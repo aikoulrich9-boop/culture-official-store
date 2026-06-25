@@ -1,0 +1,707 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CULTURE | Premium Streetwear Accessories</title>
+    <meta name="description" content="Carry The Culture. Discover premium minimalist streetwear accessories, crossbody bags, and apparel designed for city explorers and creators.">
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="styles.css?v=4">
+</head>
+<body>
+
+    <!-- STICKY NAVIGATION -->
+    <header class="site-header">
+        <div class="header-container">
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="4" y1="6" x2="20" y2="6"></line>
+                    <line x1="4" y1="12" x2="20" y2="12"></line>
+                    <line x1="4" y1="18" x2="20" y2="18"></line>
+                </svg>
+            </button>
+
+            <nav class="nav-menu" id="navMenu">
+                <ul>
+                    <li><a href="#featured" class="nav-link">Boutique</a></li>
+                    <li><a href="#categories" class="nav-link">Collections</a></li>
+                    <li><a href="#story" class="nav-link">Éditorial</a></li>
+                    <li><a href="#new-arrivals" class="nav-link">Nouveautés</a></li>
+                </ul>
+            </nav>
+
+            <div class="brand-logo">
+                <a href="#" aria-label="CULTURE Home">
+                    <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="logo-image">
+                </a>
+            </div>
+
+            <div class="header-actions">
+                <button class="action-btn" id="searchBtn" aria-label="Search Products">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="11" cy="11" r="8"></circle>
+                        <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                    </svg>
+                </button>
+                <button class="action-btn" id="wishlistBtn" aria-label="View Wishlist">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                    <span class="badge" id="wishlistCount">0</span>
+                </button>
+                <button class="action-btn" id="cartBtn" aria-label="Open Shopping Cart">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <circle cx="9" cy="21" r="1"></circle>
+                        <circle cx="20" cy="21" r="1"></circle>
+                        <path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"></path>
+                    </svg>
+                    <span class="badge" id="cartCount">0</span>
+                </button>
+                <button class="action-btn" id="accountBtn" aria-label="User Account">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                        <circle cx="12" cy="7" r="4"></circle>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- MOBILE MENU NAVIGATION -->
+    <div class="mobile-menu-overlay" id="mobileMenuOverlay">
+        <div class="mobile-menu-content">
+            <button class="close-menu" id="closeMenu" aria-label="Close Navigation">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="mobile-logo">
+                <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="logo-image">
+            </div>
+            <nav class="mobile-nav">
+                <ul>
+                    <li><a href="#featured" class="mobile-nav-link">Voir la Collection</a></li>
+                    <li><a href="#categories" class="mobile-nav-link">Collections</a></li>
+                    <li><a href="#story" class="mobile-nav-link">Éditorial</a></li>
+                    <li><a href="#new-arrivals" class="mobile-nav-link">Nouveaux Arrivages</a></li>
+                </ul>
+            </nav>
+            <div class="mobile-menu-footer">
+                <p>CULTURE STREETWEAR CO.</p>
+                <div class="social-links">
+                    <a href="#">Instagram</a>
+                    <a href="#">TikTok</a>
+                    <a href="#">Pinterest</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ASYMMETRICAL HERO SECTION -->
+    <section class="hero-section">
+        <div class="hero-container">
+            <div class="hero-text-side">
+                <div class="hero-badge animate-fade-in">PRE-FALL DROP 01</div>
+                <h1 class="hero-headline animate-slide-up">Carry<br>The Culture.</h1>
+                <p class="hero-subheadline animate-slide-up-delay">
+                    Accessoires streetwear premium conçus pour les créateurs, les rêveurs et les explorateurs urbains.
+                </p>
+                <div class="hero-ctas animate-slide-up-delay-more">
+                    <a href="#featured" class="btn btn-primary">Voir la Collection</a>
+                    <a href="#new-arrivals" class="btn btn-outline">
+                        Explorer les Nouveautés
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </a>
+                </div>
+            </div>
+            
+            <div class="hero-visual-side animate-fade-in-slow">
+                <div class="product-glow"></div>
+                <div class="hero-product-wrapper" id="heroProductWrapper">
+                    <img src="IMAGE/c 1.png" alt="Terra Icon Crossbody Bag" class="hero-product-img">
+                </div>
+                <div class="hero-product-shadow" id="heroProductShadow"></div>
+                <div class="hero-tag-floating">
+                    <div class="tag-title">TERRA ICON C1</div>
+                    <div class="tag-price">8 000 XOF</div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- BRAND MARQUEE TICKER -->
+    <div class="brand-marquee">
+        <div class="marquee-track">
+            <div class="marquee-content">
+                <span>CARRY THE CULTURE</span>
+                <span class="separator">/</span>
+                <span>DESIGNED FOR CREATORS</span>
+                <span class="separator">/</span>
+                <span>LIMITED DROP</span>
+                <span class="separator">/</span>
+                <span>STREET PORTRAIT SERIES</span>
+                <span class="separator">/</span>
+                <span>URBAN EXPLORATION</span>
+                <span class="separator">/</span>
+                <span>MONOCHROME LUXURY</span>
+                <span class="separator">/</span>
+                
+                <span>CARRY THE CULTURE</span>
+                <span class="separator">/</span>
+                <span>DESIGNED FOR CREATORS</span>
+                <span class="separator">/</span>
+                <span>LIMITED DROP</span>
+                <span class="separator">/</span>
+                <span>STREET PORTRAIT SERIES</span>
+                <span class="separator">/</span>
+                <span>URBAN EXPLORATION</span>
+                <span class="separator">/</span>
+                <span>MONOCHROME LUXURY</span>
+                <span class="separator">/</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODERN CATEGORY GRID -->
+    <section class="categories-section" id="categories">
+        <div class="section-container">
+            <div class="section-header align-left">
+                <div class="section-tag">COLLECTIONS</div>
+                <h2 class="section-title">Silhouettes Asymétriques</h2>
+            </div>
+            
+            <div class="category-grid">
+                <!-- CATEGORY 1: BAGS -->
+                <div class="category-card size-large reveal-on-scroll" data-category="bags">
+                    <div class="card-bg-img" style="background-image: url('IMAGE/c 2.png');"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3 class="card-title">Sacs</h3>
+                        <p class="card-description">Carries modulaires techniques haute densité.</p>
+                        <a href="#featured" class="card-link" onclick="filterProducts('bags')">
+                            Voir les Sacs
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CATEGORY 2: HOODIES -->
+                <div class="category-card size-tall reveal-on-scroll" data-category="hoodies">
+                    <div class="card-bg-img" style="background-image: url('IMAGE/WhatsApp Image 2026-06-16 at 08.37.09.jpeg');"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3 class="card-title">Hoodies</h3>
+                        <p class="card-description">Coton molletonné haute densité loopback.</p>
+                        <a href="#new-arrivals" class="card-link" onclick="filterProducts('hoodies')">
+                            Voir les Hoodies
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CATEGORY 3: GRAPHIC TEES -->
+                <div class="category-card size-medium reveal-on-scroll" data-category="tees">
+                    <div class="card-bg-img" style="background-image: url('IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (1).jpeg');"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3 class="card-title">Graphic Tees</h3>
+                        <p class="card-description">Expressions artistiques sur jersey épais.</p>
+                        <a href="#new-arrivals" class="card-link" onclick="filterProducts('tees')">
+                            Voir les Tees
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CATEGORY 4: CAPS -->
+                <div class="category-card size-square-small reveal-on-scroll" data-category="caps">
+                    <div class="card-bg-img" style="background-image: url('IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (3).jpeg');"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3 class="card-title">Casquettes</h3>
+                        <p class="card-description">Couvre-chefs ajustables 6 panneaux minimalistes.</p>
+                        <a href="#new-arrivals" class="card-link" onclick="filterProducts('caps')">
+                            Voir les Casquettes
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- CATEGORY 5: ACCESSORIES -->
+                <div class="category-card size-wide reveal-on-scroll" data-category="accessories">
+                    <div class="card-bg-img" style="background-image: url('IMAGE/c 4.png');"></div>
+                    <div class="card-overlay"></div>
+                    <div class="card-info">
+                        <h3 class="card-title">Accessoires</h3>
+                        <p class="card-description">Pochettes, portefeuilles et porte-clés compacts.</p>
+                        <a href="#new-arrivals" class="card-link" onclick="filterProducts('accessories')">
+                            Voir les Accessoires
+                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- GLASSMORPHISM FILTER BAR -->
+    <section class="collection-filter-section" id="featured">
+        <div class="section-container">
+            <div class="section-header align-center">
+                <div class="section-tag">LE PROJET PORTRAIT</div>
+                <h2 class="section-title">Sélection Phare</h2>
+                <p class="section-subtitle">Une fusion d'art contemporain et de sacs techniques ultra-minimalistes.</p>
+            </div>
+
+            <!-- Barre de filtre Glassmorphism -->
+            <div class="filter-bar-wrapper reveal-on-scroll">
+                <div class="glass-filter-bar">
+                    <div class="search-inner-bar">
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="search-icon-svg">
+                            <circle cx="11" cy="11" r="8"></circle>
+                            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+                        </svg>
+                        <input type="text" id="filterSearchInput" placeholder="Rechercher dans la collection..." aria-label="Rechercher">
+                    </div>
+                    <div class="filter-tags">
+                        <button class="filter-tag active" data-filter="all">Tout</button>
+                        <button class="filter-tag" data-filter="bags">Sacs</button>
+                        <button class="filter-tag" data-filter="hoodies">Hoodies</button>
+                        <button class="filter-tag" data-filter="tees">Tees</button>
+                        <button class="filter-tag" data-filter="caps">Casquettes</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PRODUCT DISPLAY GRID -->
+            <div class="products-grid" id="productsGrid">
+                <!-- Products will be dynamically generated by JS for robustness, but we output C1, C2, C3 as SSR fallbacks or structured layout -->
+                
+                <!-- Product C1 -->
+                <div class="product-card reveal-on-scroll" data-id="c1" data-category="bags">
+                    <div class="product-card-img-wrapper">
+                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                        <div class="product-image-container">
+                            <img src="IMAGE/c 1.png" alt="Terra Icon Crossbody" class="product-img-primary">
+                        </div>
+                        <div class="product-card-actions">
+                            <button class="quick-view-btn" onclick="openQuickView('c1')">Aperçu Rapide</button>
+                            <button class="quick-add-btn" onclick="addToCartDirect('c1')">Ajout Rapide</button>
+                        </div>
+                    </div>
+                    <div class="product-card-meta">
+                        <div class="product-title-row">
+                            <h3 class="product-name">Sac Bandoulière Terra Icon</h3>
+                            <span class="product-price">8 000 XOF</span>
+                        </div>
+                        <p class="product-short-desc">Sac noir avec illustration colorée d'un personnage debout sur la Terre.</p>
+                    </div>
+                </div>
+
+                <!-- Product C2 -->
+                <div class="product-card reveal-on-scroll" data-id="c2" data-category="bags">
+                    <div class="product-card-img-wrapper">
+                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                        <div class="product-image-container">
+                            <img src="IMAGE/c 2.png" alt="Aero Character Crossbody" class="product-img-primary">
+                        </div>
+                        <div class="product-card-actions">
+                            <button class="quick-view-btn" onclick="openQuickView('c2')">Aperçu Rapide</button>
+                            <button class="quick-add-btn" onclick="addToCartDirect('c2')">Ajout Rapide</button>
+                        </div>
+                    </div>
+                    <div class="product-card-meta">
+                        <div class="product-title-row">
+                            <h3 class="product-name">Sac Bandoulière Aero Character</h3>
+                            <span class="product-price">8 000 XOF</span>
+                        </div>
+                        <p class="product-short-desc">Coque résistante à l'eau avec illustration de personnage en sweat rouge.</p>
+                    </div>
+                </div>
+
+                <!-- Product C3 -->
+                <div class="product-card reveal-on-scroll" data-id="c3" data-category="bags">
+                    <div class="product-card-img-wrapper">
+                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                        </button>
+                        <div class="product-image-container">
+                            <img src="IMAGE/c 3.png" alt="Portrait Editorial Crossbody" class="product-img-primary">
+                        </div>
+                        <div class="product-card-actions">
+                            <button class="quick-view-btn" onclick="openQuickView('c3')">Aperçu Rapide</button>
+                            <button class="quick-add-btn" onclick="addToCartDirect('c3')">Ajout Rapide</button>
+                        </div>
+                    </div>
+                    <div class="product-card-meta">
+                        <div class="product-title-row">
+                            <h3 class="product-name">Sac Bandoulière Portrait Editorial</h3>
+                            <span class="product-price">8 000 XOF</span>
+                        </div>
+                        <p class="product-short-desc">Carry premium double compartiment avec illustration portrait expressif.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- SPLIT EDITORIAL STORY SECTION -->
+    <section class="story-section" id="story">
+        <div class="story-container">
+            <div class="story-text-side reveal-on-scroll">
+                <div class="story-tag">OUR IDENTITY</div>
+                <h2 class="story-headline">Conçu Pour La Nouvelle Génération</h2>
+                <p class="story-paragraph">
+                    Nous créons pour ceux qui évoluent entre l'art et l'action. Nés de la rue, nos pièces sont bien plus que des accessoires — ce sont des toiles d'expression. Chaque sac, hoodie et casquette porte une histoire d'identité, alliant savoir-faire haut de gamme et esthétique urbaine brute.
+                </p>
+                <p class="story-paragraph text-muted">
+                    Conçus en ville, inspirés par le monde entier, faits pour les explorateurs de demain. Nos produits sont imprimés avec une technologie pigmentaire longue durée pour préserver la fidélité graphique à travers chaque aventure urbaine.
+                </p>
+                <div class="story-quote">
+                    "Le streetwear n'est pas seulement ce que tu portes. C'est la façon dont tu portes ta culture."
+                </div>
+            </div>
+            
+            <div class="story-visual-side reveal-on-scroll">
+                <div class="story-product-wrapper" style="animation: float 7s ease-in-out infinite;">
+                    <img src="IMAGE/logo P.png" alt="CULTURE Brand Logo" class="story-logo-display">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW ARRIVALS HORIZONTAL PRODUCT CAROUSEL -->
+    <section class="new-arrivals-section" id="new-arrivals">
+        <div class="section-container">
+            <div class="carousel-header reveal-on-scroll">
+                <div class="header-left">
+                    <div class="section-tag">NEW DROP</div>
+                    <h2 class="section-title">Nouveaux Arrivages</h2>
+                </div>
+                <div class="carousel-nav">
+                    <button class="carousel-control prev" id="carouselPrev" aria-label="Previous Products">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                    </button>
+                    <button class="carousel-control next" id="carouselNext" aria-label="Next Products">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CAROUSEL TRACK -->
+            <div class="carousel-container reveal-on-scroll">
+                <div class="carousel-track" id="carouselTrack">
+                    <!-- Item 1 (C1 Bag) -->
+                    <div class="carousel-item" data-id="c1">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/c 1.png" alt="Terra Icon Crossbody" class="carousel-item-img">
+                            <button class="quick-add-shortcut" onclick="addToCartDirect('c1')" aria-label="Ajouter au panier">Ajouter +</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Terra Icon Crossbody</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 2 (C2 Bag) -->
+                    <div class="carousel-item" data-id="c2">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/c 2.png" alt="Aero Character Crossbody" class="carousel-item-img">
+                            <button class="quick-add-shortcut" onclick="addToCartDirect('c2')" aria-label="Ajouter au panier">Ajouter +</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Aero Character Crossbody</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 3 (C3 Bag) -->
+                    <div class="carousel-item" data-id="c3">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/c 3.png" alt="Portrait Editorial Crossbody" class="carousel-item-img">
+                            <button class="quick-add-shortcut" onclick="addToCartDirect('c3')" aria-label="Ajouter au panier">Ajouter +</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Portrait Editorial Crossbody</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 4 (C4 Bag) -->
+                    <div class="carousel-item" data-id="c4">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/c 4.png" alt="Minimalist Utility Crossbody" class="carousel-item-img">
+                            <button class="quick-add-shortcut" onclick="addToCartDirect('c4')" aria-label="Ajouter au panier">Ajouter +</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Minimalist Utility Crossbody</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 5 (Hoodie) -->
+                    <div class="carousel-item" data-id="h1">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/WhatsApp Image 2026-06-16 at 08.37.09.jpeg" alt="Heavyweight Boxy Hoodie" class="carousel-item-img fit-cover">
+                            <button class="quick-add-shortcut" onclick="openQuickView('h1')" aria-label="Choisir une taille">Choisir Taille</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Heavyweight Boxy Hoodie</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 6 (Graphic Tee) -->
+                    <div class="carousel-item" data-id="t1">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (1).jpeg" alt="Creator Studio Tee" class="carousel-item-img fit-cover">
+                            <button class="quick-add-shortcut" onclick="openQuickView('t1')" aria-label="Choisir une taille">Choisir Taille</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Creator Studio Tee</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+
+                    <!-- Item 7 (Cap) -->
+                    <div class="carousel-item" data-id="cap1">
+                        <div class="carousel-item-img-wrapper">
+                            <img src="IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (3).jpeg" alt="Urban Explorer Cap" class="carousel-item-img fit-cover">
+                            <button class="quick-add-shortcut" onclick="addToCartDirect('cap1')" aria-label="Ajouter au panier">Ajouter +</button>
+                        </div>
+                        <div class="carousel-item-meta">
+                            <h4 class="carousel-item-name">Urban Explorer Cap</h4>
+                            <span class="carousel-item-price">8 000 XOF</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="carousel-scrollbar-track">
+                    <div class="carousel-scrollbar-thumb" id="carouselThumb"></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEWSLETTER DROPS SIGNUP -->
+    <section class="newsletter-section">
+        <div class="newsletter-backdrop"></div>
+        <div class="newsletter-content reveal-on-scroll">
+            <h2 class="newsletter-title">Rejoins la Culture.</h2>
+            <p class="newsletter-text">Inscris-toi pour recevoir en avant-première nos nouveaux drops, ventes privées et collaborations artistiques.</p>
+            <form class="newsletter-form" id="newsletterForm">
+                <input type="email" placeholder="Votre adresse e-mail" aria-label="Adresse e-mail" required>
+                <button type="submit" class="btn btn-dark">
+                    S'inscrire
+                    <span class="btn-spinner" style="display:none;"></span>
+                </button>
+            </form>
+            <p class="newsletter-disclaimer">En vous inscrivant, vous acceptez de recevoir des communications de CULTURE. Désinscription possible à tout moment.</p>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer class="site-footer">
+        <div class="footer-container">
+            <div class="footer-brand-col">
+                <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="footer-logo">
+                <p class="footer-brand-desc">Accessoires streetwear premium minimalistes qui font le pont entre la sous-culture et le design de luxe.</p>
+                <div class="footer-socials">
+                    <a href="#" aria-label="Instagram">IG</a>
+                    <a href="#" aria-label="TikTok">TK</a>
+                    <a href="#" aria-label="Pinterest">PT</a>
+                    <a href="#" aria-label="X">X</a>
+                </div>
+            </div>
+            
+            <div class="footer-links-col">
+                <h4 class="footer-header">Boutique</h4>
+                <ul>
+                    <li><a href="#featured">Sacs</a></li>
+                    <li><a href="#categories">Vêtements</a></li>
+                    <li><a href="#new-arrivals">Nouveaux Drops</a></li>
+                    <li><a href="#featured">Collaborations</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4 class="footer-header">Informations</h4>
+                <ul>
+                    <li><a href="#story">Notre Histoire</a></li>
+                    <li><a href="#">Guide des Tailles</a></li>
+                    <li><a href="#">Livraison</a></li>
+                    <li><a href="#">Durabilité</a></li>
+                </ul>
+            </div>
+
+            <div class="footer-links-col">
+                <h4 class="footer-header">Contact</h4>
+                <ul>
+                    <li><a href="tel:+2290167411124">📞 +229 01 67 41 11 24</a></li>
+                    <li><a href="tel:+2290161395262">📞 +229 01 61 39 52 62</a></li>
+                    <li><a href="mailto:priority@gmail.com">✉ priority@gmail.com</a></li>
+                    <li><span style="color: var(--text-secondary); font-size: 13px; font-weight: 300;">📍 Cotonou, Bénin</span></li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <div class="footer-bottom-container">
+                <p>&copy; 2026 CULTURE Streetwear Co. Tous droits réservés.</p>
+                <div class="footer-bottom-links">
+                    <a href="#">Politique de Confidentialité</a>
+                    <a href="#">Conditions d'Utilisation</a>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- CART SIDE DRAWER -->
+    <div class="cart-drawer-overlay" id="cartDrawerOverlay">
+        <div class="cart-drawer" id="cartDrawer">
+            <div class="cart-drawer-header">
+                <h3>Votre Sac (<span id="cartHeaderCount">0</span>)</h3>
+                <button class="close-cart" id="closeCartBtn" aria-label="Fermer le panier">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="cart-items-container" id="cartItemsContainer">
+                <div class="empty-cart-msg">
+                    <p>Votre sac est vide.</p>
+                    <a href="#featured" class="btn btn-dark" id="shopEmptyBtn">Commencer les Achats</a>
+                </div>
+            </div>
+
+            <div class="cart-drawer-footer" id="cartDrawerFooter">
+                <div class="subtotal-row">
+                    <span>Sous-total</span>
+                    <span class="subtotal-price" id="cartSubtotal">0 XOF</span>
+                </div>
+                <p class="shipping-info">Taxes et frais de livraison calculés à la commande.</p>
+                <button class="checkout-btn" id="checkoutBtn">
+                    Passer à la Commande
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SEARCH DYNAMIC SLIDE-DOWN BAR -->
+    <div class="search-overlay" id="searchOverlay">
+        <div class="search-overlay-container">
+            <div class="search-header-row">
+                <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="search-logo">
+                <button class="close-search" id="closeSearchBtn" aria-label="Close Search">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            <div class="search-input-wrapper">
+                <input type="text" id="globalSearchInput" placeholder="Que recherchez-vous ?" aria-label="Recherche" autocomplete="off" autofocus>
+            </div>
+            <div class="search-results-section">
+                <div class="suggestions-col">
+                    <h4>Recherches Tendances</h4>
+                    <ul>
+                        <li><button class="suggestion-link" onclick="triggerSearchText('C1')">C1 Crossbody</button></li>
+                        <li><button class="suggestion-link" onclick="triggerSearchText('Hoodie')">Heavyweight Hoodie</button></li>
+                        <li><button class="suggestion-link" onclick="triggerSearchText('Portrait')">Portrait Crossbody</button></li>
+                        <li><button class="suggestion-link" onclick="triggerSearchText('Cap')">Explorer Caps</button></li>
+                    </ul>
+                </div>
+                <div class="results-col">
+                    <h4 id="resultsHeader">Résultats</h4>
+                    <div class="search-results-grid" id="searchResultsGrid">
+                        <p class="search-empty-state">Commencez à taper pour voir les collections correspondantes.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- WISHLIST OVERLAY DRAWER -->
+    <div class="cart-drawer-overlay" id="wishlistOverlay">
+        <div class="cart-drawer" id="wishlistDrawer">
+            <div class="cart-drawer-header">
+                <h3>Liste de Souhaits (<span id="wishlistHeaderCount">0</span>)</h3>
+                <button class="close-cart" id="closeWishlistBtn" aria-label="Fermer la liste de souhaits">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
+            
+            <div class="cart-items-container" id="wishlistItemsContainer">
+                <div class="empty-cart-msg">
+                    <p>Votre liste de souhaits est vide.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- QUICK VIEW MODAL -->
+    <div class="modal-overlay" id="quickViewOverlay">
+        <div class="modal-content" id="quickViewModal">
+            <button class="close-modal" id="closeModalBtn" aria-label="Close Product View">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <div class="modal-body" id="quickViewModalBody">
+                <!-- Dynamically loaded layout -->
+            </div>
+        </div>
+    </div>
+
+    <!-- TOAST NOTIFICATIONS DYNAMIC CONTAINER -->
+    <div class="toast-container" id="toastContainer"></div>
+
+    <!-- Global App JS -->
+    <script src="app.js?v=3"></script>
+</body>
+</html>
