@@ -1762,10 +1762,17 @@ h1, h2, h3, h4 {
     letter-spacing: 0.1em;
     border-radius: var(--radius-full);
     transition: var(--transition-smooth);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
 }
 
 .checkout-btn:hover {
-    background-color: var(--accent-orange);
+    background: linear-gradient(135deg, #25D366, #128C7E);
+    color: #ffffff;
+    box-shadow: 0 10px 25px rgba(37, 211, 102, 0.3);
+    transform: translateY(-2px);
 }
 
 /* ==========================================================================

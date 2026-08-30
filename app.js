@@ -68,15 +68,20 @@ const PRODUCTS = [
 ];
 
 /* ==========================================================================
-   APP STATE
+   APP STATE & UTILITIES
    ========================================================================== */
 let cart = JSON.parse(localStorage.getItem("culture_cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("culture_wishlist")) || [];
 let activeCategoryFilter = "all";
 let activeSearchQuery = "";
 
+function formatPrice(price) {
+    if (typeof price !== "number") price = Number(price);
+    return price.toLocaleString("fr-FR") + " XOF";
+}
+
 /* ==========================================================================
-   DOM ELEMENTS
+   DOM INITIALIZATION
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
     // Navigation / Header
@@ -84,11 +89,13 @@ document.addEventListener("DOMContentLoaded", () => {
     const menuToggle = document.getElementById("menuToggle");
     const closeMenu = document.getElementById("closeMenu");
     const mobileMenuOverlay = document.getElementById("mobileMenuOverlay");
+    const accountBtn = document.getElementById("accountBtn");
     
     // Drawers & Overlays
     const cartBtn = document.getElementById("cartBtn");
     const closeCartBtn = document.getElementById("closeCartBtn");
     const cartDrawerOverlay = document.getElementById("cartDrawerOverlay");
+    const checkoutBtn = document.getElementById("checkoutBtn");
     
     const wishlistBtn = document.getElementById("wishlistBtn");
     const closeWishlistBtn = document.getElementById("closeWishlistBtn");
@@ -136,7 +143,7 @@ document.addEventListener("DOMContentLoaded", () => {
         entries.forEach(entry => {
             if (entry.isIntersecting) {
                 entry.target.classList.add("active");
-                observer.unobserve(entry.target); // Reveal only once
+                observer.unobserve(entry.target);
             }
         });
     }, observerOptions);
@@ -144,17 +151,57 @@ document.addEventListener("DOMContentLoaded", () => {
     revealElements.forEach(el => revealObserver.observe(el));
 
     /* ==========================================================================
+       3D PARALLAX TILT ON HERO PRODUCT
+       ========================================================================== */
+    const heroProductWrapper = document.getElementById("heroProductWrapper");
+    const heroSection = document.querySelector(".hero-section");
+    if (heroProductWrapper && heroSection) {
+        heroSection.addEventListener("mousemove", (e) => {
+            const rect = heroSection.getBoundingClientRect();
+            const x = e.clientX - rect.left - rect.width / 2;
+            const y = e.clientY - rect.top - rect.height / 2;
+            const rotateX = (-y / rect.height) * 12;
+            const rotateY = (x / rect.width) * 12;
+            heroProductWrapper.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale(1.02)`;
+        });
+
+        heroSection.addEventListener("mouseleave", () => {
+            heroProductWrapper.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale(1)";
+        });
+    }
+
+    /* ==========================================================================
+       ACCOUNT BUTTON TRIGGER
+       ========================================================================== */
+    if (accountBtn) {
+        accountBtn.addEventListener("click", () => {
+            showToast("Espace membre CULTURE bientôt disponible !");
+        });
+    }
+
+    /* ==========================================================================
        MOBILE MENU TRIGGERS
        ========================================================================== */
-    menuToggle.addEventListener("click", () => {
-        mobileMenuOverlay.classList.add("active");
-    });
+    if (menuToggle) {
+        menuToggle.addEventListener("click", () => {
+            mobileMenuOverlay.classList.add("active");
+        });
+    }
 
-    closeMenu.addEventListener("click", () => {
-        mobileMenuOverlay.classList.remove("active");
-    });
+    if (closeMenu) {
+        closeMenu.addEventListener("click", () => {
+            mobileMenuOverlay.classList.remove("active");
+        });
+    }
 
-    // Close mobile menu on clicking link
+    if (mobileMenuOverlay) {
+        mobileMenuOverlay.addEventListener("click", (e) => {
+            if (e.target === mobileMenuOverlay) {
+                mobileMenuOverlay.classList.remove("active");
+            }
+        });
+    }
+
     document.querySelectorAll(".mobile-nav-link").forEach(link => {
         link.addEventListener("click", () => {
             mobileMenuOverlay.classList.remove("active");
@@ -162,76 +209,103 @@ document.addEventListener("DOMContentLoaded", () => {
     });
 
     /* ==========================================================================
-       CART DRAWER CONTROLS
+       CART DRAWER & CHECKOUT CONTROLS
        ========================================================================== */
-    cartBtn.addEventListener("click", () => {
-        cartDrawerOverlay.classList.add("active");
-        renderCart();
-    });
+    if (cartBtn) {
+        cartBtn.addEventListener("click", () => {
+            cartDrawerOverlay.classList.add("active");
+            renderCart();
+        });
+    }
 
-    closeCartBtn.addEventListener("click", () => {
-        cartDrawerOverlay.classList.remove("active");
-    });
-
-    cartDrawerOverlay.addEventListener("click", (e) => {
-        if (e.target === cartDrawerOverlay) {
+    if (closeCartBtn) {
+        closeCartBtn.addEventListener("click", () => {
             cartDrawerOverlay.classList.remove("active");
-        }
-    });
+        });
+    }
+
+    if (cartDrawerOverlay) {
+        cartDrawerOverlay.addEventListener("click", (e) => {
+            if (e.target === cartDrawerOverlay) {
+                cartDrawerOverlay.classList.remove("active");
+            }
+        });
+    }
+
+    if (checkoutBtn) {
+        checkoutBtn.addEventListener("click", () => {
+            processCheckout();
+        });
+    }
 
     /* ==========================================================================
        WISHLIST CONTROLS
        ========================================================================== */
-    wishlistBtn.addEventListener("click", () => {
-        wishlistOverlay.classList.add("active");
-        renderWishlist();
-    });
+    if (wishlistBtn) {
+        wishlistBtn.addEventListener("click", () => {
+            wishlistOverlay.classList.add("active");
+            renderWishlist();
+        });
+    }
 
-    closeWishlistBtn.addEventListener("click", () => {
-        wishlistOverlay.classList.remove("active");
-    });
-
-    wishlistOverlay.addEventListener("click", (e) => {
-        if (e.target === wishlistOverlay) {
+    if (closeWishlistBtn) {
+        closeWishlistBtn.addEventListener("click", () => {
             wishlistOverlay.classList.remove("active");
-        }
-    });
+        });
+    }
+
+    if (wishlistOverlay) {
+        wishlistOverlay.addEventListener("click", (e) => {
+            if (e.target === wishlistOverlay) {
+                wishlistOverlay.classList.remove("active");
+            }
+        });
+    }
 
     /* ==========================================================================
        GLOBAL SEARCH PANEL
        ========================================================================== */
-    searchBtn.addEventListener("click", () => {
-        searchOverlay.classList.add("active");
-        setTimeout(() => globalSearchInput.focus(), 300);
-    });
+    if (searchBtn) {
+        searchBtn.addEventListener("click", () => {
+            searchOverlay.classList.add("active");
+            setTimeout(() => globalSearchInput.focus(), 300);
+        });
+    }
 
-    closeSearchBtn.addEventListener("click", () => {
-        searchOverlay.classList.remove("active");
-        globalSearchInput.value = "";
-        triggerSearchText("");
-    });
+    if (closeSearchBtn) {
+        closeSearchBtn.addEventListener("click", () => {
+            searchOverlay.classList.remove("active");
+            globalSearchInput.value = "";
+            triggerSearchText("");
+        });
+    }
 
-    globalSearchInput.addEventListener("input", (e) => {
-        triggerSearchText(e.target.value);
-    });
+    if (globalSearchInput) {
+        globalSearchInput.addEventListener("input", (e) => {
+            triggerSearchText(e.target.value);
+        });
+    }
 
     /* ==========================================================================
        QUICK VIEW MODAL CLOSES
        ========================================================================== */
-    closeModalBtn.addEventListener("click", () => {
-        quickViewOverlay.classList.remove("active");
-    });
-
-    quickViewOverlay.addEventListener("click", (e) => {
-        if (e.target === quickViewOverlay) {
+    if (closeModalBtn) {
+        closeModalBtn.addEventListener("click", () => {
             quickViewOverlay.classList.remove("active");
-        }
-    });
+        });
+    }
+
+    if (quickViewOverlay) {
+        quickViewOverlay.addEventListener("click", (e) => {
+            if (e.target === quickViewOverlay) {
+                quickViewOverlay.classList.remove("active");
+            }
+        });
+    }
 
     /* ==========================================================================
        FEATURED PRODUCTS RENDER & FILTER
        ========================================================================== */
-    // Filter click handler
     filterTags.forEach(tag => {
         tag.addEventListener("click", () => {
             filterTags.forEach(t => t.classList.remove("active"));
@@ -241,81 +315,32 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     });
 
-    // Filter text input handler
-    filterSearchInput.addEventListener("input", (e) => {
-        activeSearchQuery = e.target.value.toLowerCase();
-        filterAndRenderFeaturedProducts();
-    });
-
-    function filterAndRenderFeaturedProducts() {
-        const filtered = PRODUCTS.filter(p => {
-            const matchesCategory = activeCategoryFilter === "all" || p.category === activeCategoryFilter;
-            const matchesSearch = p.name.toLowerCase().includes(activeSearchQuery) || 
-                                 p.description.toLowerCase().includes(activeSearchQuery);
-            return matchesCategory && matchesSearch;
+    if (filterSearchInput) {
+        filterSearchInput.addEventListener("input", (e) => {
+            activeSearchQuery = e.target.value.toLowerCase();
+            filterAndRenderFeaturedProducts();
         });
-
-        renderFeaturedProducts(filtered);
-    }
-
-    function renderFeaturedProducts(productsList) {
-        if (productsList.length === 0) {
-            productsGrid.innerHTML = `
-                <div class="search-empty-state" style="text-align: center; grid-column: 1/-1; padding: 40px 0;">
-                    <p style="color: var(--text-secondary); font-size: 16px;">Aucun produit ne correspond à vos filtres.</p>
-                </div>
-            `;
-            return;
-        }
-
-        productsGrid.innerHTML = productsList.map(product => {
-            const isWishlisted = wishlist.includes(product.id);
-            return `
-                <div class="product-card reveal-on-scroll active" data-id="${product.id}" data-category="${product.category}">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" 
-                                onclick="event.stopPropagation(); toggleWishlistItem('${product.id}')" 
-                                aria-label="Toggle Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container" onclick="openQuickView('${product.id}')">
-                            <img src="${product.image}" alt="${product.name}" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('${product.id}')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name" onclick="openQuickView('${product.id}')" style="cursor:pointer;">${product.name}</h3>
-                            <span class="product-price">${product.price} XOF</span>
-                        </div>
-                        <p class="product-short-desc">${product.description.split('.')[0]}.</p>
-                    </div>
-                </div>
-            `;
-        }).join("");
     }
 
     /* ==========================================================================
-       NEW ARRIVALS CAROUSEL HORIZONTAL DRAG & SCROLL
+       NEW ARRIVALS CAROUSEL SCROLL
        ========================================================================== */
     if (carouselTrack) {
-        // Scroll navigation buttons
-        carouselPrev.addEventListener("click", () => {
-            carouselTrack.scrollBy({ left: -380, behavior: "smooth" });
-        });
+        if (carouselPrev) {
+            carouselPrev.addEventListener("click", () => {
+                carouselTrack.scrollBy({ left: -380, behavior: "smooth" });
+            });
+        }
 
-        carouselNext.addEventListener("click", () => {
-            carouselTrack.scrollBy({ left: 380, behavior: "smooth" });
-        });
+        if (carouselNext) {
+            carouselNext.addEventListener("click", () => {
+                carouselTrack.scrollBy({ left: 380, behavior: "smooth" });
+            });
+        }
 
-        // Sync scroll bar thumb indicator
         carouselTrack.addEventListener("scroll", () => {
             const scrollTotal = carouselTrack.scrollWidth - carouselTrack.clientWidth;
+            if (scrollTotal <= 0) return;
             const scrollProgress = carouselTrack.scrollLeft / scrollTotal;
             const thumbWidth = carouselThumb.clientWidth;
             const trackWidth = carouselThumb.parentElement.clientWidth;
@@ -336,24 +361,22 @@ document.addEventListener("DOMContentLoaded", () => {
             const spinner = submitBtn.querySelector(".btn-spinner");
             const input = newsletterForm.querySelector("input");
 
-            // Animation spinner
             btnText.textContent = "";
-            spinner.style.display = "inline-block";
+            if (spinner) spinner.style.display = "inline-block";
             submitBtn.style.pointerEvents = "none";
 
             setTimeout(() => {
-                // Success trigger
-                spinner.style.display = "none";
-                btnText.textContent = "Subscribed";
+                if (spinner) spinner.style.display = "none";
+                btnText.textContent = "Inscrit !";
                 submitBtn.style.backgroundColor = "var(--accent-orange)";
                 submitBtn.style.borderColor = "var(--accent-orange)";
                 submitBtn.style.color = "white";
                 
-                showToast("Subscribed! Welcome to the Syndicate.");
+                showToast("Bienvenue dans le Syndicate CULTURE !");
                 input.value = "";
 
                 setTimeout(() => {
-                    btnText.textContent = "Subscribe";
+                    btnText.textContent = "S'inscrire";
                     submitBtn.style.backgroundColor = "var(--text-primary)";
                     submitBtn.style.borderColor = "var(--text-primary)";
                     submitBtn.style.color = "var(--bg-primary)";
@@ -370,6 +393,68 @@ document.addEventListener("DOMContentLoaded", () => {
 });
 
 /* ==========================================================================
+   FEATURED PRODUCTS FILTER ENGINE
+   ========================================================================== */
+function filterAndRenderFeaturedProducts() {
+    const productsGrid = document.getElementById("productsGrid");
+    if (!productsGrid) return;
+
+    const filtered = PRODUCTS.filter(p => {
+        const matchesCategory = activeCategoryFilter === "all" || p.category === activeCategoryFilter;
+        const matchesSearch = p.name.toLowerCase().includes(activeSearchQuery) || 
+                             p.description.toLowerCase().includes(activeSearchQuery);
+        return matchesCategory && matchesSearch;
+    });
+
+    renderFeaturedProducts(filtered);
+}
+
+function renderFeaturedProducts(productsList) {
+    const productsGrid = document.getElementById("productsGrid");
+    if (!productsGrid) return;
+
+    if (productsList.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="search-empty-state" style="text-align: center; grid-column: 1/-1; padding: 40px 0;">
+                <p style="color: var(--text-secondary); font-size: 16px;">Aucun produit ne correspond à vos filtres.</p>
+            </div>
+        `;
+        return;
+    }
+
+    productsGrid.innerHTML = productsList.map(product => {
+        const isWishlisted = wishlist.includes(product.id);
+        return `
+            <div class="product-card reveal-on-scroll active" data-id="${product.id}" data-category="${product.category}">
+                <div class="product-card-img-wrapper">
+                    <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" 
+                            onclick="event.stopPropagation(); toggleWishlistItem('${product.id}')" 
+                            aria-label="Ajouter aux favoris">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+                    <div class="product-image-container" onclick="openQuickView('${product.id}')">
+                        <img src="${product.image}" alt="${product.name}" class="product-img-primary">
+                    </div>
+                    <div class="product-card-actions">
+                        <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Aperçu Rapide</button>
+                        <button class="quick-add-btn" onclick="addToCartDirect('${product.id}')">Ajout Rapide</button>
+                    </div>
+                </div>
+                <div class="product-card-meta">
+                    <div class="product-title-row">
+                        <h3 class="product-name" onclick="openQuickView('${product.id}')" style="cursor:pointer;">${product.name}</h3>
+                        <span class="product-price">${formatPrice(product.price)}</span>
+                    </div>
+                    <p class="product-short-desc">${product.description.split('.')[0]}.</p>
+                </div>
+            </div>
+        `;
+    }).join("");
+}
+
+/* ==========================================================================
    GLOBAL SEARCH PANEL REAL-TIME FILTER
    ========================================================================== */
 function triggerSearchText(text) {
@@ -377,12 +462,14 @@ function triggerSearchText(text) {
     const searchResultsGrid = document.getElementById("searchResultsGrid");
     const resultsHeader = document.getElementById("resultsHeader");
     
-    globalSearchInput.value = text;
+    if (globalSearchInput) globalSearchInput.value = text;
     const query = text.toLowerCase().trim();
+
+    if (!searchResultsGrid) return;
 
     if (!query) {
         searchResultsGrid.innerHTML = `<p class="search-empty-state">Commencez à taper pour voir les collections correspondantes.</p>`;
-        resultsHeader.textContent = "Résultats de Recherche";
+        if (resultsHeader) resultsHeader.textContent = "Résultats de Recherche";
         return;
     }
 
@@ -392,7 +479,7 @@ function triggerSearchText(text) {
         p.description.toLowerCase().includes(query)
     );
 
-    resultsHeader.textContent = `Résultats de Recherche (${matched.length})`;
+    if (resultsHeader) resultsHeader.textContent = `Résultats de Recherche (${matched.length})`;
 
     if (matched.length === 0) {
         searchResultsGrid.innerHTML = `<p class="search-empty-state">Aucun produit trouvé pour "${text}".</p>`;
@@ -405,26 +492,24 @@ function triggerSearchText(text) {
                 <img src="${product.image}" alt="${product.name}">
             </div>
             <h5 class="search-result-name">${product.name}</h5>
-            <span class="search-result-price">${product.price} XOF</span>
+            <span class="search-result-price">${formatPrice(product.price)}</span>
         </div>
     `).join("");
 }
 
 /* ==========================================================================
-   CART UTILITIES (ADD, REMOVE, QUANTITY, RENDER)
+   CART UTILITIES (ADD, REMOVE, QUANTITY, RENDER, CHECKOUT)
    ========================================================================== */
 function addToCartDirect(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
     if (!product) return;
 
-    // If product has size selectors (hoodies, tees) but no size selected, open quick view
-    if (product.sizes.length > 0) {
+    if (product.sizes && product.sizes.length > 0) {
         openQuickView(productId);
-        showToast("Please select a size first.");
+        showToast("Veuillez sélectionner une taille.");
         return;
     }
 
-    // Add to cart with blank size
     addItemToCartArray(product, "");
     showToast(`${product.name} ajouté au panier.`);
     openCartDrawer();
@@ -456,7 +541,7 @@ function updateCartQty(productId, size, change) {
 
     if (cart[index].quantity <= 0) {
         cart.splice(index, 1);
-        showToast("Item removed from bag.");
+        showToast("Article retiré du panier.");
     }
 
     saveCart();
@@ -469,7 +554,7 @@ function removeCartItem(productId, size) {
     saveCart();
     renderCart();
     updateBadgesCount();
-    showToast("Item removed from bag.");
+    showToast("Article retiré du panier.");
 }
 
 function saveCart() {
@@ -478,8 +563,13 @@ function saveCart() {
 
 function openCartDrawer() {
     const cartDrawerOverlay = document.getElementById("cartDrawerOverlay");
-    cartDrawerOverlay.classList.add("active");
+    if (cartDrawerOverlay) cartDrawerOverlay.classList.add("active");
     renderCart();
+}
+
+function closeCartDrawer() {
+    const cartDrawerOverlay = document.getElementById("cartDrawerOverlay");
+    if (cartDrawerOverlay) cartDrawerOverlay.classList.remove("active");
 }
 
 function renderCart() {
@@ -487,6 +577,8 @@ function renderCart() {
     const subtotalText = document.getElementById("cartSubtotal");
     const footer = document.getElementById("cartDrawerFooter");
     
+    if (!container) return;
+
     if (cart.length === 0) {
         container.innerHTML = `
             <div class="empty-cart-msg">
@@ -494,14 +586,18 @@ function renderCart() {
                 <button class="btn btn-dark" style="margin-top: 15px;" onclick="closeCartDrawer()">Commencer les Achats</button>
             </div>
         `;
-        subtotalText.textContent = "0 XOF";
-        footer.style.opacity = "0.5";
-        footer.style.pointerEvents = "none";
+        if (subtotalText) subtotalText.textContent = "0 XOF";
+        if (footer) {
+            footer.style.opacity = "0.5";
+            footer.style.pointerEvents = "none";
+        }
         return;
     }
 
-    footer.style.opacity = "1";
-    footer.style.pointerEvents = "auto";
+    if (footer) {
+        footer.style.opacity = "1";
+        footer.style.pointerEvents = "auto";
+    }
 
     let total = 0;
     container.innerHTML = cart.map(item => {
@@ -515,27 +611,52 @@ function renderCart() {
                 <div class="cart-item-info">
                     <div class="cart-item-title-row">
                         <span class="cart-item-name">${item.product.name}</span>
-                        <span class="cart-item-price">${itemTotal} XOF</span>
+                        <span class="cart-item-price">${formatPrice(itemTotal)}</span>
                     </div>
                     <div class="cart-item-variant">${item.size ? 'Taille : ' + item.size : 'Taille Unique'}</div>
                     <div class="cart-item-actions">
                         <div class="qty-control">
-                            <button class="qty-btn" onclick="updateCartQty('${item.product.id}', '${item.size}', -1)" aria-label="Decrease quantity">-</button>
+                            <button class="qty-btn" onclick="updateCartQty('${item.product.id}', '${item.size}', -1)" aria-label="Diminuer la quantité">-</button>
                             <span class="qty-val">${item.quantity}</span>
-                            <button class="qty-btn" onclick="updateCartQty('${item.product.id}', '${item.size}', 1)" aria-label="Increase quantity">+</button>
+                            <button class="qty-btn" onclick="updateCartQty('${item.product.id}', '${item.size}', 1)" aria-label="Augmenter la quantité">+</button>
                         </div>
-                        <button class="remove-item-btn" onclick="removeCartItem('${item.product.id}', '${item.size}')">Remove</button>
+                        <button class="remove-item-btn" onclick="removeCartItem('${item.product.id}', '${item.size}')">Supprimer</button>
                     </div>
                 </div>
             </div>
         `;
     }).join("");
 
-    subtotalText.textContent = `${total} XOF`;
+    if (subtotalText) subtotalText.textContent = formatPrice(total);
 }
 
-function closeCartDrawer() {
-    document.getElementById("cartDrawerOverlay").classList.remove("active");
+/* ==========================================================================
+   WHATSAPP ORDER CHECKOUT PROCESSOR
+   ========================================================================== */
+function processCheckout() {
+    if (cart.length === 0) {
+        showToast("Votre panier est vide !");
+        return;
+    }
+
+    let total = 0;
+    let itemsListText = "";
+    cart.forEach((item, index) => {
+        const itemTotal = item.product.price * item.quantity;
+        total += itemTotal;
+        const sizeText = item.size ? ` (Taille: ${item.size})` : "";
+        itemsListText += `${index + 1}. *${item.product.name}*${sizeText}\n   Quantité: ${item.quantity} x ${formatPrice(item.product.price)} = *${formatPrice(itemTotal)}*\n`;
+    });
+
+    const message = `*NOUVELLE COMMANDE - CULTURE STREETWEAR*\n\n` +
+        `Bonjour, je souhaite valider la commande suivante :\n\n` +
+        `${itemsListText}\n` +
+        `*TOTAL : ${formatPrice(total)}*\n\n` +
+        `Merci de me confirmer la disponibilité des articles et les modalités de livraison à Cotonou.`;
+
+    const whatsappUrl = `https://wa.me/2290167411124?text=${encodeURIComponent(message)}`;
+    window.open(whatsappUrl, "_blank");
+    showToast("Redirection vers WhatsApp pour valider votre commande...");
 }
 
 /* ==========================================================================
@@ -547,23 +668,24 @@ function toggleWishlistItem(productId) {
     
     if (index > -1) {
         wishlist.splice(index, 1);
-        showToast("Removed from wishlist.");
+        showToast("Retiré de la liste de souhaits.");
     } else {
         wishlist.push(productId);
-        showToast("Added to wishlist.");
+        showToast("Ajouté à la liste de souhaits.");
     }
 
     saveWishlist();
     updateBadgesCount();
     
-    // Sync heart state on all cards with this product id
     document.querySelectorAll(`.product-card[data-id="${productId}"] .wishlist-toggle-btn`).forEach(btn => {
         btn.classList.toggle("active");
         const svg = btn.querySelector("svg");
-        if (btn.classList.contains("active")) {
-            svg.setAttribute("fill", "currentColor");
-        } else {
-            svg.setAttribute("fill", "none");
+        if (svg) {
+            if (btn.classList.contains("active")) {
+                svg.setAttribute("fill", "currentColor");
+            } else {
+                svg.setAttribute("fill", "none");
+            }
         }
     });
 
@@ -576,6 +698,7 @@ function saveWishlist() {
 
 function renderWishlist() {
     const container = document.getElementById("wishlistItemsContainer");
+    if (!container) return;
     
     if (wishlist.length === 0) {
         container.innerHTML = `
@@ -595,7 +718,7 @@ function renderWishlist() {
             <div class="cart-item-info">
                 <div class="cart-item-title-row">
                     <span class="cart-item-name" onclick="openQuickView('${product.id}'); closeWishlistDrawer()" style="cursor:pointer;">${product.name}</span>
-                    <span class="cart-item-price">${product.price} XOF</span>
+                    <span class="cart-item-price">${formatPrice(product.price)}</span>
                 </div>
                 <div class="cart-item-variant">${product.category}</div>
                 <div class="cart-item-actions" style="margin-top: 10px;">
@@ -608,12 +731,23 @@ function renderWishlist() {
 }
 
 function addFromWishlistToCart(productId) {
+    const product = PRODUCTS.find(p => p.id === productId);
+    if (!product) return;
+
+    if (product.sizes && product.sizes.length > 0) {
+        closeWishlistDrawer();
+        openQuickView(productId);
+        showToast("Veuillez sélectionner une taille.");
+        return;
+    }
+
     addToCartDirect(productId);
-    document.getElementById("wishlistOverlay").classList.remove("active");
+    closeWishlistDrawer();
 }
 
 function closeWishlistDrawer() {
-    document.getElementById("wishlistOverlay").classList.remove("active");
+    const wishlistOverlay = document.getElementById("wishlistOverlay");
+    if (wishlistOverlay) wishlistOverlay.classList.remove("active");
 }
 
 /* ==========================================================================
@@ -628,21 +762,23 @@ function updateBadgesCount() {
     const cartTotalQty = cart.reduce((sum, item) => sum + item.quantity, 0);
     const wishlistTotalQty = wishlist.length;
 
-    // Cart counts sync
-    cartCount.textContent = cartTotalQty;
-    if (cartTotalQty > 0) {
-        cartCount.classList.add("active");
-    } else {
-        cartCount.classList.remove("active");
+    if (cartCount) {
+        cartCount.textContent = cartTotalQty;
+        if (cartTotalQty > 0) {
+            cartCount.classList.add("active");
+        } else {
+            cartCount.classList.remove("active");
+        }
     }
     if (cartHeaderCount) cartHeaderCount.textContent = cartTotalQty;
 
-    // Wishlist counts sync
-    wishlistCount.textContent = wishlistTotalQty;
-    if (wishlistTotalQty > 0) {
-        wishlistCount.classList.add("active");
-    } else {
-        wishlistCount.classList.remove("active");
+    if (wishlistCount) {
+        wishlistCount.textContent = wishlistTotalQty;
+        if (wishlistTotalQty > 0) {
+            wishlistCount.classList.add("active");
+        } else {
+            wishlistCount.classList.remove("active");
+        }
     }
     if (wishlistHeaderCount) wishlistHeaderCount.textContent = wishlistTotalQty;
 }
@@ -656,6 +792,8 @@ function openQuickView(productId) {
 
     const overlay = document.getElementById("quickViewOverlay");
     const body = document.getElementById("quickViewModalBody");
+    if (!overlay || !body) return;
+
     const isWishlisted = wishlist.includes(product.id);
 
     body.innerHTML = `
@@ -667,10 +805,10 @@ function openQuickView(productId) {
             <div class="qv-text-side">
                 <div class="qv-badge">${product.category}</div>
                 <h3 class="qv-title">${product.name}</h3>
-                <div class="qv-price">${product.price} XOF</div>
+                <div class="qv-price">${formatPrice(product.price)}</div>
                 <p class="qv-description">${product.description}</p>
                 
-                ${product.sizes.length > 0 ? `
+                ${product.sizes && product.sizes.length > 0 ? `
                     <div class="qv-variants">
                         <h5>Sélectionner la Taille</h5>
                         <div class="qv-sizes-row">
@@ -683,7 +821,7 @@ function openQuickView(productId) {
 
                 <div class="qv-actions-row">
                     <button class="qv-add-to-cart" onclick="addFromModalToCart('${product.id}')">Ajouter au panier</button>
-                    <button class="qv-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlistItem('${product.id}'); syncModalWishlistBtn(this)" aria-label="Add to Wishlist">
+                    <button class="qv-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlistItem('${product.id}'); syncModalWishlistBtn(this)" aria-label="Ajouter aux favoris">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
@@ -698,17 +836,21 @@ function openQuickView(productId) {
 
 function selectModalSize(btn) {
     const parent = btn.parentElement;
-    parent.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+    if (parent) {
+        parent.querySelectorAll(".size-btn").forEach(b => b.classList.remove("active"));
+    }
     btn.classList.add("active");
 }
 
 function syncModalWishlistBtn(btn) {
     btn.classList.toggle("active");
     const svg = btn.querySelector("svg");
-    if (btn.classList.contains("active")) {
-        svg.setAttribute("fill", "currentColor");
-    } else {
-        svg.setAttribute("fill", "none");
+    if (svg) {
+        if (btn.classList.contains("active")) {
+            svg.setAttribute("fill", "currentColor");
+        } else {
+            svg.setAttribute("fill", "none");
+        }
     }
 }
 
@@ -723,12 +865,11 @@ function addFromModalToCart(productId) {
     }
 
     addItemToCartArray(product, selectedSize);
-    showToast(`Added ${product.name} ${selectedSize ? '(' + selectedSize + ')' : ''} to bag.`);
+    showToast(`${product.name} ${selectedSize ? '(' + selectedSize + ')' : ''} ajouté au panier.`);
     
-    // Close modal
-    document.getElementById("quickViewOverlay").classList.remove("active");
+    const quickViewOverlay = document.getElementById("quickViewOverlay");
+    if (quickViewOverlay) quickViewOverlay.classList.remove("active");
     
-    // Open cart drawer
     openCartDrawer();
 }
 
@@ -737,6 +878,8 @@ function addFromModalToCart(productId) {
    ========================================================================== */
 function showToast(message) {
     const container = document.getElementById("toastContainer");
+    if (!container) return;
+
     const toast = document.createElement("div");
     toast.className = "toast";
     toast.innerHTML = `
@@ -748,10 +891,8 @@ function showToast(message) {
 
     container.appendChild(toast);
 
-    // Fade in
     setTimeout(() => toast.classList.add("show"), 100);
 
-    // Fade out and remove
     setTimeout(() => {
         toast.classList.remove("show");
         setTimeout(() => toast.remove(), 400);
@@ -764,7 +905,6 @@ function showToast(message) {
 function filterProducts(category) {
     activeCategoryFilter = category;
     
-    // Update active filter tags UI
     const filterTags = document.querySelectorAll(".filter-tag");
     filterTags.forEach(tag => {
         if (tag.dataset.filter === category) {
@@ -774,63 +914,14 @@ function filterProducts(category) {
         }
     });
 
-    // Smooth scroll to featured drop filter bar
     const section = document.getElementById("featured");
     if (section) {
         section.scrollIntoView({ behavior: "smooth" });
     }
 
-    // Trigger filter
     const filterSearchInput = document.getElementById("filterSearchInput");
     if (filterSearchInput) filterSearchInput.value = "";
     activeSearchQuery = "";
     
-    // Call the dynamic filter and render
-    // Search elements are loaded inside DOMContentLoaded, so wrap in event loop to guarantee DOM references exist
-    setTimeout(() => {
-        const productsList = PRODUCTS.filter(p => category === "all" || p.category === category);
-        const productsGrid = document.getElementById("productsGrid");
-        if (productsGrid) {
-            // Render
-            const wishlist = JSON.parse(localStorage.getItem("culture_wishlist")) || [];
-            if (productsList.length === 0) {
-                productsGrid.innerHTML = `
-                    <div class="search-empty-state" style="text-align: center; grid-column: 1/-1; padding: 40px 0;">
-                        <p style="color: var(--text-secondary); font-size: 16px;">Aucun produit ne correspond à vos filtres.</p>
-                    </div>
-                `;
-                return;
-            }
-            productsGrid.innerHTML = productsList.map(product => {
-                const isWishlisted = wishlist.includes(product.id);
-                return `
-                    <div class="product-card reveal-on-scroll active" data-id="${product.id}" data-category="${product.category}">
-                        <div class="product-card-img-wrapper">
-                            <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" 
-                                    onclick="event.stopPropagation(); toggleWishlistItem('${product.id}')" 
-                                    aria-label="Toggle Wishlist">
-                                <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                                    <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                                </svg>
-                            </button>
-                            <div class="product-image-container" onclick="openQuickView('${product.id}')">
-                                <img src="${product.image}" alt="${product.name}" class="product-img-primary">
-                            </div>
-                            <div class="product-card-actions">
-                                <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Quick View</button>
-                                <button class="quick-add-btn" onclick="addToCartDirect('${product.id}')">Quick Add</button>
-                            </div>
-                        </div>
-                        <div class="product-card-meta">
-                            <div class="product-title-row">
-                                <h3 class="product-name" onclick="openQuickView('${product.id}')" style="cursor:pointer;">${product.name}</h3>
-                                <span class="product-price">$${product.price}</span>
-                            </div>
-                            <p class="product-short-desc">${product.description.split('.')[0]}.</p>
-                        </div>
-                    </div>
-                `;
-            }).join("");
-        }
-    }, 100);
+    filterAndRenderFeaturedProducts();
 }
