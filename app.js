@@ -74,6 +74,7 @@ let cart = JSON.parse(localStorage.getItem("culture_cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("culture_wishlist")) || [];
 let activeCategoryFilter = "all";
 let activeSearchQuery = "";
+let currentTheme = localStorage.getItem("culture_theme") || "light";
 
 function formatPrice(price) {
     if (typeof price !== "number") price = Number(price);
@@ -81,9 +82,49 @@ function formatPrice(price) {
 }
 
 /* ==========================================================================
+   THEME SWITCHER MANAGER
+   ========================================================================== */
+function initTheme() {
+    if (currentTheme === "dark") {
+        document.documentElement.setAttribute("data-theme", "dark");
+    } else {
+        document.documentElement.removeAttribute("data-theme");
+    }
+    updateThemeIcons();
+}
+
+function toggleTheme() {
+    currentTheme = currentTheme === "dark" ? "light" : "dark";
+    localStorage.setItem("culture_theme", currentTheme);
+    initTheme();
+    showToast(currentTheme === "dark" ? "Mode Minuit activé 🌙" : "Mode Clair activé ☀️");
+}
+
+function updateThemeIcons() {
+    const sunIcon = document.querySelector(".sun-icon");
+    const moonIcon = document.querySelector(".moon-icon");
+    if (!sunIcon || !moonIcon) return;
+
+    if (currentTheme === "dark") {
+        sunIcon.style.display = "none";
+        moonIcon.style.display = "block";
+    } else {
+        sunIcon.style.display = "block";
+        moonIcon.style.display = "none";
+    }
+}
+
+/* ==========================================================================
    DOM INITIALIZATION
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
+    // Initialize Theme
+    initTheme();
+    const themeToggleBtn = document.getElementById("themeToggleBtn");
+    if (themeToggleBtn) {
+        themeToggleBtn.addEventListener("click", toggleTheme);
+    }
+
     // Navigation / Header
     const header = document.querySelector(".site-header");
     const menuToggle = document.getElementById("menuToggle");
@@ -435,7 +476,7 @@ function renderFeaturedProducts(productsList) {
                         </svg>
                     </button>
                     <div class="product-image-container" onclick="openQuickView('${product.id}')">
-                        <img src="${product.image}" alt="${product.name}" class="product-img-primary">
+                        <img src="${product.image}" alt="${product.name}" class="product-img-primary" loading="lazy" decoding="async">
                     </div>
                     <div class="product-card-actions">
                         <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Aperçu Rapide</button>
@@ -489,7 +530,7 @@ function triggerSearchText(text) {
     searchResultsGrid.innerHTML = matched.map(product => `
         <div class="search-result-card" onclick="openQuickView('${product.id}')">
             <div class="search-result-img-box">
-                <img src="${product.image}" alt="${product.name}">
+                <img src="${product.image}" alt="${product.name}" loading="lazy">
             </div>
             <h5 class="search-result-name">${product.name}</h5>
             <span class="search-result-price">${formatPrice(product.price)}</span>
@@ -576,8 +617,29 @@ function renderCart() {
     const container = document.getElementById("cartItemsContainer");
     const subtotalText = document.getElementById("cartSubtotal");
     const footer = document.getElementById("cartDrawerFooter");
+    const shippingBarText = document.getElementById("shippingBarText");
+    const shippingProgressFill = document.getElementById("shippingProgressFill");
     
     if (!container) return;
+
+    let total = cart.reduce((sum, item) => sum + (item.product.price * item.quantity), 0);
+    const freeShippingThreshold = 25000;
+
+    // Shipping Progress Bar Calculation
+    if (shippingBarText && shippingProgressFill) {
+        if (total === 0) {
+            shippingBarText.innerHTML = "Livraison OFFERTE dès 25 000 XOF !";
+            shippingProgressFill.style.width = "0%";
+        } else if (total >= freeShippingThreshold) {
+            shippingBarText.innerHTML = "🎉 Félicitations ! Vous bénéficiez de la <strong>LIVRAISON OFFERTE</strong> !";
+            shippingProgressFill.style.width = "100%";
+        } else {
+            const remaining = freeShippingThreshold - total;
+            const progress = (total / freeShippingThreshold) * 100;
+            shippingBarText.innerHTML = `Plus que <strong>${formatPrice(remaining)}</strong> pour la <strong>LIVRAISON OFFERTE</strong> !`;
+            shippingProgressFill.style.width = `${progress}%`;
+        }
+    }
 
     if (cart.length === 0) {
         container.innerHTML = `
@@ -599,10 +661,8 @@ function renderCart() {
         footer.style.pointerEvents = "auto";
     }
 
-    let total = 0;
     container.innerHTML = cart.map(item => {
         const itemTotal = item.product.price * item.quantity;
-        total += itemTotal;
         return `
             <div class="cart-item">
                 <div class="cart-item-img-box">
@@ -639,6 +699,12 @@ function processCheckout() {
         return;
     }
 
+    const nameInput = document.getElementById("checkoutName");
+    const locationInput = document.getElementById("checkoutLocation");
+
+    const customerName = nameInput && nameInput.value.trim() ? nameInput.value.trim() : "";
+    const customerLocation = locationInput && locationInput.value.trim() ? locationInput.value.trim() : "";
+
     let total = 0;
     let itemsListText = "";
     cart.forEach((item, index) => {
@@ -648,11 +714,24 @@ function processCheckout() {
         itemsListText += `${index + 1}. *${item.product.name}*${sizeText}\n   Quantité: ${item.quantity} x ${formatPrice(item.product.price)} = *${formatPrice(itemTotal)}*\n`;
     });
 
+    const isFreeShipping = total >= 25000;
+    const shippingText = isFreeShipping ? "Gracieuse (Offerte 🎉)" : "Calculée à la livraison (Cotonou & environs)";
+
+    let customerInfoBlock = "";
+    if (customerName || customerLocation) {
+        customerInfoBlock = `*INFORMATIONS CLIENT*\n` +
+            (customerName ? `👤 Nom: ${customerName}\n` : "") +
+            (customerLocation ? `📍 Lieu de livraison: ${customerLocation}\n` : "") +
+            `\n`;
+    }
+
     const message = `*NOUVELLE COMMANDE - CULTURE STREETWEAR*\n\n` +
-        `Bonjour, je souhaite valider la commande suivante :\n\n` +
+        customerInfoBlock +
+        `Bonjour, je souhaite valider ma commande :\n\n` +
         `${itemsListText}\n` +
-        `*TOTAL : ${formatPrice(total)}*\n\n` +
-        `Merci de me confirmer la disponibilité des articles et les modalités de livraison à Cotonou.`;
+        `*TOTAL COMMANDE : ${formatPrice(total)}*\n` +
+        `*Frais de livraison* : ${shippingText}\n\n` +
+        `Merci de me confirmer la disponibilité des articles et l'heure de livraison.`;
 
     const whatsappUrl = `https://wa.me/2290167411124?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
@@ -713,7 +792,7 @@ function renderWishlist() {
     container.innerHTML = items.map(product => `
         <div class="cart-item">
             <div class="cart-item-img-box" onclick="openQuickView('${product.id}'); closeWishlistDrawer()" style="cursor:pointer;">
-                <img src="${product.image}" alt="${product.name}">
+                <img src="${product.image}" alt="${product.name}" loading="lazy">
             </div>
             <div class="cart-item-info">
                 <div class="cart-item-title-row">

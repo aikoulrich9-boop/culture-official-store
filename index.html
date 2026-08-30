@@ -1,23 +1,39 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="fr">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CULTURE | Premium Streetwear Accessories</title>
-    <meta name="description" content="Carry The Culture. Discover premium minimalist streetwear accessories, crossbody bags, and apparel designed for city explorers and creators.">
+    <title>CULTURE | Accessories Streetwear Premium & Crossbody Bags</title>
+    <meta name="description" content="Carry The Culture. Sacs crossbody techniques, hoodies coton bio 450gsm et accessoires streetwear minimalistes conçus à Cotonou pour les créateurs urbains.">
+    <meta name="theme-color" content="#121212">
+    <link rel="icon" type="image/png" href="IMAGE/logo P.png">
+    
+    <!-- OpenGraph / Social Share Meta Tags -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://github.com/aikoulrich9-boop/culture-official-store">
+    <meta property="og:title" content="CULTURE | Premium Streetwear Accessories">
+    <meta property="og:description" content="Carry The Culture. Découvrez nos sacs crossbody modulaires et vêtements streetwear haut de gamme.">
+    <meta property="og:image" content="IMAGE/c 1.png">
+
+    <!-- Twitter Card Meta Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="CULTURE | Premium Streetwear">
+    <meta name="twitter:description" content="Carry The Culture. Accessoires streetwear minimalistes et sacs techniques.">
+    <meta name="twitter:image" content="IMAGE/c 1.png">
+
     <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
     <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="styles.css?v=4">
+    <link rel="stylesheet" href="styles.css?v=5">
 </head>
 <body>
 
     <!-- STICKY NAVIGATION -->
     <header class="site-header">
         <div class="header-container">
-            <button class="menu-toggle" id="menuToggle" aria-label="Toggle Navigation">
+            <button class="menu-toggle" id="menuToggle" aria-label="Ouvrir le menu">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <line x1="4" y1="6" x2="20" y2="6"></line>
                     <line x1="4" y1="12" x2="20" y2="12"></line>
@@ -35,25 +51,41 @@
             </nav>
 
             <div class="brand-logo">
-                <a href="#" aria-label="CULTURE Home">
+                <a href="#" aria-label="CULTURE Accueil">
                     <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="logo-image">
                 </a>
             </div>
 
             <div class="header-actions">
-                <button class="action-btn" id="searchBtn" aria-label="Search Products">
+                <button class="action-btn" id="themeToggleBtn" aria-label="Changer le thème de couleur">
+                    <svg class="theme-icon sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                        <circle cx="12" cy="12" r="5"></circle>
+                        <line x1="12" y1="1" x2="12" y2="3"></line>
+                        <line x1="12" y1="21" x2="12" y2="23"></line>
+                        <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                        <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                        <line x1="1" y1="12" x2="3" y2="12"></line>
+                        <line x1="21" y1="12" x2="23" y2="12"></line>
+                        <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                        <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                    </svg>
+                    <svg class="theme-icon moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" style="display:none;">
+                        <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                    </svg>
+                </button>
+                <button class="action-btn" id="searchBtn" aria-label="Rechercher des produits">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="11" cy="11" r="8"></circle>
                         <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                     </svg>
                 </button>
-                <button class="action-btn" id="wishlistBtn" aria-label="View Wishlist">
+                <button class="action-btn" id="wishlistBtn" aria-label="Voir les favoris">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                     </svg>
                     <span class="badge" id="wishlistCount">0</span>
                 </button>
-                <button class="action-btn" id="cartBtn" aria-label="Open Shopping Cart">
+                <button class="action-btn" id="cartBtn" aria-label="Ouvrir le panier">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <circle cx="9" cy="21" r="1"></circle>
                         <circle cx="20" cy="21" r="1"></circle>
@@ -61,7 +93,7 @@
                     </svg>
                     <span class="badge" id="cartCount">0</span>
                 </button>
-                <button class="action-btn" id="accountBtn" aria-label="User Account">
+                <button class="action-btn" id="accountBtn" aria-label="Espace membre">
                     <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                         <circle cx="12" cy="7" r="4"></circle>
@@ -605,6 +637,14 @@
                     </svg>
                 </button>
             </div>
+
+            <!-- FREE SHIPPING PROGRESS BANNER -->
+            <div class="cart-shipping-banner" id="cartShippingBanner">
+                <div class="shipping-bar-text" id="shippingBarText">Livraison OFFERTE dès 25 000 XOF !</div>
+                <div class="shipping-progress-track">
+                    <div class="shipping-progress-fill" id="shippingProgressFill" style="width: 0%;"></div>
+                </div>
+            </div>
             
             <div class="cart-items-container" id="cartItemsContainer">
                 <div class="empty-cart-msg">
@@ -618,9 +658,17 @@
                     <span>Sous-total</span>
                     <span class="subtotal-price" id="cartSubtotal">0 XOF</span>
                 </div>
-                <p class="shipping-info">Taxes et frais de livraison calculés à la commande.</p>
+                <p class="shipping-info">Livraison rapide 24h / 48h à Cotonou & environs.</p>
+
+                <!-- CUSTOMER DELIVERY DETAILS -->
+                <div class="checkout-form-box">
+                    <label class="form-box-title">Détails de Livraison (Optionnel)</label>
+                    <input type="text" id="checkoutName" placeholder="Votre Nom & Prénom" class="checkout-input">
+                    <input type="text" id="checkoutLocation" placeholder="Quartier / Ville (ex: Cotonou, Calavi)" class="checkout-input">
+                </div>
+
                 <button class="checkout-btn" id="checkoutBtn">
-                    Passer à la Commande
+                    Passer la Commande via WhatsApp
                 </button>
             </div>
         </div>
