@@ -1,7 +1,7 @@
 /* ==========================================================================
    PRODUCTS DATA
    ========================================================================== */
-const PRODUCTS = [
+const INITIAL_PRODUCTS = [
     {
         id: "c1",
         name: "Terra Icon Crossbody",
@@ -67,11 +67,21 @@ const PRODUCTS = [
     }
 ];
 
+let PRODUCTS = JSON.parse(localStorage.getItem("culture_products")) || [...INITIAL_PRODUCTS];
+
+function saveProductsToStorage() {
+    localStorage.setItem("culture_products", JSON.stringify(PRODUCTS));
+}
+
 /* ==========================================================================
    APP STATE & UTILITIES
    ========================================================================== */
 let cart = JSON.parse(localStorage.getItem("culture_cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("culture_wishlist")) || [];
+let orders = JSON.parse(localStorage.getItem("culture_orders")) || [];
+let adminPin = localStorage.getItem("culture_admin_pin") || "1234";
+let currentProductImageData = "";
+
 let activeCategoryFilter = "all";
 let activeSearchQuery = "";
 let currentTheme = localStorage.getItem("culture_theme") || "light";
@@ -733,6 +743,25 @@ function processCheckout() {
         `*Frais de livraison* : ${shippingText}\n\n` +
         `Merci de me confirmer la disponibilité des articles et l'heure de livraison.`;
 
+    // Record order in Admin Panel log
+    const newOrder = {
+        id: "CMD-" + Date.now().toString().slice(-6),
+        date: new Date().toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }),
+        customerName: customerName || "Client Anonyme",
+        customerLocation: customerLocation || "Cotonou / Environs",
+        items: cart.map(i => ({
+            name: i.product.name,
+            size: i.size || "Standard",
+            quantity: i.quantity,
+            price: i.product.price,
+            image: i.product.image
+        })),
+        total: total,
+        status: "En attente"
+    };
+    orders.unshift(newOrder);
+    localStorage.setItem("culture_orders", JSON.stringify(orders));
+
     const whatsappUrl = `https://wa.me/2290167411124?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, "_blank");
     showToast("Redirection vers WhatsApp pour valider votre commande...");
@@ -1003,4 +1032,449 @@ function filterProducts(category) {
     activeSearchQuery = "";
     
     filterAndRenderFeaturedProducts();
+}
+
+/* ==========================================================================
+   ESPACE GÉRANT (ADMIN DASHBOARD MANAGEMENT)
+   ========================================================================== */
+
+function openAdminAuth() {
+    const modal = document.getElementById("adminLoginModal");
+    if (!modal) return;
+    const pinInput = document.getElementById("adminPinInput");
+    if (pinInput) pinInput.value = "";
+    modal.classList.add("active");
+}
+
+function closeAdminAuth() {
+    const modal = document.getElementById("adminLoginModal");
+    if (modal) modal.classList.remove("active");
+}
+
+function handleAdminLogin(event) {
+    event.preventDefault();
+    const pinInput = document.getElementById("adminPinInput");
+    const enteredPin = pinInput ? pinInput.value.trim() : "";
+
+    if (enteredPin === adminPin) {
+        closeAdminAuth();
+        openAdminDashboard();
+        showToast("Bienvenue dans l'Espace Gérant 🔑");
+    } else {
+        showToast("❌ Code PIN incorrect !");
+    }
+}
+
+function openAdminDashboard() {
+    const overlay = document.getElementById("adminDashboardOverlay");
+    if (!overlay) return;
+    overlay.classList.add("active");
+    updateAdminStats();
+    renderAdminProductsList();
+    renderAdminOrdersList();
+}
+
+function closeAdminDashboard() {
+    const overlay = document.getElementById("adminDashboardOverlay");
+    if (overlay) overlay.classList.remove("active");
+}
+
+function switchAdminTab(tabName) {
+    document.querySelectorAll(".admin-tab").forEach(tab => {
+        if (tab.dataset.tab === tabName) {
+            tab.classList.add("active");
+        } else {
+            tab.classList.remove("active");
+        }
+    });
+
+    document.querySelectorAll(".admin-tab-pane").forEach(pane => {
+        pane.classList.remove("active");
+    });
+
+    if (tabName === "products") {
+        document.getElementById("adminTabProducts")?.classList.add("active");
+        renderAdminProductsList();
+    } else if (tabName === "orders") {
+        document.getElementById("adminTabOrders")?.classList.add("active");
+        renderAdminOrdersList();
+    } else if (tabName === "settings") {
+        document.getElementById("adminTabSettings")?.classList.add("active");
+    }
+}
+
+function updateAdminStats() {
+    const statProd = document.getElementById("adminStatProducts");
+    const statOrd = document.getElementById("adminStatOrders");
+    const statVal = document.getElementById("adminStatCatalogValue");
+    const badgeOrd = document.getElementById("adminOrdersCountBadge");
+
+    if (statProd) statProd.textContent = PRODUCTS.length;
+    if (statOrd) statOrd.textContent = orders.length;
+    if (badgeOrd) badgeOrd.textContent = orders.length;
+
+    let totalCatalogVal = PRODUCTS.reduce((sum, p) => sum + (Number(p.price) || 0), 0);
+    if (statVal) statVal.textContent = formatPrice(totalCatalogVal);
+}
+
+function renderAdminProductsList() {
+    const tbody = document.getElementById("adminProductsTableBody");
+    if (!tbody) return;
+
+    const searchVal = document.getElementById("adminProductSearch")?.value.toLowerCase().trim() || "";
+    const catVal = document.getElementById("adminCategoryFilter")?.value || "all";
+
+    const filtered = PRODUCTS.filter(p => {
+        const matchCat = catVal === "all" || p.category === catVal;
+        const matchSearch = !searchVal || p.name.toLowerCase().includes(searchVal) || (p.description && p.description.toLowerCase().includes(searchVal));
+        return matchCat && matchSearch;
+    });
+
+    if (filtered.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Aucun produit trouvé dans le catalogue.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = filtered.map(p => {
+        const sizesBadges = (p.sizes && p.sizes.length > 0)
+            ? p.sizes.map(s => `<span class="admin-size-chip">${s}</span>`).join(" ")
+            : `<span class="admin-size-chip muted">Taille unique</span>`;
+
+        const categoryLabels = {
+            bags: "Sacs Crossbody",
+            hoodies: "Hoodies",
+            tees: "T-Shirts",
+            caps: "Casquettes"
+        };
+        const catName = categoryLabels[p.category] || p.category;
+
+        return `
+            <tr>
+                <td>
+                    <img src="${p.image}" alt="${p.name}" class="admin-prod-thumb" onerror="this.src='IMAGE/logo P.png'">
+                </td>
+                <td>
+                    <strong class="admin-prod-title">${p.name}</strong>
+                    <div class="admin-prod-sub">${p.description ? p.description.substring(0, 45) + "..." : ""}</div>
+                </td>
+                <td><span class="admin-cat-badge">${catName}</span></td>
+                <td><strong class="admin-price-tag">${formatPrice(p.price)}</strong></td>
+                <td>${sizesBadges}</td>
+                <td>
+                    <div class="admin-actions-cell">
+                        <button class="btn btn-sm btn-outline" onclick="openProductEditor('${p.id}')">✏️ Éditer</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteAdminProduct('${p.id}')">🗑️ Supprimer</button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function renderAdminOrdersList() {
+    const tbody = document.getElementById("adminOrdersTableBody");
+    if (!tbody) return;
+
+    if (orders.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Aucune commande enregistrée pour le moment.</td></tr>`;
+        return;
+    }
+
+    tbody.innerHTML = orders.map(ord => {
+        const itemsSummary = ord.items.map(i => `${i.quantity}x ${i.name} (${i.size})`).join("<br>");
+        
+        const statusColors = {
+            "En attente": "status-pending",
+            "Validée": "status-valid",
+            "Livrée": "status-shipped",
+            "Annulée": "status-cancelled"
+        };
+
+        return `
+            <tr>
+                <td><strong>${ord.id}</strong></td>
+                <td style="font-size:12px; color:var(--text-muted);">${ord.date}</td>
+                <td>
+                    <strong>${ord.customerName}</strong>
+                    <div style="font-size:12px; color:var(--text-secondary);">${ord.customerLocation}</div>
+                </td>
+                <td style="font-size:12px; line-height:1.4;">${itemsSummary}</td>
+                <td><strong>${formatPrice(ord.total)}</strong></td>
+                <td>
+                    <select class="admin-status-select ${statusColors[ord.status] || ''}" onchange="updateOrderStatus('${ord.id}', this.value)">
+                        <option value="En attente" ${ord.status === "En attente" ? "selected" : ""}>⏳ En attente</option>
+                        <option value="Validée" ${ord.status === "Validée" ? "selected" : ""}>✅ Validée</option>
+                        <option value="Livrée" ${ord.status === "Livrée" ? "selected" : ""}>🚚 Livrée</option>
+                        <option value="Annulée" ${ord.status === "Annulée" ? "selected" : ""}>❌ Annulée</option>
+                    </select>
+                </td>
+                <td>
+                    <button class="btn btn-sm btn-outline" onclick="deleteAdminOrder('${ord.id}')">🗑️</button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+}
+
+function updateOrderStatus(orderId, newStatus) {
+    const ord = orders.find(o => o.id === orderId);
+    if (ord) {
+        ord.status = newStatus;
+        localStorage.setItem("culture_orders", JSON.stringify(orders));
+        showToast(`Statut de la commande ${orderId} : ${newStatus}`);
+        renderAdminOrdersList();
+    }
+}
+
+function deleteAdminOrder(orderId) {
+    if (confirm(`Supprimer la commande ${orderId} de l'historique ?`)) {
+        orders = orders.filter(o => o.id !== orderId);
+        localStorage.setItem("culture_orders", JSON.stringify(orders));
+        updateAdminStats();
+        renderAdminOrdersList();
+        showToast("Commande supprimée.");
+    }
+}
+
+/* --- PRODUCT EDITOR & PHOTO UPLOAD --- */
+
+function openProductEditor(productId = null) {
+    const modal = document.getElementById("adminProductModal");
+    const form = document.getElementById("adminProductForm");
+    const modalTitle = document.getElementById("adminProductModalTitle");
+    const previewImg = document.getElementById("imagePreviewImg");
+    const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
+    const removeBtn = document.getElementById("removePhotoBtn");
+
+    if (!modal || !form) return;
+
+    form.reset();
+    currentProductImageData = "";
+
+    if (productId) {
+        const prod = PRODUCTS.find(p => p.id === productId);
+        if (prod) {
+            document.getElementById("editProductId").value = prod.id;
+            document.getElementById("prodName").value = prod.name;
+            document.getElementById("prodPrice").value = prod.price;
+            document.getElementById("prodCategory").value = prod.category;
+            document.getElementById("prodSizes").value = prod.sizes ? prod.sizes.join(", ") : "";
+            document.getElementById("prodDescription").value = prod.description || "";
+            
+            if (prod.image && prod.image.startsWith("http")) {
+                document.getElementById("prodImageUrl").value = prod.image;
+            }
+            currentProductImageData = prod.image || "";
+
+            if (prod.image && previewImg && previewPlaceholder) {
+                previewImg.src = prod.image;
+                previewImg.style.display = "block";
+                previewPlaceholder.style.display = "none";
+                if (removeBtn) removeBtn.style.display = "inline-flex";
+            } else if (previewImg && previewPlaceholder) {
+                previewImg.src = "";
+                previewImg.style.display = "none";
+                previewPlaceholder.style.display = "block";
+                if (removeBtn) removeBtn.style.display = "none";
+            }
+
+            modalTitle.textContent = "✏️ Modifier le Produit";
+        }
+    } else {
+        document.getElementById("editProductId").value = "";
+        if (previewImg && previewPlaceholder) {
+            previewImg.src = "";
+            previewImg.style.display = "none";
+            previewPlaceholder.style.display = "block";
+        }
+        if (removeBtn) removeBtn.style.display = "none";
+        modalTitle.textContent = "➕ Ajouter un Nouveau Produit";
+    }
+
+    modal.classList.add("active");
+}
+
+function closeProductEditor() {
+    const modal = document.getElementById("adminProductModal");
+    if (modal) modal.classList.remove("active");
+}
+
+function handleImageFileSelect(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    if (!file.type.startsWith("image/")) {
+        showToast("Veuillez sélectionner un fichier image valide.");
+        return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        currentProductImageData = e.target.result;
+        const previewImg = document.getElementById("imagePreviewImg");
+        const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
+        const removeBtn = document.getElementById("removePhotoBtn");
+
+        if (previewImg && previewPlaceholder) {
+            previewImg.src = currentProductImageData;
+            previewImg.style.display = "block";
+            previewPlaceholder.style.display = "none";
+        }
+        if (removeBtn) removeBtn.style.display = "inline-flex";
+
+        document.getElementById("prodImageUrl").value = "";
+        showToast("Photo chargée avec succès 📷");
+    };
+    reader.readAsDataURL(file);
+}
+
+function handleImageUrlInput() {
+    const url = document.getElementById("prodImageUrl")?.value.trim();
+    const previewImg = document.getElementById("imagePreviewImg");
+    const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
+    const removeBtn = document.getElementById("removePhotoBtn");
+
+    if (url) {
+        currentProductImageData = url;
+        if (previewImg && previewPlaceholder) {
+            previewImg.src = url;
+            previewImg.style.display = "block";
+            previewPlaceholder.style.display = "none";
+        }
+        if (removeBtn) removeBtn.style.display = "inline-flex";
+    } else if (!currentProductImageData) {
+        if (previewImg && previewPlaceholder) {
+            previewImg.src = "";
+            previewImg.style.display = "none";
+            previewPlaceholder.style.display = "block";
+        }
+        if (removeBtn) removeBtn.style.display = "none";
+    }
+}
+
+function removeCurrentProductPhoto() {
+    currentProductImageData = "";
+    const previewImg = document.getElementById("imagePreviewImg");
+    const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
+    const removeBtn = document.getElementById("removePhotoBtn");
+    const urlInput = document.getElementById("prodImageUrl");
+    const fileInput = document.getElementById("prodFile");
+
+    if (previewImg) {
+        previewImg.src = "";
+        previewImg.style.display = "none";
+    }
+    if (previewPlaceholder) {
+        previewPlaceholder.textContent = "Photo supprimée - Choisissez une nouvelle photo";
+        previewPlaceholder.style.display = "block";
+    }
+    if (removeBtn) removeBtn.style.display = "none";
+    if (urlInput) urlInput.value = "";
+    if (fileInput) fileInput.value = "";
+    
+    showToast("Photo supprimée du produit 🗑️");
+}
+
+function handleProductFormSubmit(event) {
+    event.preventDefault();
+
+    const editId = document.getElementById("editProductId").value;
+    const name = document.getElementById("prodName").value.trim();
+    const price = Number(document.getElementById("prodPrice").value);
+    const category = document.getElementById("prodCategory").value;
+    const sizesRaw = document.getElementById("prodSizes").value.trim();
+    const description = document.getElementById("prodDescription").value.trim();
+
+    if (!name || isNaN(price) || price < 0) {
+        showToast("Veuillez remplir correctement les champs obligatoires.");
+        return;
+    }
+
+    const sizes = sizesRaw ? sizesRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
+    const image = currentProductImageData || "IMAGE/logo P.png";
+
+    if (editId) {
+        const index = PRODUCTS.findIndex(p => p.id === editId);
+        if (index !== -1) {
+            PRODUCTS[index] = {
+                ...PRODUCTS[index],
+                name,
+                price,
+                category,
+                sizes,
+                description,
+                image
+            };
+            showToast(`Produit "${name}" mis à jour avec succès ! ✨`);
+        }
+    } else {
+        const newId = "p_" + Date.now();
+        const newProduct = {
+            id: newId,
+            name,
+            price,
+            category,
+            sizes,
+            description,
+            image
+        };
+        PRODUCTS.unshift(newProduct);
+        showToast(`Produit "${name}" ajouté au catalogue ! 🎉`);
+    }
+
+    saveProductsToStorage();
+    closeProductEditor();
+
+    // Refresh Public Shop & Admin
+    filterAndRenderFeaturedProducts();
+    if (typeof renderNewArrivals === "function") renderNewArrivals();
+    updateAdminStats();
+    renderAdminProductsList();
+}
+
+function deleteAdminProduct(productId) {
+    const prod = PRODUCTS.find(p => p.id === productId);
+    if (!prod) return;
+
+    if (confirm(`Êtes-vous sûr de vouloir supprimer "${prod.name}" du catalogue ?`)) {
+        PRODUCTS = PRODUCTS.filter(p => p.id !== productId);
+        saveProductsToStorage();
+
+        filterAndRenderFeaturedProducts();
+        if (typeof renderNewArrivals === "function") renderNewArrivals();
+        updateAdminStats();
+        renderAdminProductsList();
+
+        showToast(`Produit "${prod.name}" supprimé.`);
+    }
+}
+
+function resetDefaultCatalogPrompt() {
+    if (confirm("Attention : Cette action va réinitialiser le catalogue avec les produits d'origine. Continuer ?")) {
+        PRODUCTS = [...INITIAL_PRODUCTS];
+        localStorage.removeItem("culture_products");
+        
+        filterAndRenderFeaturedProducts();
+        if (typeof renderNewArrivals === "function") renderNewArrivals();
+        updateAdminStats();
+        renderAdminProductsList();
+
+        showToast("Catalogue réinitialisé aux produits d'origine.");
+    }
+}
+
+function changeAdminPin(event) {
+    event.preventDefault();
+    const newPinInput = document.getElementById("newAdminPinInput");
+    const newPin = newPinInput ? newPinInput.value.trim() : "";
+
+    if (!newPin || newPin.length < 4) {
+        showToast("Le code PIN doit contenir au moins 4 caractères.");
+        return;
+    }
+
+    adminPin = newPin;
+    localStorage.setItem("culture_admin_pin", adminPin);
+    if (newPinInput) newPinInput.value = "";
+    showToast("Nouveau code PIN enregistré avec succès 🔐");
 }

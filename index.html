@@ -99,6 +99,11 @@
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                 </button>
+                <button class="action-btn admin-badge-btn" id="adminBtn" onclick="openAdminAuth()" aria-label="Espace Gérant Admin" title="Espace Gérant (Admin)">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                    </svg>
+                </button>
             </div>
         </div>
     </header>
@@ -619,6 +624,7 @@
                 <div class="footer-bottom-links">
                     <a href="#">Politique de Confidentialité</a>
                     <a href="#">Conditions d'Utilisation</a>
+                    <a href="#" onclick="openAdminAuth(); return false;" class="footer-admin-link">🔑 Espace Gérant</a>
                 </div>
             </div>
         </div>
@@ -742,6 +748,221 @@
             <div class="modal-body" id="quickViewModalBody">
                 <!-- Dynamically loaded layout -->
             </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PIN AUTH MODAL -->
+    <div class="modal-overlay" id="adminLoginModal">
+        <div class="modal-content admin-modal-card">
+            <button class="close-modal" id="closeAdminLoginBtn" onclick="closeAdminAuth()" aria-label="Fermer">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            <div class="admin-auth-header">
+                <div class="admin-auth-badge">🔑</div>
+                <h3>Espace Gérant CULTURE</h3>
+                <p>Entrez votre code PIN administrateur pour accéder à la gestion du catalogue et des commandes.</p>
+            </div>
+            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
+                <div class="form-group">
+                    <input type="password" id="adminPinInput" placeholder="Code PIN (ex: 1234)" maxlength="8" required autofocus autocomplete="off">
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Accéder au Panneau Gérant</button>
+                <p class="pin-hint">Code PIN par défaut : <strong>1234</strong></p>
+            </form>
+        </div>
+    </div>
+
+    <!-- ADMIN DASHBOARD FULLSCREEN OVERLAY -->
+    <div class="admin-dashboard-overlay" id="adminDashboardOverlay">
+        <div class="admin-dashboard-container">
+            <!-- Dashboard Header -->
+            <div class="admin-header">
+                <div class="admin-brand">
+                    <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="admin-logo">
+                    <div class="admin-title-box">
+                        <h2>Espace Gérant — Dashboard</h2>
+                        <span class="admin-badge-live">● Mode Gestionnaire Actif</span>
+                    </div>
+                </div>
+                <div class="admin-header-actions">
+                    <button class="btn btn-sm btn-outline" onclick="resetDefaultCatalogPrompt()">🔄 Réinitialiser Catalogue</button>
+                    <button class="btn btn-sm btn-accent" onclick="openProductEditor()">➕ Ajouter un Produit</button>
+                    <button class="btn-icon-close" onclick="closeAdminDashboard()" title="Quitter l'Espace Gérant">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Dashboard Stats Row -->
+            <div class="admin-stats-row">
+                <div class="admin-stat-card">
+                    <span class="stat-label">Total Produits</span>
+                    <span class="stat-value" id="adminStatProducts">0</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="stat-label">Commandes Reçues</span>
+                    <span class="stat-value" id="adminStatOrders">0</span>
+                </div>
+                <div class="admin-stat-card">
+                    <span class="stat-label">Valeur du Catalogue</span>
+                    <span class="stat-value" id="adminStatCatalogValue">0 XOF</span>
+                </div>
+            </div>
+
+            <!-- Dashboard Tabs Bar -->
+            <div class="admin-tabs">
+                <button class="admin-tab active" data-tab="products" onclick="switchAdminTab('products')">📦 Gestion du Catalogue</button>
+                <button class="admin-tab" data-tab="orders" onclick="switchAdminTab('orders')">📋 Commandes Clients <span class="badge" id="adminOrdersCountBadge">0</span></button>
+                <button class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">⚙️ Sécurité & PIN</button>
+            </div>
+
+            <!-- Tab Content 1: Products List -->
+            <div class="admin-tab-pane active" id="adminTabProducts">
+                <div class="admin-toolbar">
+                    <input type="text" id="adminProductSearch" placeholder="Rechercher par nom..." class="admin-search-input" oninput="renderAdminProductsList()">
+                    <select id="adminCategoryFilter" class="admin-select-input" onchange="renderAdminProductsList()">
+                        <option value="all">Toutes les catégories</option>
+                        <option value="bags">Sacs Crossbody</option>
+                        <option value="hoodies">Hoodies & Sweats</option>
+                        <option value="tees">T-Shirts Studio</option>
+                        <option value="caps">Casquettes & Accessoires</option>
+                    </select>
+                </div>
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>Photo</th>
+                                <th>Nom du Produit</th>
+                                <th>Catégorie</th>
+                                <th>Prix (XOF)</th>
+                                <th>Tailles</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminProductsTableBody">
+                            <!-- Dynamic rows -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content 2: Orders List -->
+            <div class="admin-tab-pane" id="adminTabOrders">
+                <div class="admin-table-wrapper">
+                    <table class="admin-table">
+                        <thead>
+                            <tr>
+                                <th>N° Commande</th>
+                                <th>Date</th>
+                                <th>Client & Infos</th>
+                                <th>Articles</th>
+                                <th>Total</th>
+                                <th>Statut</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="adminOrdersTableBody">
+                            <!-- Dynamic orders -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab Content 3: Settings -->
+            <div class="admin-tab-pane" id="adminTabSettings">
+                <div class="admin-settings-box">
+                    <h3>Changer le Code PIN Administrateur</h3>
+                    <p>Définissez un nouveau code PIN confidentiel pour sécuriser l'accès à l'Espace Gérant.</p>
+                    <form onsubmit="changeAdminPin(event)" class="admin-pin-change-form">
+                        <div class="form-group">
+                            <label>Nouveau Code PIN</label>
+                            <input type="password" id="newAdminPinInput" placeholder="Entrez le nouveau PIN" maxlength="8" required>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Mettre à jour le PIN</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ADMIN PRODUCT EDIT / ADD MODAL -->
+    <div class="modal-overlay" id="adminProductModal">
+        <div class="modal-content admin-form-card">
+            <button class="close-modal" id="closeAdminProductModalBtn" onclick="closeProductEditor()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <h3 id="adminProductModalTitle">➕ Ajouter un Nouveau Produit</h3>
+            
+            <form id="adminProductForm" onsubmit="handleProductFormSubmit(event)">
+                <input type="hidden" id="editProductId">
+                
+                <div class="form-row">
+                    <div class="form-group col-8">
+                        <label>Nom du Produit *</label>
+                        <input type="text" id="prodName" placeholder="ex: Terra Icon Crossbody" required>
+                    </div>
+                    <div class="form-group col-4">
+                        <label>Prix en XOF *</label>
+                        <input type="number" id="prodPrice" placeholder="ex: 8000" min="0" step="100" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Catégorie *</label>
+                        <select id="prodCategory" required>
+                            <option value="bags">Sacs Crossbody</option>
+                            <option value="hoodies">Hoodies & Sweats</option>
+                            <option value="tees">T-Shirts Studio</option>
+                            <option value="caps">Casquettes & Accessoires</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Tailles disponibles (séparées par une virgule)</label>
+                        <input type="text" id="prodSizes" placeholder="ex: S, M, L, XL (laisser vide si taille unique)">
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Description du Produit *</label>
+                    <textarea id="prodDescription" rows="3" placeholder="Description du produit, matériaux, caractéristiques..." required></textarea>
+                </div>
+
+                <div class="form-group">
+                    <label>Photo du Produit *</label>
+                    <div class="image-upload-wrapper">
+                        <div class="upload-options">
+                            <label class="file-upload-label btn btn-outline">
+                                📷 Choisir une Photo (Appareil / Fichier)
+                                <input type="file" id="prodFile" accept="image/*" onchange="handleImageFileSelect(event)" style="display:none;">
+                            </label>
+                            <button type="button" class="btn btn-sm btn-danger" id="removePhotoBtn" onclick="removeCurrentProductPhoto()" style="display:none;">🗑️ Supprimer la photo</button>
+                            <span class="upload-or">ou</span>
+                            <input type="text" id="prodImageUrl" placeholder="https://... Lien URL d'image" oninput="handleImageUrlInput()" class="url-input">
+                        </div>
+                        <div class="image-preview-container" id="imagePreviewContainer">
+                            <img id="imagePreviewImg" src="" alt="Aperçu Photo" style="display:none;">
+                            <span id="imagePreviewPlaceholder" class="preview-placeholder">Aucune photo sélectionnée</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeProductEditor()">Annuler</button>
+                    <button type="submit" class="btn btn-accent">💾 Enregistrer le Produit</button>
+                </div>
+            </form>
         </div>
     </div>
 
