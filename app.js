@@ -794,7 +794,7 @@ function renderFeaturedProducts(productsList) {
                         </svg>
                     </button>
                     <div class="product-image-container" onclick="openQuickView('${product.id}')">
-                        <img src="${product.image}" alt="${product.name}" class="product-img-primary" loading="lazy" decoding="async">
+                        <img src="${product.image}" alt="${product.name}" class="product-img-primary${product.id.startsWith('sac') ? ' backpack-img' : ''}" loading="lazy" decoding="async">
                     </div>
                     <div class="product-card-actions">
                         <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Aperçu Rapide</button>

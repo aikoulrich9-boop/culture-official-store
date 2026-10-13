@@ -993,6 +993,11 @@ h1, h2, h3, h4 {
     filter: drop-shadow(0 15px 25px rgba(0,0,0,0.12));
 }
 
+/* Sacs à dos ILLEGAL — taille +50% */
+.product-img-primary.backpack-img {
+    max-height: 420px; /* 280px × 1.5 */
+}
+
 /* Product Actions (Slide-up or Overlay) */
 .product-card-actions {
     position: absolute;
