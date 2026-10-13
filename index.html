@@ -25,8 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="styles.css?v=5">
+    <link rel="stylesheet" href="styles.css?v=7">
 </head>
 <body>
 
@@ -43,10 +42,9 @@
 
             <nav class="nav-menu" id="navMenu">
                 <ul>
-                    <li><a href="#featured" class="nav-link">Boutique</a></li>
-                    <li><a href="#categories" class="nav-link">Collections</a></li>
-                    <li><a href="#story" class="nav-link">Éditorial</a></li>
-                    <li><a href="#new-arrivals" class="nav-link">Nouveautés</a></li>
+                    <li><a href="#boutique" class="nav-link">La Boutique</a></li>
+                    <li><a href="#new-arrivals" class="nav-link">New Drop</a></li>
+                    <li><a href="#newsletter" class="nav-link">Newsletter</a></li>
                 </ul>
             </nav>
 
@@ -122,10 +120,10 @@
             </div>
             <nav class="mobile-nav">
                 <ul>
-                    <li><a href="#featured" class="mobile-nav-link">Voir la Collection</a></li>
-                    <li><a href="#categories" class="mobile-nav-link">Collections</a></li>
-                    <li><a href="#story" class="mobile-nav-link">Éditorial</a></li>
-                    <li><a href="#new-arrivals" class="mobile-nav-link">Nouveaux Arrivages</a></li>
+                    <li><a href="#boutique" class="mobile-nav-link">La Boutique</a></li>
+                    <li><a href="#new-arrivals" class="mobile-nav-link">New Drop</a></li>
+                    <li><a href="#newsletter" class="mobile-nav-link">Newsletter</a></li>
+                    <li><a href="#" onclick="openAdminAuth(); return false;" class="mobile-nav-link" style="color:var(--accent-orange); font-weight:600;">🔑 Espace Revendeur & Gérant</a></li>
                 </ul>
             </nav>
             <div class="mobile-menu-footer">
@@ -139,7 +137,7 @@
         </div>
     </div>
 
-    <!-- ASYMMETRICAL HERO SECTION -->
+    <!-- 1. HERO SECTION -->
     <section class="hero-section">
         <div class="hero-container">
             <div class="hero-text-side">
@@ -149,9 +147,9 @@
                     Accessoires streetwear premium conçus pour les créateurs, les rêveurs et les explorateurs urbains.
                 </p>
                 <div class="hero-ctas animate-slide-up-delay-more">
-                    <a href="#featured" class="btn btn-primary">Voir la Collection</a>
+                    <a href="#boutique" class="btn btn-primary">Voir la Boutique</a>
                     <a href="#new-arrivals" class="btn btn-outline">
-                        Explorer les Nouveautés
+                        Explorer le New Drop
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="arrow-icon">
                             <line x1="5" y1="12" x2="19" y2="12"></line>
                             <polyline points="12 5 19 12 12 19"></polyline>
@@ -206,110 +204,13 @@
         </div>
     </div>
 
-    <!-- MODERN CATEGORY GRID -->
-    <section class="categories-section" id="categories">
-        <div class="section-container">
-            <div class="section-header align-left">
-                <div class="section-tag">COLLECTIONS</div>
-                <h2 class="section-title">Silhouettes Asymétriques</h2>
-            </div>
-            
-            <div class="category-grid">
-                <!-- CATEGORY 1: BAGS -->
-                <div class="category-card size-large reveal-on-scroll" data-category="bags">
-                    <div class="card-bg-img" style="background-image: url('IMAGE/c 2.png');"></div>
-                    <div class="card-overlay"></div>
-                    <div class="card-info">
-                        <h3 class="card-title">Sacs</h3>
-                        <p class="card-description">Carries modulaires techniques haute densité.</p>
-                        <a href="#featured" class="card-link" onclick="filterProducts('bags')">
-                            Voir les Sacs
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- CATEGORY 2: HOODIES -->
-                <div class="category-card size-tall reveal-on-scroll" data-category="hoodies">
-                    <div class="card-bg-img" style="background-image: url('IMAGE/WhatsApp Image 2026-06-16 at 08.37.09.jpeg');"></div>
-                    <div class="card-overlay"></div>
-                    <div class="card-info">
-                        <h3 class="card-title">Hoodies</h3>
-                        <p class="card-description">Coton molletonné haute densité loopback.</p>
-                        <a href="#featured" class="card-link" onclick="filterProducts('hoodies')">
-                            Voir les Hoodies
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- CATEGORY 3: GRAPHIC TEES -->
-                <div class="category-card size-medium reveal-on-scroll" data-category="tees">
-                    <div class="card-bg-img" style="background-image: url('IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (1).jpeg');"></div>
-                    <div class="card-overlay"></div>
-                    <div class="card-info">
-                        <h3 class="card-title">Graphic Tees</h3>
-                        <p class="card-description">Expressions artistiques sur jersey épais.</p>
-                        <a href="#featured" class="card-link" onclick="filterProducts('tees')">
-                            Voir les Tees
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- CATEGORY 4: CAPS -->
-                <div class="category-card size-square-small reveal-on-scroll" data-category="caps">
-                    <div class="card-bg-img" style="background-image: url('IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (3).jpeg');"></div>
-                    <div class="card-overlay"></div>
-                    <div class="card-info">
-                        <h3 class="card-title">Casquettes</h3>
-                        <p class="card-description">Couvre-chefs ajustables 6 panneaux minimalistes.</p>
-                        <a href="#featured" class="card-link" onclick="filterProducts('caps')">
-                            Voir les Casquettes
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-
-                <!-- CATEGORY 5: ACCESSORIES -->
-                <div class="category-card size-wide reveal-on-scroll" data-category="accessories">
-                    <div class="card-bg-img" style="background-image: url('IMAGE/c 4.png');"></div>
-                    <div class="card-overlay"></div>
-                    <div class="card-info">
-                        <h3 class="card-title">Accessoires</h3>
-                        <p class="card-description">Pochettes, portefeuilles et porte-clés compacts.</p>
-                        <a href="#featured" class="card-link" onclick="filterProducts('bags')">
-                            Voir les Accessoires
-                            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <line x1="5" y1="12" x2="19" y2="12"></line>
-                                <polyline points="12 5 19 12 12 19"></polyline>
-                            </svg>
-                        </a>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- GLASSMORPHISM FILTER BAR -->
-    <section class="collection-filter-section" id="featured">
+    <!-- 2. LA BOUTIQUE SECTION -->
+    <section class="collection-filter-section" id="boutique">
         <div class="section-container">
             <div class="section-header align-center">
-                <div class="section-tag">LE PROJET PORTRAIT</div>
-                <h2 class="section-title">Sélection Phare</h2>
-                <p class="section-subtitle">Une fusion d'art contemporain et de sacs techniques ultra-minimalistes.</p>
+                <div class="section-tag">CATALOGUE OFFICIEL</div>
+                <h2 class="section-title">La Boutique</h2>
+                <p class="section-subtitle">Découvrez toute notre collection d'accessoires et vêtements streetwear premium.</p>
             </div>
 
             <!-- Barre de filtre Glassmorphism -->
@@ -320,7 +221,7 @@
                             <circle cx="11" cy="11" r="8"></circle>
                             <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
                         </svg>
-                        <input type="text" id="filterSearchInput" placeholder="Rechercher dans la collection..." aria-label="Rechercher">
+                        <input type="text" id="filterSearchInput" placeholder="Rechercher dans la boutique..." aria-label="Rechercher">
                     </div>
                     <div class="filter-tags">
                         <button class="filter-tag active" data-filter="all">Tout</button>
@@ -334,8 +235,6 @@
 
             <!-- PRODUCT DISPLAY GRID -->
             <div class="products-grid" id="productsGrid">
-                <!-- Products will be dynamically generated by JS for robustness, but we output C1, C2, C3 as SSR fallbacks or structured layout -->
-                
                 <!-- Product C1 -->
                 <div class="product-card reveal-on-scroll" data-id="c1" data-category="bags">
                     <div class="product-card-img-wrapper">
@@ -411,154 +310,134 @@
                     </div>
                 </div>
             </div>
-        </div>
-    </section>
-
-    <!-- SPLIT EDITORIAL STORY SECTION -->
-    <section class="story-section" id="story">
-        <div class="story-container">
-            <div class="story-text-side reveal-on-scroll">
-                <div class="story-tag">OUR IDENTITY</div>
-                <h2 class="story-headline">Conçu Pour La Nouvelle Génération</h2>
-                <p class="story-paragraph">
-                    Nous créons pour ceux qui évoluent entre l'art et l'action. Nés de la rue, nos pièces sont bien plus que des accessoires — ce sont des toiles d'expression. Chaque sac, hoodie et casquette porte une histoire d'identité, alliant savoir-faire haut de gamme et esthétique urbaine brute.
-                </p>
-                <p class="story-paragraph text-muted">
-                    Conçus en ville, inspirés par le monde entier, faits pour les explorateurs de demain. Nos produits sont imprimés avec une technologie pigmentaire longue durée pour préserver la fidélité graphique à travers chaque aventure urbaine.
-                </p>
-                <div class="story-quote">
-                    "Le streetwear n'est pas seulement ce que tu portes. C'est la façon dont tu portes ta culture."
-                </div>
-            </div>
-            
-            <div class="story-visual-side reveal-on-scroll">
-                <div class="story-product-wrapper" style="animation: float 7s ease-in-out infinite;">
-                    <img src="IMAGE/logo P.png" alt="CULTURE Brand Logo" class="story-logo-display">
-                </div>
-            </div>
-        </div>
-    </section>
-
-    <!-- NEW ARRIVALS HORIZONTAL PRODUCT CAROUSEL -->
+        <    <!-- 3. NEW DROP EXCLUSIF SECTION -->
     <section class="new-arrivals-section" id="new-arrivals">
         <div class="section-container">
-            <div class="carousel-header reveal-on-scroll">
-                <div class="header-left">
-                    <div class="section-tag">NEW DROP</div>
-                    <h2 class="section-title">Nouveaux Arrivages</h2>
+            <div class="section-header align-center reveal-on-scroll">
+                <div class="section-tag">PROCHAIN DROP EXCLUSIF // ÉDITION LIMITÉE</div>
+                <h2 class="section-title">New Drop — Veste Denim Hoodie</h2>
+                <p class="section-subtitle">Découvrez en exclusivité la pièce phare de notre prochaine collection streetwear avant sa sortie officielle.</p>
+            </div>
+
+            <!-- FLAGSHIP DROP SHOWCASE STAGE -->
+            <div class="flagship-drop-card reveal-on-scroll">
+                <div class="flagship-drop-glow"></div>
+                
+                <div class="flagship-img-col">
+                    <div class="flagship-badge-floating">
+                        <span class="pulse-dot"></span>
+                        <span>⚡ PRÉ-VENTE EN COURS</span>
+                    </div>
+                    <div class="flagship-image-wrapper" onclick="openQuickView('dj1')">
+                        <img src="IMAGE/denim_jacket.jpg" alt="Veste Hoodie Raw Indigo Denim 480gsm" class="flagship-drop-img">
+                    </div>
+                    <div class="flagship-spec-chips">
+                        <span class="spec-chip">💎 Raw Indigo Denim 480GSM</span>
+                        <span class="spec-chip">✂️ Coupe Boxy Oversize</span>
+                        <span class="spec-chip">🔒 Capuche Structurée</span>
+                    </div>
                 </div>
-                <div class="carousel-nav">
-                    <button class="carousel-control prev" id="carouselPrev" aria-label="Previous Products">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <line x1="19" y1="12" x2="5" y2="12"></line>
-                            <polyline points="12 19 5 12 12 5"></polyline>
-                        </svg>
-                    </button>
-                    <button class="carousel-control next" id="carouselNext" aria-label="Next Products">
-                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                            <polyline points="12 5 19 12 12 19"></polyline>
-                        </svg>
-                    </button>
+
+                <div class="flagship-info-col">
+                    <div class="flagship-header-row">
+                        <span class="flagship-serial-tag">SERIES 02 // PRE-RELEASE #042</span>
+                        <span class="flagship-status-pill">PRÉ-VENTE OUVERTE</span>
+                    </div>
+
+                    <h3 class="flagship-product-title">Veste Hoodie Raw Indigo Denim 480gsm</h3>
+                    
+                    <p class="flagship-product-desc">
+                        L'alliance ultime entre le raffinement du jeans brut japonais et la silhouette hooded américaine. Taillée dans un denim brut indigo ultra-lourd 480gsm avec capuche anatomique structurée, fermeture éclair métallique renforcée argentée et finitions plissées élastiques. Une pièce iconique taillée pour traverser les époques.
+                    </p>
+
+                    <!-- PRICING BLOCK -->
+                    <div class="flagship-price-block">
+                        <span class="flagship-current-price">12 000 XOF</span>
+                        <span class="flagship-old-price">16 000 XOF</span>
+                        <span class="flagship-discount-badge">-25% PRÉ-VENTE</span>
+                    </div>
+
+                    <!-- SIZE SELECTION FOR PRE-ORDER -->
+                    <div class="flagship-sizes-wrapper">
+                        <span class="size-select-label">SÉLECTIONNER VOTRE TAILLE :</span>
+                        <div class="flagship-sizes-row" id="flagshipSizesRow">
+                            <button class="flagship-size-btn active" onclick="selectFlagshipSize(this, 'S')">S</button>
+                            <button class="flagship-size-btn" onclick="selectFlagshipSize(this, 'M')">M</button>
+                            <button class="flagship-size-btn" onclick="selectFlagshipSize(this, 'L')">L</button>
+                            <button class="flagship-size-btn" onclick="selectFlagshipSize(this, 'XL')">XL</button>
+                        </div>
+                    </div>
+
+                    <!-- COUNTDOWN TIMER -->
+                    <div class="drop-countdown-wrapper">
+                        <span class="countdown-label">LANCEMENT OFFICIEL DU DROP DANS :</span>
+                        <div class="drop-countdown" id="dropCountdown">
+                            <div class="time-block">
+                                <span class="number" id="cdDays">04</span>
+                                <span class="label">JOURS</span>
+                            </div>
+                            <span class="time-colon">:</span>
+                            <div class="time-block">
+                                <span class="number" id="cdHours">18</span>
+                                <span class="label">HEURES</span>
+                            </div>
+                            <span class="time-colon">:</span>
+                            <div class="time-block">
+                                <span class="number" id="cdMins">42</span>
+                                <span class="label">MINS</span>
+                            </div>
+                            <span class="time-colon">:</span>
+                            <div class="time-block">
+                                <span class="number" id="cdSecs">15</span>
+                                <span class="label">SECS</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- STOCK ALLOCATION BAR -->
+                    <div class="drop-allocation-box">
+                        <div class="allocation-meta">
+                            <span>🔥 <strong>85%</strong> des pièces pré-commandées</span>
+                            <span>42 / 50 pièces allouées</span>
+                        </div>
+                        <div class="allocation-bar-track">
+                            <div class="allocation-bar-fill" style="width: 85%;"></div>
+                        </div>
+                    </div>
+
+                    <!-- DIRECT PRE-ORDER ACTIONS -->
+                    <div class="flagship-actions-row">
+                        <button class="btn-flagship-preorder" onclick="preorderFlagshipDenimJacket()">
+                            ⚡ PRÉ-COMMANDER (PRÉ-VENTE 12 000 XOF)
+                        </button>
+                        <button class="btn-flagship-alert" onclick="triggerDropAlert('dj1')" title="Alerte WhatsApp">
+                            🔔 ALERTE DROPS
+                        </button>
+                    </div>
                 </div>
             </div>
 
-            <!-- CAROUSEL TRACK -->
-            <div class="carousel-container reveal-on-scroll">
-                <div class="carousel-track" id="carouselTrack">
-                    <!-- Item 1 (C1 Bag) -->
-                    <div class="carousel-item" data-id="c1">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/c 1.png" alt="Terra Icon Crossbody" class="carousel-item-img">
-                            <button class="quick-add-shortcut" onclick="addToCartDirect('c1')" aria-label="Ajouter au panier">Ajouter +</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Terra Icon Crossbody</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
+            <!-- VIP ACCESS PASS FOOTER ROW -->
+            <div class="vip-drop-pass-row reveal-on-scroll">
+                <div class="vip-drop-pass-card inline-pass">
+                    <div class="vip-pass-content">
+                        <div class="vip-pass-badge">⚡ PASS DROPS VIP WHATSAPP</div>
+                        <h4>Accès Anticipé 1H Avant Lancement</h4>
+                        <p>Inscrivez votre numéro pour débloquer l'accès prioritaire et un code secret sur les prochains drops.</p>
                     </div>
-
-                    <!-- Item 2 (C2 Bag) -->
-                    <div class="carousel-item" data-id="c2">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/c 2.png" alt="Aero Character Crossbody" class="carousel-item-img">
-                            <button class="quick-add-shortcut" onclick="addToCartDirect('c2')" aria-label="Ajouter au panier">Ajouter +</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Aero Character Crossbody</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 3 (C3 Bag) -->
-                    <div class="carousel-item" data-id="c3">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/c 3.png" alt="Portrait Editorial Crossbody" class="carousel-item-img">
-                            <button class="quick-add-shortcut" onclick="addToCartDirect('c3')" aria-label="Ajouter au panier">Ajouter +</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Portrait Editorial Crossbody</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 4 (C4 Bag) -->
-                    <div class="carousel-item" data-id="c4">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/c 4.png" alt="Minimalist Utility Crossbody" class="carousel-item-img">
-                            <button class="quick-add-shortcut" onclick="addToCartDirect('c4')" aria-label="Ajouter au panier">Ajouter +</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Minimalist Utility Crossbody</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 5 (Hoodie) -->
-                    <div class="carousel-item" data-id="h1">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/WhatsApp Image 2026-06-16 at 08.37.09.jpeg" alt="Heavyweight Boxy Hoodie" class="carousel-item-img fit-cover">
-                            <button class="quick-add-shortcut" onclick="openQuickView('h1')" aria-label="Choisir une taille">Choisir Taille</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Heavyweight Boxy Hoodie</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 6 (Graphic Tee) -->
-                    <div class="carousel-item" data-id="t1">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (1).jpeg" alt="Creator Studio Tee" class="carousel-item-img fit-cover">
-                            <button class="quick-add-shortcut" onclick="openQuickView('t1')" aria-label="Choisir une taille">Choisir Taille</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Creator Studio Tee</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
-                    </div>
-
-                    <!-- Item 7 (Cap) -->
-                    <div class="carousel-item" data-id="cap1">
-                        <div class="carousel-item-img-wrapper">
-                            <img src="IMAGE/WhatsApp Image 2026-06-16 at 08.37.09 (3).jpeg" alt="Urban Explorer Cap" class="carousel-item-img fit-cover">
-                            <button class="quick-add-shortcut" onclick="addToCartDirect('cap1')" aria-label="Ajouter au panier">Ajouter +</button>
-                        </div>
-                        <div class="carousel-item-meta">
-                            <h4 class="carousel-item-name">Urban Explorer Cap</h4>
-                            <span class="carousel-item-price">8 000 XOF</span>
-                        </div>
-                    </div>
-                </div>
-                <div class="carousel-scrollbar-track">
-                    <div class="carousel-scrollbar-thumb" id="carouselThumb"></div>
+                    <form class="vip-pass-form inline-form" id="vipDropPassForm" onsubmit="handleVipPassSignup(event)">
+                        <input type="text" id="vipPhoneInput" placeholder="Numéro WhatsApp (ex: +229...)" required>
+                        <button type="submit" class="btn btn-dark">
+                            Rejoindre VIP
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- NEWSLETTER DROPS SIGNUP -->
-    <section class="newsletter-section">
+    <section class="newsletter-section" id="newsletter">
         <div class="newsletter-backdrop"></div>
         <div class="newsletter-content reveal-on-scroll">
             <h2 class="newsletter-title">Rejoins la Culture.</h2>
@@ -591,20 +470,18 @@
             <div class="footer-links-col">
                 <h4 class="footer-header">Boutique</h4>
                 <ul>
-                    <li><a href="#featured">Sacs</a></li>
-                    <li><a href="#categories">Vêtements</a></li>
-                    <li><a href="#new-arrivals">Nouveaux Drops</a></li>
-                    <li><a href="#featured">Collaborations</a></li>
+                    <li><a href="#boutique">Sacs</a></li>
+                    <li><a href="#boutique">Vêtements</a></li>
+                    <li><a href="#new-arrivals">New Drop</a></li>
                 </ul>
             </div>
 
             <div class="footer-links-col">
                 <h4 class="footer-header">Informations</h4>
                 <ul>
-                    <li><a href="#story">Notre Histoire</a></li>
+                    <li><a href="#newsletter">Newsletter</a></li>
+                    <li><a href="#">Livraison & Retours</a></li>
                     <li><a href="#">Guide des Tailles</a></li>
-                    <li><a href="#">Livraison</a></li>
-                    <li><a href="#">Durabilité</a></li>
                 </ul>
             </div>
 
@@ -665,15 +542,51 @@
                 </div>
                 <p class="shipping-info">Livraison rapide 24h / 48h à Cotonou & environs.</p>
 
-                <!-- CUSTOMER DELIVERY DETAILS -->
+                <!-- GUEST CHECKOUT & DELIVERY DETAILS -->
                 <div class="checkout-form-box">
-                    <label class="form-box-title">Détails de Livraison (Optionnel)</label>
-                    <input type="text" id="checkoutName" placeholder="Votre Nom & Prénom" class="checkout-input">
-                    <input type="text" id="checkoutLocation" placeholder="Quartier / Ville (ex: Cotonou, Calavi)" class="checkout-input">
+                    <label class="form-box-title">📍 Informations de Livraison (Checkout Invité)</label>
+                    
+                    <div class="form-row-compact">
+                        <input type="text" id="checkoutName" placeholder="Nom & Prénom *" class="checkout-input" required>
+                        <input type="tel" id="checkoutPhone" placeholder="Téléphone / WhatsApp *" class="checkout-input" required>
+                    </div>
+
+                    <div class="form-row-compact">
+                        <input type="email" id="checkoutEmail" placeholder="Email (facultatif)" class="checkout-input">
+                        <select id="checkoutCountry" class="checkout-input select-country" onchange="updatePaymentMethodsByCountry()">
+                            <option value="Bénin">🇧🇯 Bénin</option>
+                            <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                            <option value="Autre">🌍 Autre Pays</option>
+                        </select>
+                    </div>
+
+                    <div class="form-row-compact">
+                        <input type="text" id="checkoutCity" placeholder="Ville (ex: Cotonou, Abidjan)" class="checkout-input">
+                        <input type="text" id="checkoutLocation" placeholder="Quartier / Adresse précise" class="checkout-input">
+                    </div>
+
+                    <!-- PAYMENT METHOD SELECTION -->
+                    <label class="form-box-sublabel">💳 Moyen de Paiement</label>
+                    <select id="checkoutPaymentMethod" class="checkout-input select-payment">
+                        <option value="Mobile Money (MTN / Moov)">📱 Mobile Money (MTN / Moov Bénin)</option>
+                        <option value="Wave / Orange Money">🌊 Wave / Orange Money (Côte d'Ivoire)</option>
+                        <option value="Espèces à la livraison">💵 Paiement à la Livraison</option>
+                        <option value="WhatsApp Direct (Validation Rapide)">💬 Validation Directe via WhatsApp</option>
+                    </select>
+
+                    <!-- DISCRETE RESELLER CODE FIELD -->
+                    <div class="reseller-code-container">
+                        <label class="reseller-code-label">🏷️ Code revendeur (facultatif)</label>
+                        <div class="reseller-code-input-group">
+                            <input type="text" id="checkoutResellerCode" placeholder="ex: MARIE01" class="checkout-input reseller-input" uppercase autocomplete="off">
+                            <button type="button" class="btn-apply-code" id="applyResellerBtn" onclick="applyCheckoutResellerCode()">Appliquer</button>
+                        </div>
+                        <div id="resellerCodeFeedback" class="reseller-feedback"></div>
+                    </div>
                 </div>
 
                 <button class="checkout-btn" id="checkoutBtn">
-                    Passer la Commande via WhatsApp
+                    🛒 Valider & Passer la Commande
                 </button>
             </div>
         </div>
@@ -751,7 +664,7 @@
         </div>
     </div>
 
-    <!-- ADMIN PIN AUTH MODAL -->
+    <!-- UNIFIED AUTHENTICATION MODAL (ADMIN & RESELLER) -->
     <div class="modal-overlay" id="adminLoginModal">
         <div class="modal-content admin-modal-card">
             <button class="close-modal" id="closeAdminLoginBtn" onclick="closeAdminAuth()" aria-label="Fermer">
@@ -760,22 +673,40 @@
                     <line x1="6" y1="6" x2="18" y2="18"></line>
                 </svg>
             </button>
+            
             <div class="admin-auth-header">
-                <div class="admin-auth-badge">🔑</div>
-                <h3>Espace Gérant CULTURE</h3>
-                <p>Entrez votre code PIN administrateur pour accéder à la gestion du catalogue et des commandes.</p>
+                <div class="admin-auth-badge">🔐</div>
+                <h3>Espace de Gestion CULTURE</h3>
+                <p>Connectez-vous en tant qu'Administrateur ou Revendeur pour accéder à votre tableau de bord.</p>
             </div>
-            <form id="adminLoginForm" onsubmit="handleAdminLogin(event)">
-                <div class="form-group">
-                    <input type="password" id="adminPinInput" placeholder="Code PIN (ex: 1234)" maxlength="8" required autofocus autocomplete="off">
+
+            <!-- ROLE SELECTOR TABS -->
+            <div class="role-auth-selector">
+                <button type="button" class="role-btn active" id="authRoleAdminBtn" onclick="selectAuthRole('admin')">🛡️ Administrateur</button>
+                <button type="button" class="role-btn" id="authRoleResellerBtn" onclick="selectAuthRole('reseller')">👥 Revendeur / Affilié</button>
+            </div>
+
+            <!-- ADMIN LOGIN FORM -->
+            <form id="adminLoginForm" onsubmit="handleUnifiedLogin(event)">
+                <input type="hidden" id="authRoleInput" value="admin">
+                
+                <div class="form-group" id="adminPinGroup">
+                    <label>Code PIN Administrateur</label>
+                    <input type="password" id="adminPinInput" placeholder="Code PIN (ex: 1234)" maxlength="16" autofocus autocomplete="off">
                 </div>
-                <button type="submit" class="btn btn-primary btn-block">Accéder au Panneau Gérant</button>
-                <p class="pin-hint">Code PIN par défaut : <strong>1234</strong></p>
+
+                <div class="form-group" id="resellerCodeGroup" style="display:none;">
+                    <label>Code Revendeur ou Email</label>
+                    <input type="text" id="resellerCodeLoginInput" placeholder="ex: MARIE01 ou email@domaine.com" uppercase autocomplete="off">
+                </div>
+
+                <button type="submit" class="btn btn-primary btn-block">Se Connecter à l'Espace de Gestion</button>
+                <p class="pin-hint" id="loginHintText">Code PIN Admin par défaut : <strong>1234</strong></p>
             </form>
         </div>
     </div>
 
-    <!-- ADMIN DASHBOARD FULLSCREEN OVERLAY -->
+    <!-- UNIFIED DASHBOARD FULLSCREEN OVERLAY (ROLE_ADMIN & ROLE_RESELLER) -->
     <div class="admin-dashboard-overlay" id="adminDashboardOverlay">
         <div class="admin-dashboard-container">
             <!-- Dashboard Header -->
@@ -783,14 +714,16 @@
                 <div class="admin-brand">
                     <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="admin-logo">
                     <div class="admin-title-box">
-                        <h2>Espace Gérant — Dashboard</h2>
-                        <span class="admin-badge-live">● Mode Gestionnaire Actif</span>
+                        <h2 id="dashboardHeaderTitle">Espace de Gestion — Dashboard</h2>
+                        <span class="admin-badge-live" id="dashboardRoleBadge">● Mode Administrateur Actif</span>
                     </div>
                 </div>
                 <div class="admin-header-actions">
-                    <button class="btn btn-sm btn-outline" onclick="resetDefaultCatalogPrompt()">🔄 Réinitialiser Catalogue</button>
-                    <button class="btn btn-sm btn-accent" onclick="openProductEditor()">➕ Ajouter un Produit</button>
-                    <button class="btn-icon-close" onclick="closeAdminDashboard()" title="Quitter l'Espace Gérant">
+                    <button class="btn btn-sm btn-outline admin-only" onclick="resetDefaultCatalogPrompt()">🔄 Réinitialiser Catalogue</button>
+                    <button class="btn btn-sm btn-accent admin-only" onclick="openProductEditor()">➕ Ajouter un Produit</button>
+                    <button class="btn btn-sm btn-outline reseller-only" onclick="openResellerWithdrawalModal()" style="display:none;">💸 Demander un Retrait</button>
+                    <button class="btn btn-sm btn-outline" onclick="logoutAdminDashboard()" title="Déconnexion">🚪 Déconnexion</button>
+                    <button class="btn-icon-close" onclick="closeAdminDashboard()" title="Quitter l'Espace de Gestion">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -799,96 +732,445 @@
                 </div>
             </div>
 
-            <!-- Dashboard Stats Row -->
-            <div class="admin-stats-row">
-                <div class="admin-stat-card">
-                    <span class="stat-label">Total Produits</span>
-                    <span class="stat-value" id="adminStatProducts">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="stat-label">Commandes Reçues</span>
-                    <span class="stat-value" id="adminStatOrders">0</span>
-                </div>
-                <div class="admin-stat-card">
-                    <span class="stat-label">Valeur du Catalogue</span>
-                    <span class="stat-value" id="adminStatCatalogValue">0 XOF</span>
-                </div>
+            <!-- DASHBOARD STATS ROW (ADMIN & RESELLER DYNAMIC CARDS) -->
+            <div class="admin-stats-row" id="dashboardStatsRow">
+                <!-- Dynamically rendered according to role -->
             </div>
 
-            <!-- Dashboard Tabs Bar -->
-            <div class="admin-tabs">
-                <button class="admin-tab active" data-tab="products" onclick="switchAdminTab('products')">📦 Gestion du Catalogue</button>
-                <button class="admin-tab" data-tab="orders" onclick="switchAdminTab('orders')">📋 Commandes Clients <span class="badge" id="adminOrdersCountBadge">0</span></button>
-                <button class="admin-tab" data-tab="settings" onclick="switchAdminTab('settings')">⚙️ Sécurité & PIN</button>
+            <!-- DASHBOARD TABS BAR -->
+            <div class="admin-tabs" id="dashboardTabsBar">
+                <!-- Dynamically rendered tabs for Admin vs Reseller -->
             </div>
 
-            <!-- Tab Content 1: Products List -->
-            <div class="admin-tab-pane active" id="adminTabProducts">
-                <div class="admin-toolbar">
-                    <input type="text" id="adminProductSearch" placeholder="Rechercher par nom..." class="admin-search-input" oninput="renderAdminProductsList()">
-                    <select id="adminCategoryFilter" class="admin-select-input" onchange="renderAdminProductsList()">
-                        <option value="all">Toutes les catégories</option>
-                        <option value="bags">Sacs Crossbody</option>
-                        <option value="hoodies">Hoodies & Sweats</option>
-                        <option value="tees">T-Shirts Studio</option>
-                        <option value="caps">Casquettes & Accessoires</option>
-                    </select>
-                </div>
-                <div class="admin-table-wrapper">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>Photo</th>
-                                <th>Nom du Produit</th>
-                                <th>Catégorie</th>
-                                <th>Prix (XOF)</th>
-                                <th>Tailles</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminProductsTableBody">
-                            <!-- Dynamic rows -->
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <!-- PANES CONTENT AREA -->
+            <div class="dashboard-panes-container">
 
-            <!-- Tab Content 2: Orders List -->
-            <div class="admin-tab-pane" id="adminTabOrders">
-                <div class="admin-table-wrapper">
-                    <table class="admin-table">
-                        <thead>
-                            <tr>
-                                <th>N° Commande</th>
-                                <th>Date</th>
-                                <th>Client & Infos</th>
-                                <th>Articles</th>
-                                <th>Total</th>
-                                <th>Statut</th>
-                                <th>Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody id="adminOrdersTableBody">
-                            <!-- Dynamic orders -->
-                        </tbody>
-                    </table>
+                <!-- ADMIN TAB 1: CATALOGUE PRODUCTS -->
+                <div class="admin-tab-pane active" id="paneProducts">
+                    <div class="admin-toolbar">
+                        <input type="text" id="adminProductSearch" placeholder="Rechercher par nom..." class="admin-search-input" oninput="renderAdminProductsList()">
+                        <select id="adminCategoryFilter" class="admin-select-input" onchange="renderAdminProductsList()">
+                            <option value="all">Toutes les catégories</option>
+                            <option value="bags">Sacs Crossbody</option>
+                            <option value="hoodies">Hoodies & Sweats</option>
+                            <option value="tees">T-Shirts Studio</option>
+                            <option value="caps">Casquettes & Accessoires</option>
+                        </select>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Photo</th>
+                                    <th>Nom du Produit</th>
+                                    <th>Catégorie</th>
+                                    <th>Prix (XOF)</th>
+                                    <th>Tailles</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminProductsTableBody"></tbody>
+                        </table>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Tab Content 3: Settings -->
-            <div class="admin-tab-pane" id="adminTabSettings">
-                <div class="admin-settings-box">
-                    <h3>Changer le Code PIN Administrateur</h3>
-                    <p>Définissez un nouveau code PIN confidentiel pour sécuriser l'accès à l'Espace Gérant.</p>
-                    <form onsubmit="changeAdminPin(event)" class="admin-pin-change-form">
-                        <div class="form-group">
-                            <label>Nouveau Code PIN</label>
-                            <input type="password" id="newAdminPinInput" placeholder="Entrez le nouveau PIN" maxlength="8" required>
+                <!-- ADMIN TAB 2: ALL ORDERS -->
+                <div class="admin-tab-pane" id="paneOrders">
+                    <div class="admin-toolbar">
+                        <input type="text" id="adminOrderSearch" placeholder="Rechercher par client, téléphone ou code revendeur..." class="admin-search-input" oninput="renderAdminOrdersList()">
+                        <select id="adminOrderStatusFilter" class="admin-select-input" onchange="renderAdminOrdersList()">
+                            <option value="all">Tous les statuts</option>
+                            <option value="En attente">En attente</option>
+                            <option value="Pré-commande">Pré-commande</option>
+                            <option value="Livrée">Livrée / Terminée</option>
+                            <option value="Annulée">Annulée</option>
+                        </select>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>N° Commande</th>
+                                    <th>Date</th>
+                                    <th>Client & Livraison</th>
+                                    <th>Revendeur & Commission</th>
+                                    <th>Total</th>
+                                    <th>Statut Commande</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminOrdersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 3: RESELLERS MANAGEMENT -->
+                <div class="admin-tab-pane" id="paneResellers">
+                    <div class="admin-toolbar">
+                        <button class="btn btn-accent" onclick="openCreateResellerModal()">➕ Créer un Nouveau Revendeur</button>
+                        <input type="text" id="adminResellerSearch" placeholder="Rechercher un revendeur..." class="admin-search-input" oninput="renderAdminResellersList()">
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>Code</th>
+                                    <th>Nom & Contact</th>
+                                    <th>Pays</th>
+                                    <th>Taux (%)</th>
+                                    <th>Ventes Générées</th>
+                                    <th>Commissions (Total / Dispo)</th>
+                                    <th>Statut</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminResellersTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 4: PAYOUT REQUESTS & HISTORY -->
+                <div class="admin-tab-pane" id="panePayouts">
+                    <div class="admin-toolbar">
+                        <select id="adminPayoutFilter" class="admin-select-input" onchange="renderAdminPayoutsList()">
+                            <option value="all">Toutes les demandes</option>
+                            <option value="PENDING">Demandes En attente (PENDING)</option>
+                            <option value="APPROVED">Demandes Approuvées (APPROVED)</option>
+                            <option value="PAID">Demandes Payées (PAID)</option>
+                            <option value="REJECTED">Demandes Rejetées (REJECTED)</option>
+                        </select>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>ID Demande</th>
+                                    <th>Revendeur</th>
+                                    <th>Montant Demandé</th>
+                                    <th>Pays & Moyen de Réception</th>
+                                    <th>Compte & Titulaire</th>
+                                    <th>Date Demande</th>
+                                    <th>Statut</th>
+                                    <th>Actions Admin</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminPayoutsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 5: GLOBAL COMMISSIONS LOG -->
+                <div class="admin-tab-pane" id="paneCommissions">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>N° Commande</th>
+                                    <th>Code Revendeur</th>
+                                    <th>Montant Vente</th>
+                                    <th>Taux</th>
+                                    <th>Montant Commission</th>
+                                    <th>Statut Commission</th>
+                                    <th>Date</th>
+                                </tr>
+                            </thead>
+                            <tbody id="adminCommissionsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- ADMIN TAB 6: SETTINGS -->
+                <div class="admin-tab-pane" id="paneSettings">
+                    <div class="admin-settings-box">
+                        <h3>Configuration de la Plateforme & Sécurité</h3>
+                        <form onsubmit="savePlatformSettings(event)" class="admin-pin-change-form">
+                            <div class="form-group">
+                                <label>Code PIN Administrateur</label>
+                                <input type="password" id="newAdminPinInput" placeholder="Nouveau Code PIN Admin" maxlength="16">
+                            </div>
+                            <div class="form-group">
+                                <label>Montant Minimum de Retrait (FCFA)</label>
+                                <input type="number" id="minPayoutInput" placeholder="ex: 10000" min="1000" step="1000">
+                            </div>
+                            <div class="form-group">
+                                <label>Passerelle de Paiement Active</label>
+                                <select id="activeGatewaySelect" class="checkout-input" onchange="window.PaymentService.setActiveProvider(this.value)">
+                                    <option value="WHATSAPP_BRIDGE">💬 WhatsApp Direct Bridge (Actif par défaut)</option>
+                                    <option value="BENIN_MOBILE_MONEY">📱 Mobile Money (MTN & Moov Bénin API)</option>
+                                    <option value="CI_WAVE_ORANGE">🌊 Wave & Orange Money (Côte d'Ivoire API)</option>
+                                    <option value="CARD_VIREMENT">💳 Carte Bancaire / Virement</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary" style="margin-bottom: 20px;">Enregistrer les Paramètres</button>
+                        </form>
+
+                        <div class="test-suite-box" style="margin-top:24px; padding-top:20px; border-top: 1px dashed rgba(255,255,255,0.1);">
+                            <h4>🧪 Suite de Tests Automatisés Unifiée</h4>
+                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Exécute immédiatement la suite de validation complète des 18 scénarios (Checkout, Commissions, Snapshots immuables, Verrouillage anti-double-retrait et RBAC).</p>
+                            <button type="button" class="btn btn-accent" onclick="window.RunSuiteTests()">⚡ Lancer la Suite de Tests Automatisés</button>
                         </div>
-                        <button type="submit" class="btn btn-primary">Mettre à jour le PIN</button>
-                    </form>
+                    </div>
                 </div>
+
+                <!-- RESELLER TAB 1: MY SALES & COMMISSIONS -->
+                <div class="admin-tab-pane" id="paneResellerSales">
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>N° Commande</th>
+                                    <th>Date</th>
+                                    <th>Montant Commande</th>
+                                    <th>Taux Appliqué</th>
+                                    <th>Ma Commission</th>
+                                    <th>Statut Vente</th>
+                                    <th>Statut Commission</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resellerSalesTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RESELLER TAB 2: MY CODE & REFERRAL LINK -->
+                <div class="admin-tab-pane" id="paneResellerCode">
+                    <div class="reseller-code-card">
+                        <h3>🔑 Votre Code & Lien de Parrainage Officiel</h3>
+                        <p>Partagez votre code ou votre lien direct. Chaque client effectuant un achat crédite automatiquement votre commission !</p>
+                        
+                        <div class="reseller-share-box">
+                            <div class="share-item">
+                                <span class="share-title">Votre Code Revendeur :</span>
+                                <div class="share-field">
+                                    <strong id="displayResellerCode" class="highlight-code">MARIE01</strong>
+                                    <button class="btn btn-sm btn-accent" onclick="copyResellerCodeToClipboard()">📋 Copier le Code</button>
+                                </div>
+                            </div>
+                            
+                            <div class="share-item">
+                                <span class="share-title">Votre Lien de Recommandation Direct :</span>
+                                <div class="share-field">
+                                    <input type="text" id="displayResellerLink" readonly class="share-link-input" value="https://culture.store/?ref=MARIE01">
+                                    <button class="btn btn-sm btn-primary" onclick="copyResellerLinkToClipboard()">🔗 Copier le Lien</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- RESELLER TAB 3: MY WITHDRAWALS & PAYOUTS -->
+                <div class="admin-tab-pane" id="paneResellerWithdrawals">
+                    <div class="reseller-withdraw-header">
+                        <div>
+                            <h4>Demandes de Retrait Effectuées</h4>
+                            <p>Les demandes sont traitées chaque semaine par l'administration.</p>
+                        </div>
+                        <button class="btn btn-accent" onclick="openResellerWithdrawalModal()">💸 Demander un Retrait</button>
+                    </div>
+                    <div class="admin-table-wrapper">
+                        <table class="admin-table">
+                            <thead>
+                                <tr>
+                                    <th>N° Demande</th>
+                                    <th>Date Demande</th>
+                                    <th>Montant</th>
+                                    <th>Moyen & Numéro</th>
+                                    <th>Statut</th>
+                                    <th>Référence Paiement</th>
+                                    <th>Date de Virement</th>
+                                </tr>
+                            </thead>
+                            <tbody id="resellerWithdrawalsTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- RESELLER TAB 4: MY RECEIVING PROFILE -->
+                <div class="admin-tab-pane" id="paneResellerProfile">
+                    <div class="admin-settings-box">
+                        <h3>Configuration de votre Moyen de Réception</h3>
+                        <p>Renseignez votre compte de réception (Wave, Mobile Money, Orange Money, Moov) pour recevoir vos retraits sans délai.</p>
+                        <form onsubmit="saveResellerProfile(event)" class="admin-pin-change-form">
+                            <div class="form-row">
+                                <div class="form-group col-6">
+                                    <label>Pays de Résidence *</label>
+                                    <select id="profileCountry" class="checkout-input">
+                                        <option value="Bénin">🇧🇯 Bénin</option>
+                                        <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                                        <option value="Autre">🌍 Autre</option>
+                                    </select>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label>Moyen de Réception Préféré *</label>
+                                    <select id="profilePayoutMethod" class="checkout-input">
+                                        <option value="Wave">🌊 Wave</option>
+                                        <option value="MTN Mobile Money">📱 MTN Mobile Money</option>
+                                        <option value="Moov Money">📱 Moov Money</option>
+                                        <option value="Orange Money">📱 Orange Money</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-row">
+                                <div class="form-group col-6">
+                                    <label>Numéro de Réception Mobile *</label>
+                                    <input type="tel" id="profilePayoutAccount" placeholder="ex: +229 97 00 11 22" required>
+                                </div>
+                                <div class="form-group col-6">
+                                    <label>Nom Complet du Titulaire du Compte *</label>
+                                    <input type="text" id="profilePayoutName" placeholder="ex: Marie Koffi" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Sauvegarder Mon Profil de Réception</button>
+                        </form>
+                    </div>
+                </div>
+
             </div>
+        </div>
+    </div>
+
+    <!-- MODAL 1: CREATE NEW RESELLER (ADMIN ONLY) -->
+    <div class="modal-overlay" id="adminCreateResellerModal">
+        <div class="modal-content admin-form-card">
+            <button class="close-modal" onclick="closeCreateResellerModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <h3>➕ Ajouter un Nouveau Revendeur / Affilié</h3>
+            
+            <form id="createResellerForm" onsubmit="handleCreateResellerSubmit(event)">
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Nom & Prénom *</label>
+                        <input type="text" id="newResellerName" placeholder="ex: Marie Koffi" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Téléphone / WhatsApp *</label>
+                        <input type="tel" id="newResellerPhone" placeholder="ex: +229 97 00 11 22" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Email *</label>
+                        <input type="email" id="newResellerEmail" placeholder="ex: marie@culture.store" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Code Revendeur Unique *</label>
+                        <input type="text" id="newResellerCode" placeholder="ex: MARIE01" uppercase required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Taux de Commission (%) *</label>
+                        <input type="number" id="newResellerRate" placeholder="ex: 10" min="1" max="50" step="0.5" value="10" required>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Pays de Résidence *</label>
+                        <select id="newResellerCountry" class="checkout-input">
+                            <option value="Bénin">🇧🇯 Bénin</option>
+                            <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                            <option value="Autre">🌍 Autre</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeCreateResellerModal()">Annuler</button>
+                    <button type="submit" class="btn btn-accent">Créer le Revendeur</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2: REQUEST WITHDRAWAL (RESELLER) -->
+    <div class="modal-overlay" id="resellerWithdrawalModal">
+        <div class="modal-content admin-form-card">
+            <button class="close-modal" onclick="closeResellerWithdrawalModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <h3>💸 Demander un Retrait de Commission</h3>
+            
+            <div class="withdrawal-info-banner">
+                <div>Solde Disponible au Retrait : <strong id="withdrawAvailableBalance">0 FCFA</strong></div>
+                <div class="sub-hint">Montant minimum de retrait : <span id="withdrawMinAmount">10 000 FCFA</span></div>
+            </div>
+
+            <form id="resellerWithdrawalForm" onsubmit="handleWithdrawalSubmit(event)">
+                <div class="form-group">
+                    <label>Montant Souhaité à Retirer (FCFA) *</label>
+                    <input type="number" id="withdrawAmountInput" placeholder="ex: 20000" required step="1000">
+                </div>
+
+                <div class="form-row">
+                    <div class="form-group col-6">
+                        <label>Moyen de Réception *</label>
+                        <select id="withdrawMethodSelect" class="checkout-input">
+                            <option value="Wave">🌊 Wave</option>
+                            <option value="MTN Mobile Money">📱 MTN Mobile Money</option>
+                            <option value="Moov Money">📱 Moov Money</option>
+                            <option value="Orange Money">📱 Orange Money</option>
+                        </select>
+                    </div>
+                    <div class="form-group col-6">
+                        <label>Numéro de Réception *</label>
+                        <input type="tel" id="withdrawAccountInput" placeholder="ex: +229 97 00 11 22" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label>Nom du Titulaire du Compte *</label>
+                    <input type="text" id="withdrawNameInput" placeholder="ex: Marie Koffi" required>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeResellerWithdrawalModal()">Annuler</button>
+                    <button type="submit" class="btn btn-accent">Confirmer la Demande</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 3: ADMIN CONFIRM MANUAL PAYOUT (ADMIN ONLY) -->
+    <div class="modal-overlay" id="adminPayModal">
+        <div class="modal-content admin-form-card">
+            <button class="close-modal" onclick="closeAdminPayModal()">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <line x1="18" y1="6" x2="6" y2="18"></line>
+                    <line x1="6" y1="6" x2="18" y2="18"></line>
+                </svg>
+            </button>
+            
+            <h3>✅ Confirmer le Paiement du Retrait</h3>
+            <p id="payModalSubtitle">Validation de virement manuel du revendeur.</p>
+
+            <form id="adminPayForm" onsubmit="handleConfirmPayoutSubmit(event)">
+                <input type="hidden" id="payModalPayoutId">
+                
+                <div class="form-group">
+                    <label>Référence de la Transaction Mobile Money / Wave *</label>
+                    <input type="text" id="payTxRefInput" placeholder="ex: TXN-8923019238" required autocomplete="off">
+                </div>
+
+                <div class="form-group">
+                    <label>Note Interne Administrateur (Optionnel)</label>
+                    <input type="text" id="payAdminNoteInput" placeholder="ex: Virement effectué par Wave Bénin">
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeAdminPayModal()">Annuler</button>
+                    <button type="submit" class="btn btn-success">✅ Marquer comme PAYÉ</button>
+                </div>
+            </form>
         </div>
     </div>
 
@@ -939,6 +1221,41 @@
                     <textarea id="prodDescription" rows="3" placeholder="Description du produit, matériaux, caractéristiques..." required></textarea>
                 </div>
 
+                <!-- PRE-ORDER / DROPS MANAGEMENT BOX FOR ADMIN -->
+                <div class="admin-preorder-box">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" id="prodIsPreorder" onchange="toggleAdminPreorderFields()">
+                            <span>⚡ Activer la Pré-Vente (Drop à venir / Pré-commande)</span>
+                        </label>
+                    </div>
+                    <div class="preorder-subfields" id="preorderSubfields" style="display:none; margin-top: 12px;">
+                        <div class="form-row">
+                            <div class="form-group col-6">
+                                <label>Badge du Drop (ex: ⚡ PRÉ-VENTE, ⏳ DROP 02)</label>
+                                <input type="text" id="prodPreorderBadge" placeholder="⚡ PRÉ-VENTE DROPS 02">
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Date d'Expédition Estimée (ex: 15 Oct. 2026)</label>
+                                <input type="text" id="prodReleaseDate" placeholder="15 Oct. 2026">
+                            </div>
+                        </div>
+                        <div class="form-row" style="margin-top: 10px;">
+                            <div class="form-group col-6">
+                                <label>% Stock Réservé en Pré-Vente</label>
+                                <input type="number" id="prodReservedPercent" placeholder="85" min="0" max="100">
+                            </div>
+                            <div class="form-group col-6">
+                                <label>Statut du Drop</label>
+                                <select id="prodDropStatus">
+                                    <option value="preorder">⚡ Pré-Vente Ouverte</option>
+                                    <option value="upcoming">⏳ Drop Imminent (Teaser)</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="form-group">
                     <label>Photo du Produit *</label>
                     <div class="image-upload-wrapper">
@@ -969,7 +1286,18 @@
     <!-- TOAST NOTIFICATIONS DYNAMIC CONTAINER -->
     <div class="toast-container" id="toastContainer"></div>
 
+    <!-- Environment Configuration -->
+    <script src="env-config.js?v=7"></script>
+    <!-- Modular Payment Provider Architecture -->
+    <script src="payment-providers.js?v=7"></script>
+    <!-- Supabase JS Client SDK CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- Supabase Configuration & Helpers -->
+    <script src="supabase-config.js?v=7"></script>
+    <!-- Automated Integrated Test Suite -->
+    <script src="tests/test-suite.js?v=7"></script>
+
     <!-- Global App JS -->
-    <script src="app.js?v=3"></script>
+    <script src="app.js?v=7"></script>
 </body>
 </html>

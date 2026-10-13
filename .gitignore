@@ -1,1 +1,7 @@
 .DS_Store
+node_modules/
+*.log
+hf_*.jpg
+pull/
+
+
