@@ -187,6 +187,14 @@ PRODUCTS = PRODUCTS.map(prod => {
     }
     return prod;
 });
+
+// Inject any new INITIAL_PRODUCTS entries missing from localStorage cache
+INITIAL_PRODUCTS.forEach(initProd => {
+    if (!PRODUCTS.find(p => p.id === initProd.id)) {
+        PRODUCTS.push(initProd);
+    }
+});
+
 saveProductsToStorage();
 
 function saveProductsToStorage() {
