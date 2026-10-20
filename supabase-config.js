@@ -190,12 +190,20 @@ window.AuthService = {
 
             // VÉRIFICATION STRICTE DE LA PROPRIÉTÉ DES DONNÉES (DATA OWNERSHIP CHECK)
             if (targetResellerId && targetResellerId !== session.resellerId) {
-                return { 
-                    allowed: false, 
-                    status: 403, 
-                    error: "Violation de propriété des données (403 Forbidden)", 
-                    message: "Vous n'avez pas l'autorisation d'accéder aux données d'un autre revendeur." 
-                };
+                const resTarget = (window.SupabaseService && window.SupabaseService.resolveResellerUUID)
+                    ? window.SupabaseService.resolveResellerUUID(targetResellerId)
+                    : targetResellerId;
+                const resSession = (window.SupabaseService && window.SupabaseService.resolveResellerUUID)
+                    ? window.SupabaseService.resolveResellerUUID(session.resellerId)
+                    : session.resellerId;
+                if (resTarget !== resSession && targetResellerId !== session.resellerId) {
+                    return { 
+                        allowed: false, 
+                        status: 403, 
+                        error: "Violation de propriété des données (403 Forbidden)", 
+                        message: "Vous n'avez pas l'autorisation d'accéder aux données d'un autre revendeur." 
+                    };
+                }
             }
 
             return { allowed: true, session, resellerId: session.resellerId };
@@ -209,6 +217,52 @@ window.AuthService = {
  * Service global d'interaction Supabase pour la boutique, revendeurs et administration
  */
 window.SupabaseService = {
+    /**
+     * Vérifie si une chaîne est un UUID v4 valide RFC 4122
+     */
+    isValidUUID(str) {
+        if (!str || typeof str !== 'string') return false;
+        return /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(str.trim());
+    },
+
+    /**
+     * Génère un identifiant UUID v4 standard conforme RFC 4122
+     */
+    generateUUID() {
+        if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+            return crypto.randomUUID();
+        }
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+            const r = Math.random() * 16 | 0;
+            const v = c === 'x' ? r : (r & 0x3 | 0x8);
+            return v.toString(16);
+        });
+    },
+
+    /**
+     * Résout un identifiant ou code revendeur vers son UUID canonique Supabase
+     */
+    resolveResellerUUID(identifier) {
+        if (!identifier) return null;
+        const clean = String(identifier).trim();
+        if (this.isValidUUID(clean)) return clean;
+
+        const canonicalMap = {
+            'res-marie01': '11111111-1111-1111-1111-111111111111',
+            'MARIE01': '11111111-1111-1111-1111-111111111111',
+            'res-koffi02': '22222222-2222-2222-2222-222222222222',
+            'KOFFI02': '22222222-2222-2222-2222-222222222222',
+            'res-daniel03': '33333333-3333-3333-3333-333333333333',
+            'DANIEL03': '33333333-3333-3333-3333-333333333333'
+        };
+
+        if (canonicalMap[clean]) return canonicalMap[clean];
+        if (canonicalMap[clean.toUpperCase()]) return canonicalMap[clean.toUpperCase()];
+        if (canonicalMap[clean.toLowerCase()]) return canonicalMap[clean.toLowerCase()];
+
+        return clean;
+    },
+
     /**
      * Vérifie l'état de la connexion Supabase
      */
@@ -334,9 +388,9 @@ window.SupabaseService = {
         }
 
         const demoCodes = {
-            'MARIE01': { id: 'res-marie01', name: 'Marie K.', code: 'MARIE01', rate: 10, email: 'marie.test@culture.store', phone: '+229 97 00 11 22' },
-            'KOFFI02': { id: 'res-koffi02', name: 'Koffi A.', code: 'KOFFI02', rate: 12, email: 'koffi.test@culture.store', phone: '+225 07 11 22 33' },
-            'DANIEL03': { id: 'res-daniel03', name: 'Daniel S.', code: 'DANIEL03', rate: 15, email: 'daniel.test@culture.store', phone: '+229 95 00 00 00' }
+            'MARIE01': { id: 'res-marie01', canonical_id: '11111111-1111-1111-1111-111111111111', name: 'Marie K.', code: 'MARIE01', rate: 10, email: 'marie.test@culture.store', phone: '+229 97 00 11 22' },
+            'KOFFI02': { id: 'res-koffi02', canonical_id: '22222222-2222-2222-2222-222222222222', name: 'Koffi A.', code: 'KOFFI02', rate: 12, email: 'koffi.test@culture.store', phone: '+225 07 11 22 33' },
+            'DANIEL03': { id: 'res-daniel03', canonical_id: '33333333-3333-3333-3333-333333333333', name: 'Daniel S.', code: 'DANIEL03', rate: 15, email: 'daniel.test@culture.store', phone: '+229 95 00 00 00' }
         };
 
         if (demoCodes[cleanCode]) {
@@ -411,16 +465,22 @@ window.SupabaseService = {
 
         if (this.isConfigured()) {
             try {
+                const resolvedResellerId = resellerId ? this.resolveResellerUUID(resellerId) : null;
+                const supabaseOrderPayload = {
+                    ...orderRecord,
+                    reseller_id: resolvedResellerId
+                };
                 const { data, error } = await supabaseClient
                     .from('orders')
-                    .insert([orderRecord])
+                    .insert([supabaseOrderPayload])
                     .select();
 
                 if (!error && data && data.length > 0) {
                     if (resellerId) {
                         await supabaseClient.from('commissions').insert([{
+                            id: this.generateUUID(),
                             order_id: data[0].id,
-                            reseller_id: resellerId,
+                            reseller_id: resolvedResellerId,
                             referral_code: refCode,
                             rate: commRate,
                             amount: commAmount,
@@ -441,7 +501,8 @@ window.SupabaseService = {
         if (resellerId) {
             const localCommissions = JSON.parse(localStorage.getItem('culture_commissions') || '[]');
             localCommissions.unshift({
-                id: "COMM-" + Date.now().toString().slice(-6),
+                id: this.generateUUID(),
+                legacy_id: "COMM-" + Date.now().toString().slice(-6),
                 order_id: orderRecord.id,
                 reseller_id: resellerId,
                 referral_code: refCode,
@@ -485,7 +546,8 @@ window.SupabaseService = {
         if (resellersList.length === 0) {
             resellersList = [
                 {
-                    id: "res-marie01",
+                    id: "11111111-1111-1111-1111-111111111111",
+                    legacy_id: "res-marie01",
                     name: "Marie Koffi",
                     phone: "+229 97 00 11 22",
                     email: "marie.test@culture.store",
@@ -501,7 +563,8 @@ window.SupabaseService = {
                     created_at: "2026-09-01T10:00:00Z"
                 },
                 {
-                    id: "res-koffi02",
+                    id: "22222222-2222-2222-2222-222222222222",
+                    legacy_id: "res-koffi02",
                     name: "Koffi Mensah",
                     phone: "+225 07 11 22 33",
                     email: "koffi.test@culture.store",
@@ -537,8 +600,9 @@ window.SupabaseService = {
             throw new Error(`${auth.status} ${auth.error}: ${auth.message}`);
         }
 
+        const newResellerId = this.generateUUID();
         const newReseller = {
-            id: "RES-" + Date.now().toString().slice(-6),
+            id: newResellerId,
             name: dataPayload.name.trim(),
             phone: dataPayload.phone.trim(),
             email: dataPayload.email.trim().toLowerCase(),
@@ -611,13 +675,24 @@ window.SupabaseService = {
         // Le reseller_id est systématiquement déduit de la session si l'utilisateur est un revendeur
         const effectiveResellerId = auth.session.role === 'ROLE_ADMIN' ? resellerId : auth.session.resellerId;
         const effectiveRefCode = auth.session.role === 'ROLE_ADMIN' ? referralCode : (auth.session.user.referral_code || referralCode);
+        const resolvedEffectiveId = (window.SupabaseService && window.SupabaseService.resolveResellerUUID)
+            ? window.SupabaseService.resolveResellerUUID(effectiveResellerId)
+            : effectiveResellerId;
 
         const orders = JSON.parse(localStorage.getItem('culture_orders') || '[]');
         const commissions = JSON.parse(localStorage.getItem('culture_commissions') || '[]');
         const payouts = JSON.parse(localStorage.getItem('culture_payouts') || '[]');
 
-        const myOrders = orders.filter(o => o.reseller_id === effectiveResellerId || (effectiveRefCode && o.referral_code === effectiveRefCode));
-        const myCommissions = commissions.filter(c => c.reseller_id === effectiveResellerId || (effectiveRefCode && c.referral_code === effectiveRefCode));
+        const myOrders = orders.filter(o => 
+            o.reseller_id === effectiveResellerId || 
+            (resolvedEffectiveId && (o.reseller_id === resolvedEffectiveId || (window.SupabaseService && window.SupabaseService.resolveResellerUUID(o.reseller_id) === resolvedEffectiveId))) ||
+            (effectiveRefCode && o.referral_code === effectiveRefCode)
+        );
+        const myCommissions = commissions.filter(c => 
+            c.reseller_id === effectiveResellerId || 
+            (resolvedEffectiveId && (c.reseller_id === resolvedEffectiveId || (window.SupabaseService && window.SupabaseService.resolveResellerUUID(c.reseller_id) === resolvedEffectiveId))) ||
+            (effectiveRefCode && c.referral_code === effectiveRefCode)
+        );
 
         let totalGenerated = 0;
         let pendingBalance = 0;
@@ -634,7 +709,11 @@ window.SupabaseService = {
             else if (c.status === 'PAID') paidBalance += amt;
         });
 
-        const myPayouts = payouts.filter(p => p.reseller_id === effectiveResellerId || (effectiveRefCode && p.referral_code === effectiveRefCode));
+        const myPayouts = payouts.filter(p => 
+            p.reseller_id === effectiveResellerId || 
+            (resolvedEffectiveId && (p.reseller_id === resolvedEffectiveId || (window.SupabaseService && window.SupabaseService.resolveResellerUUID(p.reseller_id) === resolvedEffectiveId))) ||
+            (effectiveRefCode && p.referral_code === effectiveRefCode)
+        );
         let pendingPayoutsTotal = 0;
         myPayouts.forEach(p => {
             if (p.status === 'PENDING' || p.status === 'APPROVED' || p.status === 'PROCESSING') {
@@ -670,6 +749,7 @@ window.SupabaseService = {
 
         const effectiveResellerId = auth.session.role === 'ROLE_ADMIN' ? resellerId : auth.session.resellerId;
         const effectiveCode = auth.session.role === 'ROLE_ADMIN' ? code : (auth.session.user.referral_code || code);
+        const resolvedId = this.resolveResellerUUID(effectiveResellerId);
 
         const metrics = await this.getResellerMetrics(effectiveResellerId, effectiveCode);
         const minPayout = Number(localStorage.getItem('culture_min_payout') || 10000);
@@ -684,7 +764,7 @@ window.SupabaseService = {
 
         const payoutRecord = {
             id: "PAYOUT-" + Date.now().toString().slice(-6),
-            reseller_id: effectiveResellerId,
+            reseller_id: resolvedId || effectiveResellerId,
             referral_code: effectiveCode,
             amount: Number(amount),
             currency: "FCFA",
@@ -820,7 +900,8 @@ window.SupabaseService = {
        ========================================================================== */
     async logAuditEvent(actorId, actorRole, action, targetEntity, targetId, details = {}) {
         const auditRecord = {
-            id: "AUDIT-" + Date.now().toString().slice(-6),
+            id: this.generateUUID(),
+            legacy_id: "AUDIT-" + Date.now().toString().slice(-6),
             actor_id: actorId,
             actor_role: actorRole,
             action: action,
@@ -868,9 +949,10 @@ window.SupabaseService = {
         }
 
         const adjRecord = {
-            id: "ADJ-" + Date.now().toString().slice(-6),
+            id: this.generateUUID(),
+            legacy_id: "ADJ-" + Date.now().toString().slice(-6),
             commission_id: commissionId,
-            reseller_id: resellerId,
+            reseller_id: this.resolveResellerUUID(resellerId) || resellerId,
             original_amount: originalAmount,
             adjusted_amount: adjustedAmount,
             reason: reason,
@@ -904,7 +986,7 @@ window.SupabaseService = {
         }
         const cleanEmail = email.trim().toLowerCase();
         const record = {
-            id: "sub_" + Date.now(),
+            id: this.generateUUID(),
             email: cleanEmail,
             created_at: new Date().toISOString()
         };
@@ -932,7 +1014,7 @@ window.SupabaseService = {
         }
         const cleanPhone = phone.trim();
         const record = {
-            id: "vip_" + Date.now(),
+            id: this.generateUUID(),
             phone: cleanPhone,
             created_at: new Date().toISOString()
         };
