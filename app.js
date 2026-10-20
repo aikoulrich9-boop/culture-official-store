@@ -171,14 +171,14 @@ const INITIAL_PRODUCTS = [
 
 let PRODUCTS = JSON.parse(localStorage.getItem("culture_products")) || [...INITIAL_PRODUCTS];
 
-// Ensure initial products always merge up-to-date properties & studio images
+// Ensure initial products always merge up-to-date properties while keeping custom images
 PRODUCTS = PRODUCTS.map(prod => {
     const initMatch = INITIAL_PRODUCTS.find(i => i.id === prod.id);
     if (initMatch) {
         return {
             ...initMatch,
             ...prod,
-            image: initMatch.image,
+            image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
             status: prod.status || initMatch.status,
             preorderBadge: prod.preorderBadge || initMatch.preorderBadge,
             releaseDate: prod.releaseDate || initMatch.releaseDate,
@@ -745,7 +745,11 @@ function triggerDropAlert(productId) {
 function handleVipPassSignup(event) {
     event.preventDefault();
     const phoneInput = document.getElementById("vipPhoneInput");
-    if (phoneInput && phoneInput.value.trim()) {
+    const phone = phoneInput ? phoneInput.value.trim() : "";
+    if (phone) {
+        if (window.SupabaseService && typeof window.SupabaseService.subscribeVip === 'function') {
+            window.SupabaseService.subscribeVip(phone);
+        }
         showToast("⚡ INSCRIPTION VIP VALIDÉE ! Accès anticipé WhatsApp 1H avant le drop.");
         phoneInput.value = "";
     }
@@ -926,6 +930,16 @@ function openCartDrawer() {
     const cartDrawerOverlay = document.getElementById("cartDrawerOverlay");
     if (cartDrawerOverlay) cartDrawerOverlay.classList.add("active");
     renderCart();
+
+    // Auto-détection et pré-remplissage du code revendeur depuis l'URL ou session
+    if (!currentAppliedReseller && window.SupabaseService) {
+        const storedCode = window.SupabaseService.getStoredReferralCode();
+        const codeInput = document.getElementById("checkoutResellerCode");
+        if (storedCode && codeInput && !codeInput.value) {
+            codeInput.value = storedCode;
+            applyCheckoutResellerCode();
+        }
+    }
 }
 
 function closeCartDrawer() {
@@ -1031,11 +1045,11 @@ function applyCheckoutResellerCode() {
             feedback.className = "reseller-feedback error";
         }
         currentAppliedReseller = null;
-        return;
+        return Promise.resolve({ valid: false });
     }
 
     if (window.SupabaseService) {
-        window.SupabaseService.verifyResellerCode(code).then(res => {
+        return window.SupabaseService.verifyResellerCode(code).then(res => {
             if (res.valid) {
                 currentAppliedReseller = res.reseller;
                 if (feedback) {
@@ -1050,8 +1064,10 @@ function applyCheckoutResellerCode() {
                     feedback.className = "reseller-feedback error";
                 }
             }
+            return res;
         });
     }
+    return Promise.resolve({ valid: false });
 }
 
 function updatePaymentMethodsByCountry() {
@@ -1083,7 +1099,7 @@ function updatePaymentMethodsByCountry() {
     }
 }
 
-function processCheckout() {
+async function processCheckout() {
     if (cart.length === 0) {
         showToast("Votre panier est vide !");
         return;
@@ -1105,16 +1121,20 @@ function processCheckout() {
     const customerLocation = locationInput && locationInput.value.trim() ? locationInput.value.trim() : "";
     const paymentMethod = paymentMethodInput ? paymentMethodInput.value : "Mobile Money";
 
-    // Vérifier si un code revendeur a été capturé via l'URL (?ref=MARIE01) si aucun saisi au checkout
+    // Vérifier et attendre de manière asynchrone sécurisée le code revendeur capturé via l'URL (?ref=MARIE01)
     let resellerToUse = currentAppliedReseller;
     if (!resellerToUse && window.SupabaseService) {
         const storedCode = window.SupabaseService.getStoredReferralCode();
         if (storedCode) {
-            window.SupabaseService.verifyResellerCode(storedCode).then(res => {
+            try {
+                const res = await window.SupabaseService.verifyResellerCode(storedCode);
                 if (res.valid) {
                     resellerToUse = res.reseller;
+                    currentAppliedReseller = res.reseller;
                 }
-            });
+            } catch (err) {
+                console.warn("Erreur vérification code revendeur:", err);
+            }
         }
     }
 
@@ -1177,21 +1197,40 @@ function processCheckout() {
     };
 
     if (window.SupabaseService) {
-        window.SupabaseService.createOrder(orderPayload).then(createdOrder => {
+        try {
+            const createdOrder = await window.SupabaseService.createOrder(orderPayload);
             orders.unshift(createdOrder);
-        });
+        } catch (err) {
+            console.error("Erreur enregistrement commande:", err);
+            showToast(err.message || "Erreur lors de la validation de la commande.");
+            return;
+        }
     }
 
+    const defaultWhatsApp = (window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER)
+        ? window.ENV_CONFIG.WHATSAPP_NUMBER
+        : "2290167411124";
+
     if (window.PaymentService) {
-        window.PaymentService.processOrderPayment(orderPayload).then(res => {
-            if (res.message) showToast(res.message);
-        });
+        try {
+            const res = await window.PaymentService.processOrderPayment(orderPayload);
+            if (res && res.message) showToast(res.message);
+        } catch (err) {
+            console.warn("Passerelle de paiement en échec, bascule WhatsApp:", err);
+            const whatsappUrl = `https://wa.me/${defaultWhatsApp}?text=${encodeURIComponent(message)}`;
+            window.open(whatsappUrl, "_blank");
+        }
     } else {
-        const whatsappUrl = `https://wa.me/2290167411124?text=${encodeURIComponent(message)}`;
+        const whatsappUrl = `https://wa.me/${defaultWhatsApp}?text=${encodeURIComponent(message)}`;
         window.open(whatsappUrl, "_blank");
         showToast("Redirection vers la passerelle de confirmation...");
     }
 
+    // Vider le panier et synchroniser l'affichage
+    cart = [];
+    saveCart();
+    renderCart();
+    updateBadgesCount();
     closeCartDrawer();
 }
 
@@ -1450,7 +1489,7 @@ function filterProducts(category) {
         }
     });
 
-    const section = document.getElementById("featured");
+    const section = document.getElementById("boutique") || document.getElementById("featured");
     if (section) {
         section.scrollIntoView({ behavior: "smooth" });
     }

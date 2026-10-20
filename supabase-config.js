@@ -2,9 +2,14 @@
    SUPABASE CONFIGURATION & E-COMMERCE CORE SERVICE (RESELLERS & PAYOUTS)
    ========================================================================== */
 
-// 🔑 CLÉS D'API SUPABASE AUTOMATIQUEMENT CONFIGURÉES
-const SUPABASE_URL = "https://mmqkfzqqaeoygsbqmxzv.supabase.co"; 
-const SUPABASE_ANON_KEY = "sb_publishable_bONFcHwZoHqOx-SDsT9uaA_YvxzZKpA";
+// 🔑 CLÉS D'API SUPABASE AUTOMATIQUEMENT HARMONISÉES AVEC ENV_CONFIG
+const SUPABASE_URL = (typeof window !== 'undefined' && window.ENV_CONFIG && window.ENV_CONFIG.SUPABASE_URL)
+    ? window.ENV_CONFIG.SUPABASE_URL
+    : "https://eodlhorzehhhssyduxpf.supabase.co";
+
+const SUPABASE_ANON_KEY = (typeof window !== 'undefined' && window.ENV_CONFIG && window.ENV_CONFIG.SUPABASE_ANON_KEY)
+    ? window.ENV_CONFIG.SUPABASE_ANON_KEY
+    : "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImVvZGxob3J6ZWhoaHNzeWR1eHBmIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODIwNTk3MDUsImV4cCI6MjA5NzYzNTcwNX0.pzWRXbz-k3TuCN3KquHlHzQTqA7MMebceOkxXLzPXGg";
 
 // Client Supabase
 let supabaseClient = null;
@@ -12,7 +17,7 @@ let supabaseClient = null;
 if (typeof supabase !== 'undefined') {
     try {
         supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-        console.log("⚡ Supabase connecté au projet CULTURE !");
+        console.log("⚡ Supabase connecté au projet CULTURE (" + SUPABASE_URL + ") !");
     } catch (err) {
         console.error("❌ Erreur d'initialisation Supabase :", err);
     }
@@ -888,6 +893,65 @@ window.SupabaseService = {
         });
 
         return adjRecord;
+    },
+
+    /* ==========================================================================
+       10. NEWSLETTER & VIP PASS SUBSCRIPTIONS
+       ========================================================================== */
+    async subscribeNewsletter(email) {
+        if (!email || !email.includes('@')) {
+            return { success: false, message: "Adresse email invalide" };
+        }
+        const cleanEmail = email.trim().toLowerCase();
+        const record = {
+            id: "sub_" + Date.now(),
+            email: cleanEmail,
+            created_at: new Date().toISOString()
+        };
+
+        if (this.isConfigured()) {
+            try {
+                await supabaseClient.from('newsletter_subscribers').insert([record]);
+            } catch (e) {
+                // Ignore si la table distante n'est pas encore créée
+            }
+        }
+
+        const localSubs = JSON.parse(localStorage.getItem('culture_newsletter_subscribers') || '[]');
+        if (!localSubs.find(s => s.email === cleanEmail)) {
+            localSubs.unshift(record);
+            localStorage.setItem('culture_newsletter_subscribers', JSON.stringify(localSubs));
+        }
+
+        return { success: true, email: cleanEmail };
+    },
+
+    async subscribeVip(phone) {
+        if (!phone || phone.trim().length < 6) {
+            return { success: false, message: "Numéro de téléphone invalide" };
+        }
+        const cleanPhone = phone.trim();
+        const record = {
+            id: "vip_" + Date.now(),
+            phone: cleanPhone,
+            created_at: new Date().toISOString()
+        };
+
+        if (this.isConfigured()) {
+            try {
+                await supabaseClient.from('vip_subscribers').insert([record]);
+            } catch (e) {
+                // Ignore si la table distante n'est pas encore créée
+            }
+        }
+
+        const localVips = JSON.parse(localStorage.getItem('culture_vip_subscribers') || '[]');
+        if (!localVips.find(v => v.phone === cleanPhone)) {
+            localVips.unshift(record);
+            localStorage.setItem('culture_vip_subscribers', JSON.stringify(localVips));
+        }
+
+        return { success: true, phone: cleanPhone };
     }
 };
 

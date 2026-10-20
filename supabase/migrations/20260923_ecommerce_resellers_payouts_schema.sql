@@ -182,3 +182,33 @@ CREATE POLICY "Allow anon payout_requests all" ON public.payout_requests FOR ALL
 
 DROP POLICY IF EXISTS "Allow anon payout_items all" ON public.payout_items;
 CREATE POLICY "Allow anon payout_items all" ON public.payout_items FOR ALL USING (true);
+
+-- --------------------------------------------------------------------------
+-- SECTION F: ABONNÉS NEWSLETTER & PASS DROPS VIP WHATSAPP
+-- --------------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS public.newsletter_subscribers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_newsletter_email ON public.newsletter_subscribers(LOWER(email));
+
+CREATE TABLE IF NOT EXISTS public.vip_subscribers (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    phone TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_vip_phone ON public.vip_subscribers(phone);
+
+ALTER TABLE public.newsletter_subscribers ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.vip_subscribers ENABLE ROW LEVEL SECURITY;
+
+DROP POLICY IF EXISTS "Allow anon newsletter insert" ON public.newsletter_subscribers;
+CREATE POLICY "Allow anon newsletter insert" ON public.newsletter_subscribers FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow anon newsletter select" ON public.newsletter_subscribers;
+CREATE POLICY "Allow anon newsletter select" ON public.newsletter_subscribers FOR SELECT USING (true);
+
+DROP POLICY IF EXISTS "Allow anon vip insert" ON public.vip_subscribers;
+CREATE POLICY "Allow anon vip insert" ON public.vip_subscribers FOR INSERT WITH CHECK (true);
+DROP POLICY IF EXISTS "Allow anon vip select" ON public.vip_subscribers;
+CREATE POLICY "Allow anon vip select" ON public.vip_subscribers FOR SELECT USING (true);

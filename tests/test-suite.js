@@ -18,7 +18,10 @@ window.TestRunner = {
 
         this.results = [];
 
-        // Réinitialiser la session avant les tests
+        // Sauvegarder la session active pour ne pas déconnecter l'utilisateur réel après les tests
+        const activeSessionBackup = window.AuthService.getSession();
+
+        // Réinitialiser la session temporairement pour les tests
         window.AuthService.logout();
 
         // ----------------------------------------------------------------------
@@ -344,6 +347,13 @@ window.TestRunner = {
         const passedCount = this.results.filter(r => r.passed).length;
         console.log(`🧪 RÉSULTAT FINAL: ${passedCount}/${this.results.length} TESTS RÉUSSIS (100% CONFORME)`);
         console.log("🧪 =========================================================");
+
+        // Restaurer la session utilisateur active si elle existait avant les tests
+        if (activeSessionBackup) {
+            try {
+                localStorage.setItem(window.AuthService.SESSION_KEY, JSON.stringify(activeSessionBackup));
+            } catch (err) {}
+        }
 
         return {
             total: this.results.length,
