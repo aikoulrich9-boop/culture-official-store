@@ -26,6 +26,9 @@ if (typeof supabase !== 'undefined') {
 /* ==========================================================================
    AUTHENTICATION & AUTHORIZATION SERVICE (ROLE_ADMIN & ROLE_RESELLER)
    ========================================================================== */
+/* ==========================================================================
+   AUTH SERVICE — Tâche 03 : Supabase Auth réel + RLS isolation
+   ========================================================================== */
 window.AuthService = {
     SESSION_KEY: 'culture_auth_session',
 
@@ -50,94 +53,197 @@ window.AuthService = {
     /**
      * Authentification (Admin ou Revendeur)
      */
+    /**
+     * Authentification Supabase Auth réelle (Tâche 03)
+     * Pour les revendeurs : signInWithPassword → lookup resellers.user_id → session isolée
+     * @param {string} email
+     * @param {string} password
+     * @param {object} options - { remember: boolean }
+     */
     async login(email, password, options = {}) {
         const cleanEmail = (email || '').trim().toLowerCase();
         const pwd = (password || '').trim();
 
         if (!cleanEmail || !pwd) {
-            return { success: false, status: 400, message: "Email et mot de passe requis." };
+            return { success: false, status: 400, message: 'Email et mot de passe requis.' };
         }
 
-        // 1. Détection rôle Admin (par défaut: admin@culture.store / admin123)
-        if (cleanEmail === 'admin@culture.store' && (pwd === 'admin123' || pwd === 'admin')) {
-            const session = {
-                token: 'tok_admin_' + Date.now(),
-                user: { id: 'admin-001', email: cleanEmail, name: 'Administrateur Culture' },
-                role: 'ROLE_ADMIN',
-                resellerId: null,
-                createdAt: new Date().toISOString(),
-                expiresAt: Date.now() + (24 * 60 * 60 * 1000)
-            };
-            if (options.remember !== false) {
-                localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-            } else {
-                sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-            }
-            if (window.SupabaseService) {
-                await window.SupabaseService.logAuditEvent('admin-001', 'ROLE_ADMIN', 'LOGIN', 'SESSION', session.token, { email: cleanEmail });
-            }
-            return { success: true, session };
-        }
-
-        // 2. Détection rôle Revendeur par correspondance d'email ou code
-        let reseller = null;
+        // ── Tentative 1 : Supabase Auth signInWithPassword ─────────────────
         if (window.SupabaseService && window.SupabaseService.isConfigured()) {
             try {
-                const { data } = await window.SupabaseService.getClient()
-                    .from('resellers')
-                    .select('*')
-                    .or(`email.eq.${cleanEmail},referral_code.eq.${cleanEmail.toUpperCase()}`)
-                    .single();
-                if (data) reseller = data;
-            } catch (e) {}
+                const client = window.SupabaseService.getClient();
+                if (client && client.auth) {
+                    const { data, error } = await client.auth.signInWithPassword({
+                        email: cleanEmail,
+                        password: pwd
+                    });
+
+                    if (!error && data && data.user) {
+                        const authUser = data.user;
+                        const appRole  = authUser.app_metadata?.role;
+
+                        // Admin détecté dans Supabase Auth → rediriger vers /admin/
+                        if (appRole === 'admin' || appRole === 'ROLE_ADMIN') {
+                            await client.auth.signOut();
+                            return {
+                                success: false,
+                                status: 403,
+                                message: 'Compte administrateur : veuillez vous connecter via le portail admin.',
+                                redirect: '/admin/index.html'
+                            };
+                        }
+
+                        // Rechercher le revendeur lié à ce auth.users.id
+                        let reseller = null;
+                        try {
+                            const { data: resData } = await client
+                                .from('resellers')
+                                .select('*')
+                                .eq('user_id', authUser.id)
+                                .single();
+                            if (resData) reseller = resData;
+                        } catch (_) {}
+
+                        // Si pas lié par user_id → chercher par email
+                        if (!reseller) {
+                            try {
+                                const { data: resData } = await client
+                                    .from('resellers')
+                                    .select('*')
+                                    .eq('email', cleanEmail)
+                                    .single();
+                                if (resData) {
+                                    reseller = resData;
+                                    // Lier le user_id pour les prochaines connexions
+                                    await client
+                                        .from('resellers')
+                                        .update({ user_id: authUser.id })
+                                        .eq('id', resData.id);
+                                }
+                            } catch (_) {}
+                        }
+
+                        if (reseller && reseller.status && !['Inactif', 'Suspendu', 'inactive', 'suspended'].includes(reseller.status)) {
+                            const session = this._buildResellerSession(reseller, {
+                                provider: 'supabase_auth',
+                                token: data.session?.access_token || ('tok_res_' + Date.now())
+                            });
+                            this._persistSession(session, options.remember !== false);
+                            return { success: true, session };
+                        } else if (reseller) {
+                            await client.auth.signOut();
+                            return { success: false, status: 403, message: 'Votre compte revendeur est suspendu ou inactif.' };
+                        }
+
+                        // Utilisateur Supabase sans compte revendeur associé
+                        await client.auth.signOut();
+                        return { success: false, status: 404, message: 'Aucun compte revendeur associé à cet email.' };
+                    }
+
+                    // Erreur 400 = mauvais identifiants → ne pas faire de fallback
+                    if (error && (error.status === 400 || error.status === 422)) {
+                        return { success: false, status: 401, message: 'Email ou mot de passe incorrect.' };
+                    }
+                }
+            } catch (err) {
+                console.warn('[AuthService] Supabase Auth indisponible, repli:', err.message);
+            }
         }
 
-        if (!reseller && window.SupabaseService) {
-            const resellers = await window.SupabaseService.getAllResellersRaw();
-            reseller = resellers.find(r => 
-                (r.email && r.email.toLowerCase() === cleanEmail) || 
-                (r.referral_code && r.referral_code.toUpperCase() === cleanEmail.toUpperCase()) ||
-                (r.code && r.code.toUpperCase() === cleanEmail.toUpperCase())
-            );
+        // ── Tentative 2 : Fallback local (recherche par email + code dans cache) ─
+        return this._fallbackResellerLogin(cleanEmail, pwd, options);
+    },
+
+    /**
+     * Fallback pour les revendeurs sans Supabase Auth
+     * Authentification par email + referral_code comme mot de passe
+     */
+    async _fallbackResellerLogin(cleanEmail, pwd, options) {
+        let reseller = null;
+        if (window.SupabaseService) {
+            try {
+                const resellers = await window.SupabaseService.getAllResellersRaw();
+                reseller = resellers.find(r =>
+                    (r.email && r.email.toLowerCase() === cleanEmail) ||
+                    (r.referral_code && r.referral_code.toUpperCase() === pwd.toUpperCase())
+                );
+            } catch (_) {}
         }
 
         if (reseller) {
-            const expectedPassword = reseller.password || reseller.referral_code || reseller.code || 'reseller123';
-            if (pwd === expectedPassword || pwd === 'reseller123' || pwd === (reseller.referral_code || reseller.code)) {
-                const resellerId = reseller.id;
-                const session = {
-                    token: 'tok_reseller_' + Date.now(),
-                    user: { 
-                        id: resellerId, 
-                        email: reseller.email, 
-                        name: reseller.name,
-                        referral_code: reseller.referral_code || reseller.code
-                    },
-                    role: 'ROLE_RESELLER',
-                    resellerId: resellerId, // VÉRIFICATION STRICTE DE PROPRIÉTÉ DE LA SESSION
-                    createdAt: new Date().toISOString(),
-                    expiresAt: Date.now() + (24 * 60 * 60 * 1000)
-                };
-                if (options.remember !== false) {
-                    localStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-                } else {
-                    sessionStorage.setItem(this.SESSION_KEY, JSON.stringify(session));
-                }
+            const codeMatch = reseller.referral_code && reseller.referral_code.toUpperCase() === pwd.toUpperCase();
+            const codeOld   = reseller.code && reseller.code.toUpperCase() === pwd.toUpperCase();
+            const legacyPwd = pwd === 'reseller123';
+
+            if (codeMatch || codeOld || legacyPwd) {
+                const session = this._buildResellerSession(reseller, {
+                    provider: 'local_fallback',
+                    token: 'tok_reseller_' + Date.now()
+                });
+                this._persistSession(session, options.remember !== false);
                 return { success: true, session };
             }
         }
 
-        return { success: false, status: 401, message: "Identifiants invalides." };
+        return { success: false, status: 401, message: 'Identifiants invalides.' };
     },
 
     /**
-     * Déconnexion
+     * Construit un objet session revendeur normalisé
      */
-    logout() {
-        const session = this.getSession();
-        if (session && session.role === 'ROLE_ADMIN' && window.SupabaseService) {
-            window.SupabaseService.logAuditEvent(session.user.id, 'ROLE_ADMIN', 'LOGOUT', 'SESSION', session.token, {});
+    _buildResellerSession(reseller, { provider, token }) {
+        return {
+            token,
+            user: {
+                id:            reseller.id,
+                email:         reseller.email,
+                name:          reseller.name,
+                referral_code: reseller.referral_code || reseller.code
+            },
+            role:       'ROLE_RESELLER',
+            resellerId: reseller.id,
+            provider,
+            createdAt:  new Date().toISOString(),
+            expiresAt:  Date.now() + (24 * 60 * 60 * 1000)
+        };
+    },
+
+    /**
+     * Persiste la session dans localStorage ou sessionStorage
+     */
+    _persistSession(session, remember) {
+        const payload = JSON.stringify(session);
+        if (remember) {
+            localStorage.setItem(this.SESSION_KEY, payload);
+            sessionStorage.removeItem(this.SESSION_KEY);
+        } else {
+            sessionStorage.setItem(this.SESSION_KEY, payload);
+            localStorage.removeItem(this.SESSION_KEY);
         }
+    },
+
+    /**
+     * Déconnexion (revendeur) — déconnecte aussi de Supabase Auth
+     */
+    async logout() {
+        const session = this.getSession();
+
+        // Déconnexion Supabase Auth si session réelle
+        if (session?.provider === 'supabase_auth' && window.SupabaseService?.isConfigured()) {
+            try {
+                await window.SupabaseService.getClient().auth.signOut();
+            } catch (_) {}
+        }
+
+        if (session && window.SupabaseService) {
+            try {
+                await window.SupabaseService.logAuditEvent(
+                    session.user.id, session.role,
+                    'LOGOUT', 'SESSION', session.token, { email: session.user.email }
+                );
+            } catch (_) {}
+        }
+
         localStorage.removeItem(this.SESSION_KEY);
         sessionStorage.removeItem(this.SESSION_KEY);
     },

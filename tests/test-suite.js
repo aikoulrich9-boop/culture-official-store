@@ -11,6 +11,25 @@ window.TestRunner = {
         console.log(`${icon} | ${name} ${details ? '(' + details + ')' : ''}`);
     },
 
+    /**
+     * Injecte directement une session ROLE_ADMIN sans passer par Supabase Auth.
+     * Utilisé dans les tests pour valider les règles RBAC côté SupabaseService,
+     * sans dépendre d'un compte Supabase existant en base.
+     */
+    _forceAdminSession() {
+        const adminSession = {
+            token: 'tok_admin_test_' + Date.now(),
+            user: { id: 'admin-test-001', email: 'admin@culture.store', name: 'Administrateur Test' },
+            role: 'ROLE_ADMIN',
+            resellerId: null,
+            provider: 'test_injection',
+            createdAt: new Date().toISOString(),
+            expiresAt: Date.now() + (60 * 60 * 1000)  // 1h test
+        };
+        localStorage.setItem(window.AuthService.SESSION_KEY, JSON.stringify(adminSession));
+        return adminSession;
+    },
+
     async runAllTests() {
         console.log("🧪 =========================================================");
         console.log("🧪 DÉMARRAGE DE LA SUITE DE TESTS AUTOMATISÉS UNIFIÉE (RBAC & AUDIT)");
@@ -22,7 +41,7 @@ window.TestRunner = {
         const activeSessionBackup = window.AuthService.getSession();
 
         // Réinitialiser la session temporairement pour les tests
-        window.AuthService.logout();
+        await window.AuthService.logout();
 
         // ----------------------------------------------------------------------
         // SCÉNARIO 1: Commande client sans code revendeur
@@ -118,8 +137,8 @@ window.TestRunner = {
                 resellerBlocked = err.message.includes("403") || err.message.includes("ROLE_ADMIN");
             }
 
-            // Se connecter en Admin
-            await window.AuthService.login("admin@culture.store", "admin123");
+            // Injection directe de session Admin (Tâche 03 : bypass Auth pour tests)
+            this._forceAdminSession();
             const adminSession = window.AuthService.getSession();
 
             // En tant qu'admin, l'action réussit
@@ -159,11 +178,11 @@ window.TestRunner = {
         // SCÉNARIO 16: Journalisation d'audit (audit_log) générée lors des actions admin
         // ----------------------------------------------------------------------
         try {
-            // Se connecter Admin et effectuer une action administrative
-            await window.AuthService.login("admin@culture.store", "admin123");
+            // Injection directe de session Admin pour ce test (Tâche 03)
+            this._forceAdminSession();
             
             // Créer un ajustement de commission
-            const adj = await window.SupabaseService.createCommissionAdjustment("a1b2c3d4-0001-0000-0000-000000000001", "res-marie01", 3000, 3500, "Bonus de performance", "admin-001");
+            const adj = await window.SupabaseService.createCommissionAdjustment("a1b2c3d4-0001-0000-0000-000000000001", "res-marie01", 3000, 3500, "Bonus de performance", "admin-test-001");
             
             const logs = await window.SupabaseService.getAuditLogs();
             const foundAudit = logs.find(l => l.target_id === "a1b2c3d4-0001-0000-0000-000000000001" && l.action === "COMMISSION_ADJUSTMENT");
@@ -194,32 +213,33 @@ window.TestRunner = {
         // SCÉNARIO 24: Cycle de vie complet de l'authentification unifiée
         // ----------------------------------------------------------------------
         try {
-            // 1. Login Admin
-            const adminLogin = await window.AuthService.login("admin@culture.store", "admin123");
+            // 1. Injection directe session Admin (Tâche 03 : auth réelle via Supabase uniquement)
+            const adminSession = this._forceAdminSession();
             const adminSess = window.AuthService.getSession();
-            const isAdminOk = adminLogin.success && adminSess.role === "ROLE_ADMIN" && !!adminSess.token;
+            const isAdminOk = adminSess && adminSess.role === "ROLE_ADMIN" && !!adminSess.token;
 
             // 2. Logout Admin
-            window.AuthService.logout();
+            await window.AuthService.logout();
             const loggedOutSess = window.AuthService.getSession();
             const isLogoutOk = loggedOutSess === null;
 
-            // 3. Login Revendeur
+            // 3. Login Revendeur (via fallback local)
             const resellerLogin = await window.AuthService.login("marie.test@culture.store", "reseller123");
             const resellerSess = window.AuthService.getSession();
             const isResellerOk = resellerLogin.success && resellerSess.role === "ROLE_RESELLER" && !!resellerSess.resellerId;
 
             // Clean logout
-            window.AuthService.logout();
+            await window.AuthService.logout();
 
             const cyclePassed = isAdminOk && isLogoutOk && isResellerOk;
-            this.log("SCÉNARIO 24: Cycle de vie complet de l'authentification unifiée", cyclePassed, "Login Admin ➔ Logout ➔ Login Revendeur ➔ Logout");
+            this.log("SCÉNARIO 24: Cycle de vie complet de l'authentification unifiée", cyclePassed, "Session Admin injectée ➔ Logout ➔ Login Revendeur ➔ Logout");
         } catch (e) {
             this.log("SCÉNARIO 24: Cycle de vie authentification unifiée", false, e.message);
         }
 
-        // Restore admin login for remaining suite
-        await window.AuthService.login("admin@culture.store", "admin123");
+        // Restore admin session for remaining suite
+        this._forceAdminSession();
+
 
         // ----------------------------------------------------------------------
         // SCÉNARIOS COMPLÉMENTAIRES (8, 9, 10, 11, 12, 20, 21, 23)
