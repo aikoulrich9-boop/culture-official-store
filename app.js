@@ -207,8 +207,6 @@ function saveProductsToStorage() {
 let cart = JSON.parse(localStorage.getItem("culture_cart")) || [];
 let wishlist = JSON.parse(localStorage.getItem("culture_wishlist")) || [];
 let orders = JSON.parse(localStorage.getItem("culture_orders")) || [];
-let adminPin = localStorage.getItem("culture_admin_pin") || "1234";
-let currentProductImageData = "";
 
 let activeCategoryFilter = "all";
 let activeSearchQuery = "";
@@ -354,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
        ========================================================================== */
     if (accountBtn) {
         accountBtn.addEventListener("click", () => {
-            openAdminAuth();
+            openResellerAuth();
         });
     }
 

@@ -97,11 +97,6 @@
                         <circle cx="12" cy="7" r="4"></circle>
                     </svg>
                 </button>
-                <button class="action-btn admin-badge-btn" id="adminBtn" onclick="openAdminAuth()" aria-label="Espace Gérant Admin" title="Espace Gérant (Admin)">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                    </svg>
-                </button>
             </div>
         </div>
     </header>
@@ -123,7 +118,7 @@
                     <li><a href="#boutique" class="mobile-nav-link">La Boutique</a></li>
                     <li><a href="#new-arrivals" class="mobile-nav-link">New Drop</a></li>
                     <li><a href="#newsletter" class="mobile-nav-link">Newsletter</a></li>
-                    <li><a href="#" onclick="openAdminAuth(); return false;" class="mobile-nav-link" style="color:var(--accent-orange); font-weight:600;">🔑 Espace Revendeur & Gérant</a></li>
+                    <li><a href="#" onclick="openResellerAuth(); return false;" class="mobile-nav-link" style="color:var(--accent-orange); font-weight:600;">👥 Espace Partenaire Revendeur</a></li>
                 </ul>
             </nav>
             <div class="mobile-menu-footer">
@@ -501,7 +496,7 @@
                 <div class="footer-bottom-links">
                     <a href="#">Politique de Confidentialité</a>
                     <a href="#">Conditions d'Utilisation</a>
-                    <a href="#" onclick="openAdminAuth(); return false;" class="footer-admin-link">🔑 Espace Gérant</a>
+                    <a href="#" onclick="openResellerAuth(); return false;" class="footer-admin-link">👥 Espace Revendeur</a>
                 </div>
             </div>
         </div>
@@ -664,10 +659,10 @@
         </div>
     </div>
 
-    <!-- UNIFIED AUTHENTICATION MODAL (ADMIN & RESELLER) -->
-    <div class="modal-overlay" id="adminLoginModal">
+    <!-- RESELLER AUTHENTICATION MODAL (DEDICATED PARTNER PORTAL) -->
+    <div class="modal-overlay" id="resellerLoginModal">
         <div class="modal-content admin-modal-card">
-            <button class="close-modal" id="closeAdminLoginBtn" onclick="closeAdminAuth()" aria-label="Fermer">
+            <button class="close-modal" id="closeResellerLoginBtn" onclick="closeResellerAuth()" aria-label="Fermer">
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                     <line x1="18" y1="6" x2="6" y2="18"></line>
                     <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -675,55 +670,39 @@
             </button>
             
             <div class="admin-auth-header">
-                <div class="admin-auth-badge">🔐</div>
-                <h3>Espace de Gestion CULTURE</h3>
-                <p>Connectez-vous en tant qu'Administrateur ou Revendeur pour accéder à votre tableau de bord.</p>
+                <div class="admin-auth-badge">👥</div>
+                <h3>Espace Partenaire & Affilié</h3>
+                <p>Connectez-vous pour suivre vos commissions en temps réel et demander vos retraits Mobile Money.</p>
             </div>
 
-            <!-- ROLE SELECTOR TABS -->
-            <div class="role-auth-selector">
-                <button type="button" class="role-btn active" id="authRoleAdminBtn" onclick="selectAuthRole('admin')">🛡️ Administrateur</button>
-                <button type="button" class="role-btn" id="authRoleResellerBtn" onclick="selectAuthRole('reseller')">👥 Revendeur / Affilié</button>
-            </div>
-
-            <!-- ADMIN LOGIN FORM -->
-            <form id="adminLoginForm" onsubmit="handleUnifiedLogin(event)">
-                <input type="hidden" id="authRoleInput" value="admin">
-                
-                <div class="form-group" id="adminPinGroup">
-                    <label>Code PIN Administrateur</label>
-                    <input type="password" id="adminPinInput" placeholder="Code PIN (ex: 1234)" maxlength="16" autofocus autocomplete="off">
+            <form id="resellerLoginForm" onsubmit="handleResellerLogin(event)">
+                <div class="form-group">
+                    <label>Votre Code Revendeur ou Email *</label>
+                    <input type="text" id="resellerCodeLoginInput" placeholder="ex: MARIE01 ou email@partenaire.com" required autocomplete="off" style="text-transform: uppercase;">
                 </div>
 
-                <div class="form-group" id="resellerCodeGroup" style="display:none;">
-                    <label>Code Revendeur ou Email</label>
-                    <input type="text" id="resellerCodeLoginInput" placeholder="ex: MARIE01 ou email@domaine.com" uppercase autocomplete="off">
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">Se Connecter à l'Espace de Gestion</button>
-                <p class="pin-hint" id="loginHintText">Code PIN Admin par défaut : <strong>1234</strong></p>
+                <button type="submit" class="btn btn-primary btn-block">Accéder à mon Espace Partenaire</button>
+                <p class="pin-hint" id="loginHintText">Exemples de codes partenaires : <strong>MARIE01</strong>, <strong>KOFFI02</strong></p>
             </form>
         </div>
     </div>
 
-    <!-- UNIFIED DASHBOARD FULLSCREEN OVERLAY (ROLE_ADMIN & ROLE_RESELLER) -->
-    <div class="admin-dashboard-overlay" id="adminDashboardOverlay">
+    <!-- RESELLER DASHBOARD FULLSCREEN OVERLAY -->
+    <div class="admin-dashboard-overlay" id="resellerDashboardOverlay">
         <div class="admin-dashboard-container">
             <!-- Dashboard Header -->
             <div class="admin-header">
                 <div class="admin-brand">
                     <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="admin-logo">
                     <div class="admin-title-box">
-                        <h2 id="dashboardHeaderTitle">Espace de Gestion — Dashboard</h2>
-                        <span class="admin-badge-live" id="dashboardRoleBadge">● Mode Administrateur Actif</span>
+                        <h2 id="resellerDashboardHeaderTitle">Espace Partenaire Revendeur</h2>
+                        <span class="admin-badge-live stat-value-orange" id="resellerDashboardRoleBadge">● Revendeur Actif</span>
                     </div>
                 </div>
                 <div class="admin-header-actions">
-                    <button class="btn btn-sm btn-outline admin-only" onclick="resetDefaultCatalogPrompt()">🔄 Réinitialiser Catalogue</button>
-                    <button class="btn btn-sm btn-accent admin-only" onclick="openProductEditor()">➕ Ajouter un Produit</button>
-                    <button class="btn btn-sm btn-outline reseller-only" onclick="openResellerWithdrawalModal()" style="display:none;">💸 Demander un Retrait</button>
-                    <button class="btn btn-sm btn-outline" onclick="logoutAdminDashboard()" title="Déconnexion">🚪 Déconnexion</button>
-                    <button class="btn-icon-close" onclick="closeAdminDashboard()" title="Quitter l'Espace de Gestion">
+                    <button class="btn btn-sm btn-outline" onclick="openResellerWithdrawalModal()">💸 Demander un Retrait</button>
+                    <button class="btn btn-sm btn-outline" onclick="logoutResellerDashboard()" title="Déconnexion">🚪 Déconnexion</button>
+                    <button class="btn-icon-close" onclick="closeResellerDashboard()" title="Fermer le tableau de bord">
                         <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                             <line x1="18" y1="6" x2="6" y2="18"></line>
                             <line x1="6" y1="6" x2="18" y2="18"></line>
@@ -732,189 +711,24 @@
                 </div>
             </div>
 
-            <!-- DASHBOARD STATS ROW (ADMIN & RESELLER DYNAMIC CARDS) -->
-            <div class="admin-stats-row" id="dashboardStatsRow">
-                <!-- Dynamically rendered according to role -->
+            <!-- DASHBOARD STATS ROW -->
+            <div class="admin-stats-row" id="resellerStatsRow">
+                <!-- Dynamically rendered -->
             </div>
 
             <!-- DASHBOARD TABS BAR -->
-            <div class="admin-tabs" id="dashboardTabsBar">
-                <!-- Dynamically rendered tabs for Admin vs Reseller -->
+            <div class="admin-tabs" id="resellerTabsBar">
+                <button class="admin-tab active" onclick="switchResellerPane('paneResellerSales')">🛒 Mes Ventes</button>
+                <button class="admin-tab" onclick="switchResellerPane('paneResellerCode')">🔑 Mon Code & Lien</button>
+                <button class="admin-tab" onclick="switchResellerPane('paneResellerWithdrawals')">🏦 Mes Retraits</button>
+                <button class="admin-tab" onclick="switchResellerPane('paneResellerProfile')">👤 Profil de Réception</button>
             </div>
 
             <!-- PANES CONTENT AREA -->
             <div class="dashboard-panes-container">
 
-                <!-- ADMIN TAB 1: CATALOGUE PRODUCTS -->
-                <div class="admin-tab-pane active" id="paneProducts">
-                    <div class="admin-toolbar">
-                        <input type="text" id="adminProductSearch" placeholder="Rechercher par nom..." class="admin-search-input" oninput="renderAdminProductsList()">
-                        <select id="adminCategoryFilter" class="admin-select-input" onchange="renderAdminProductsList()">
-                            <option value="all">Toutes les catégories</option>
-                            <option value="bags">Sacs Crossbody</option>
-                            <option value="hoodies">Hoodies & Sweats</option>
-                            <option value="tees">T-Shirts Studio</option>
-                            <option value="caps">Casquettes & Accessoires</option>
-                        </select>
-                    </div>
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Photo</th>
-                                    <th>Nom du Produit</th>
-                                    <th>Catégorie</th>
-                                    <th>Prix (XOF)</th>
-                                    <th>Tailles</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminProductsTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN TAB 2: ALL ORDERS -->
-                <div class="admin-tab-pane" id="paneOrders">
-                    <div class="admin-toolbar">
-                        <input type="text" id="adminOrderSearch" placeholder="Rechercher par client, téléphone ou code revendeur..." class="admin-search-input" oninput="renderAdminOrdersList()">
-                        <select id="adminOrderStatusFilter" class="admin-select-input" onchange="renderAdminOrdersList()">
-                            <option value="all">Tous les statuts</option>
-                            <option value="En attente">En attente</option>
-                            <option value="Pré-commande">Pré-commande</option>
-                            <option value="Livrée">Livrée / Terminée</option>
-                            <option value="Annulée">Annulée</option>
-                        </select>
-                    </div>
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>N° Commande</th>
-                                    <th>Date</th>
-                                    <th>Client & Livraison</th>
-                                    <th>Revendeur & Commission</th>
-                                    <th>Total</th>
-                                    <th>Statut Commande</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminOrdersTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN TAB 3: RESELLERS MANAGEMENT -->
-                <div class="admin-tab-pane" id="paneResellers">
-                    <div class="admin-toolbar">
-                        <button class="btn btn-accent" onclick="openCreateResellerModal()">➕ Créer un Nouveau Revendeur</button>
-                        <input type="text" id="adminResellerSearch" placeholder="Rechercher un revendeur..." class="admin-search-input" oninput="renderAdminResellersList()">
-                    </div>
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Nom & Contact</th>
-                                    <th>Pays</th>
-                                    <th>Taux (%)</th>
-                                    <th>Ventes Générées</th>
-                                    <th>Commissions (Total / Dispo)</th>
-                                    <th>Statut</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminResellersTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN TAB 4: PAYOUT REQUESTS & HISTORY -->
-                <div class="admin-tab-pane" id="panePayouts">
-                    <div class="admin-toolbar">
-                        <select id="adminPayoutFilter" class="admin-select-input" onchange="renderAdminPayoutsList()">
-                            <option value="all">Toutes les demandes</option>
-                            <option value="PENDING">Demandes En attente (PENDING)</option>
-                            <option value="APPROVED">Demandes Approuvées (APPROVED)</option>
-                            <option value="PAID">Demandes Payées (PAID)</option>
-                            <option value="REJECTED">Demandes Rejetées (REJECTED)</option>
-                        </select>
-                    </div>
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>ID Demande</th>
-                                    <th>Revendeur</th>
-                                    <th>Montant Demandé</th>
-                                    <th>Pays & Moyen de Réception</th>
-                                    <th>Compte & Titulaire</th>
-                                    <th>Date Demande</th>
-                                    <th>Statut</th>
-                                    <th>Actions Admin</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminPayoutsTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN TAB 5: GLOBAL COMMISSIONS LOG -->
-                <div class="admin-tab-pane" id="paneCommissions">
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>N° Commande</th>
-                                    <th>Code Revendeur</th>
-                                    <th>Montant Vente</th>
-                                    <th>Taux</th>
-                                    <th>Montant Commission</th>
-                                    <th>Statut Commission</th>
-                                    <th>Date</th>
-                                </tr>
-                            </thead>
-                            <tbody id="adminCommissionsTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- ADMIN TAB 6: SETTINGS -->
-                <div class="admin-tab-pane" id="paneSettings">
-                    <div class="admin-settings-box">
-                        <h3>Configuration de la Plateforme & Sécurité</h3>
-                        <form onsubmit="savePlatformSettings(event)" class="admin-pin-change-form">
-                            <div class="form-group">
-                                <label>Code PIN Administrateur</label>
-                                <input type="password" id="newAdminPinInput" placeholder="Nouveau Code PIN Admin" maxlength="16">
-                            </div>
-                            <div class="form-group">
-                                <label>Montant Minimum de Retrait (FCFA)</label>
-                                <input type="number" id="minPayoutInput" placeholder="ex: 10000" min="1000" step="1000">
-                            </div>
-                            <div class="form-group">
-                                <label>Passerelle de Paiement Active</label>
-                                <select id="activeGatewaySelect" class="checkout-input" onchange="window.PaymentService.setActiveProvider(this.value)">
-                                    <option value="WHATSAPP_BRIDGE">💬 WhatsApp Direct Bridge (Actif par défaut)</option>
-                                    <option value="BENIN_MOBILE_MONEY">📱 Mobile Money (MTN & Moov Bénin API)</option>
-                                    <option value="CI_WAVE_ORANGE">🌊 Wave & Orange Money (Côte d'Ivoire API)</option>
-                                    <option value="CARD_VIREMENT">💳 Carte Bancaire / Virement</option>
-                                </select>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary" style="margin-bottom: 20px;">Enregistrer les Paramètres</button>
-                        </form>
-
-                        <div class="test-suite-box" style="margin-top:24px; padding-top:20px; border-top: 1px dashed rgba(255,255,255,0.1);">
-                            <h4>🧪 Suite de Tests Automatisés Unifiée</h4>
-                            <p style="font-size:12px; color:var(--text-muted); margin-bottom:12px;">Exécute immédiatement la suite de validation complète des 18 scénarios (Checkout, Commissions, Snapshots immuables, Verrouillage anti-double-retrait et RBAC).</p>
-                            <button type="button" class="btn btn-accent" onclick="window.RunSuiteTests()">⚡ Lancer la Suite de Tests Automatisés</button>
-                        </div>
-                    </div>
-                </div>
-
                 <!-- RESELLER TAB 1: MY SALES & COMMISSIONS -->
-                <div class="admin-tab-pane" id="paneResellerSales">
+                <div class="admin-tab-pane active" id="paneResellerSales">
                     <div class="admin-table-wrapper">
                         <table class="admin-table">
                             <thead>
@@ -937,7 +751,7 @@
                 <div class="admin-tab-pane" id="paneResellerCode">
                     <div class="reseller-code-card">
                         <h3>🔑 Votre Code & Lien de Parrainage Officiel</h3>
-                        <p>Partagez votre code ou votre lien direct. Chaque client effectuant un achat crédite automatiquement votre commission !</p>
+                        <p>Partagez votre code ou votre lien direct. Chaque commande enregistrée crédite automatiquement vos commissions !</p>
                         
                         <div class="reseller-share-box">
                             <div class="share-item">
@@ -951,7 +765,7 @@
                             <div class="share-item">
                                 <span class="share-title">Votre Lien de Recommandation Direct :</span>
                                 <div class="share-field">
-                                    <input type="text" id="displayResellerLink" readonly class="share-link-input" value="https://culture.store/?ref=MARIE01">
+                                    <input type="text" id="displayResellerLink" readonly class="share-link-input" value="">
                                     <button class="btn btn-sm btn-primary" onclick="copyResellerLinkToClipboard()">🔗 Copier le Lien</button>
                                 </div>
                             </div>
@@ -964,7 +778,7 @@
                     <div class="reseller-withdraw-header">
                         <div>
                             <h4>Demandes de Retrait Effectuées</h4>
-                            <p>Les demandes sont traitées chaque semaine par l'administration.</p>
+                            <p>Les demandes sont traitées chaque semaine par l'équipe administrative via Mobile Money.</p>
                         </div>
                         <button class="btn btn-accent" onclick="openResellerWithdrawalModal()">💸 Demander un Retrait</button>
                     </div>
@@ -990,7 +804,7 @@
                 <div class="admin-tab-pane" id="paneResellerProfile">
                     <div class="admin-settings-box">
                         <h3>Configuration de votre Moyen de Réception</h3>
-                        <p>Renseignez votre compte de réception (Wave, Mobile Money, Orange Money, Moov) pour recevoir vos retraits sans délai.</p>
+                        <p>Renseignez votre compte de réception (Wave, Mobile Money, Orange Money, Moov) pour recevoir vos virements sans délai.</p>
                         <form onsubmit="saveResellerProfile(event)" class="admin-pin-change-form">
                             <div class="form-row">
                                 <div class="form-group col-6">
@@ -998,6 +812,8 @@
                                     <select id="profileCountry" class="checkout-input">
                                         <option value="Bénin">🇧🇯 Bénin</option>
                                         <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                                        <option value="Togo">🇹🇬 Togo</option>
+                                        <option value="Sénégal">🇸🇳 Sénégal</option>
                                         <option value="Autre">🌍 Autre</option>
                                     </select>
                                 </div>
@@ -1018,7 +834,7 @@
                                 </div>
                                 <div class="form-group col-6">
                                     <label>Nom Complet du Titulaire du Compte *</label>
-                                    <input type="text" id="profilePayoutName" placeholder="ex: Marie Koffi" required>
+                                    <input type="text" id="profilePayoutName" placeholder="ex: Marie Dossou" required>
                                 </div>
                             </div>
                             <button type="submit" class="btn btn-primary">Sauvegarder Mon Profil de Réception</button>
@@ -1030,65 +846,7 @@
         </div>
     </div>
 
-    <!-- MODAL 1: CREATE NEW RESELLER (ADMIN ONLY) -->
-    <div class="modal-overlay" id="adminCreateResellerModal">
-        <div class="modal-content admin-form-card">
-            <button class="close-modal" onclick="closeCreateResellerModal()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-            
-            <h3>➕ Ajouter un Nouveau Revendeur / Affilié</h3>
-            
-            <form id="createResellerForm" onsubmit="handleCreateResellerSubmit(event)">
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label>Nom & Prénom *</label>
-                        <input type="text" id="newResellerName" placeholder="ex: Marie Koffi" required>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Téléphone / WhatsApp *</label>
-                        <input type="tel" id="newResellerPhone" placeholder="ex: +229 97 00 11 22" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label>Email *</label>
-                        <input type="email" id="newResellerEmail" placeholder="ex: marie@culture.store" required>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Code Revendeur Unique *</label>
-                        <input type="text" id="newResellerCode" placeholder="ex: MARIE01" uppercase required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label>Taux de Commission (%) *</label>
-                        <input type="number" id="newResellerRate" placeholder="ex: 10" min="1" max="50" step="0.5" value="10" required>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Pays de Résidence *</label>
-                        <select id="newResellerCountry" class="checkout-input">
-                            <option value="Bénin">🇧🇯 Bénin</option>
-                            <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
-                            <option value="Autre">🌍 Autre</option>
-                        </select>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeCreateResellerModal()">Annuler</button>
-                    <button type="submit" class="btn btn-accent">Créer le Revendeur</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 2: REQUEST WITHDRAWAL (RESELLER) -->
+    <!-- MODAL: REQUEST WITHDRAWAL (RESELLER) -->
     <div class="modal-overlay" id="resellerWithdrawalModal">
         <div class="modal-content admin-form-card">
             <button class="close-modal" onclick="closeResellerWithdrawalModal()">
@@ -1102,13 +860,13 @@
             
             <div class="withdrawal-info-banner">
                 <div>Solde Disponible au Retrait : <strong id="withdrawAvailableBalance">0 FCFA</strong></div>
-                <div class="sub-hint">Montant minimum de retrait : <span id="withdrawMinAmount">10 000 FCFA</span></div>
+                <div class="sub-hint">Montant minimum de retrait : <span id="withdrawMinAmount">5 000 FCFA</span></div>
             </div>
 
             <form id="resellerWithdrawalForm" onsubmit="handleWithdrawalSubmit(event)">
                 <div class="form-group">
                     <label>Montant Souhaité à Retirer (FCFA) *</label>
-                    <input type="number" id="withdrawAmountInput" placeholder="ex: 20000" required step="1000">
+                    <input type="number" id="withdrawAmountInput" placeholder="ex: 10000" min="1000" required step="500">
                 </div>
 
                 <div class="form-row">
@@ -1129,155 +887,12 @@
 
                 <div class="form-group">
                     <label>Nom du Titulaire du Compte *</label>
-                    <input type="text" id="withdrawNameInput" placeholder="ex: Marie Koffi" required>
+                    <input type="text" id="withdrawNameInput" placeholder="ex: Marie Dossou" required>
                 </div>
 
                 <div class="form-actions">
                     <button type="button" class="btn btn-outline" onclick="closeResellerWithdrawalModal()">Annuler</button>
                     <button type="submit" class="btn btn-accent">Confirmer la Demande</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- MODAL 3: ADMIN CONFIRM MANUAL PAYOUT (ADMIN ONLY) -->
-    <div class="modal-overlay" id="adminPayModal">
-        <div class="modal-content admin-form-card">
-            <button class="close-modal" onclick="closeAdminPayModal()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-            
-            <h3>✅ Confirmer le Paiement du Retrait</h3>
-            <p id="payModalSubtitle">Validation de virement manuel du revendeur.</p>
-
-            <form id="adminPayForm" onsubmit="handleConfirmPayoutSubmit(event)">
-                <input type="hidden" id="payModalPayoutId">
-                
-                <div class="form-group">
-                    <label>Référence de la Transaction Mobile Money / Wave *</label>
-                    <input type="text" id="payTxRefInput" placeholder="ex: TXN-8923019238" required autocomplete="off">
-                </div>
-
-                <div class="form-group">
-                    <label>Note Interne Administrateur (Optionnel)</label>
-                    <input type="text" id="payAdminNoteInput" placeholder="ex: Virement effectué par Wave Bénin">
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeAdminPayModal()">Annuler</button>
-                    <button type="submit" class="btn btn-success">✅ Marquer comme PAYÉ</button>
-                </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- ADMIN PRODUCT EDIT / ADD MODAL -->
-    <div class="modal-overlay" id="adminProductModal">
-        <div class="modal-content admin-form-card">
-            <button class="close-modal" id="closeAdminProductModalBtn" onclick="closeProductEditor()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-            
-            <h3 id="adminProductModalTitle">➕ Ajouter un Nouveau Produit</h3>
-            
-            <form id="adminProductForm" onsubmit="handleProductFormSubmit(event)">
-                <input type="hidden" id="editProductId">
-                
-                <div class="form-row">
-                    <div class="form-group col-8">
-                        <label>Nom du Produit *</label>
-                        <input type="text" id="prodName" placeholder="ex: Terra Icon Crossbody" required>
-                    </div>
-                    <div class="form-group col-4">
-                        <label>Prix en XOF *</label>
-                        <input type="number" id="prodPrice" placeholder="ex: 8000" min="0" step="100" required>
-                    </div>
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label>Catégorie *</label>
-                        <select id="prodCategory" required>
-                            <option value="bags">Sacs Crossbody</option>
-                            <option value="hoodies">Hoodies & Sweats</option>
-                            <option value="tees">T-Shirts Studio</option>
-                            <option value="caps">Casquettes & Accessoires</option>
-                        </select>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Tailles disponibles (séparées par une virgule)</label>
-                        <input type="text" id="prodSizes" placeholder="ex: S, M, L, XL (laisser vide si taille unique)">
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Description du Produit *</label>
-                    <textarea id="prodDescription" rows="3" placeholder="Description du produit, matériaux, caractéristiques..." required></textarea>
-                </div>
-
-                <!-- PRE-ORDER / DROPS MANAGEMENT BOX FOR ADMIN -->
-                <div class="admin-preorder-box">
-                    <div class="checkbox-group">
-                        <label class="checkbox-label">
-                            <input type="checkbox" id="prodIsPreorder" onchange="toggleAdminPreorderFields()">
-                            <span>⚡ Activer la Pré-Vente (Drop à venir / Pré-commande)</span>
-                        </label>
-                    </div>
-                    <div class="preorder-subfields" id="preorderSubfields" style="display:none; margin-top: 12px;">
-                        <div class="form-row">
-                            <div class="form-group col-6">
-                                <label>Badge du Drop (ex: ⚡ PRÉ-VENTE, ⏳ DROP 02)</label>
-                                <input type="text" id="prodPreorderBadge" placeholder="⚡ PRÉ-VENTE DROPS 02">
-                            </div>
-                            <div class="form-group col-6">
-                                <label>Date d'Expédition Estimée (ex: 15 Oct. 2026)</label>
-                                <input type="text" id="prodReleaseDate" placeholder="15 Oct. 2026">
-                            </div>
-                        </div>
-                        <div class="form-row" style="margin-top: 10px;">
-                            <div class="form-group col-6">
-                                <label>% Stock Réservé en Pré-Vente</label>
-                                <input type="number" id="prodReservedPercent" placeholder="85" min="0" max="100">
-                            </div>
-                            <div class="form-group col-6">
-                                <label>Statut du Drop</label>
-                                <select id="prodDropStatus">
-                                    <option value="preorder">⚡ Pré-Vente Ouverte</option>
-                                    <option value="upcoming">⏳ Drop Imminent (Teaser)</option>
-                                </select>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Photo du Produit *</label>
-                    <div class="image-upload-wrapper">
-                        <div class="upload-options">
-                            <label class="file-upload-label btn btn-outline">
-                                📷 Choisir une Photo (Appareil / Fichier)
-                                <input type="file" id="prodFile" accept="image/*" onchange="handleImageFileSelect(event)" style="display:none;">
-                            </label>
-                            <button type="button" class="btn btn-sm btn-danger" id="removePhotoBtn" onclick="removeCurrentProductPhoto()" style="display:none;">🗑️ Supprimer la photo</button>
-                            <span class="upload-or">ou</span>
-                            <input type="text" id="prodImageUrl" placeholder="https://... Lien URL d'image" oninput="handleImageUrlInput()" class="url-input">
-                        </div>
-                        <div class="image-preview-container" id="imagePreviewContainer">
-                            <img id="imagePreviewImg" src="" alt="Aperçu Photo" style="display:none;">
-                            <span id="imagePreviewPlaceholder" class="preview-placeholder">Aucune photo sélectionnée</span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeProductEditor()">Annuler</button>
-                    <button type="submit" class="btn btn-accent">💾 Enregistrer le Produit</button>
                 </div>
             </form>
         </div>
