@@ -13,7 +13,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Syne:wght@700;800&display=swap" rel="stylesheet">
     
     <!-- Admin Design System -->
-    <link rel="stylesheet" href="assets/css/admin.css?v=20261027_fix">
+    <link rel="stylesheet" href="assets/css/admin.css?v=20261027_glass">
 </head>
 <body class="admin-body">
 
@@ -629,7 +629,7 @@
         <div class="admin-modal-card admin-modal-lg">
             <div class="admin-modal-header">
                 <h3 id="adminProductModalTitle" class="admin-modal-title">✏️ Éditer le Produit</h3>
-                <button class="admin-modal-close" onclick="window.ProductsModule.closeEditor()">✕</button>
+                <button type="button" id="adminCloseProductModal" class="admin-modal-close" aria-label="Fermer la fenêtre">✕</button>
             </div>
             <form id="adminProductForm">
                 <div class="admin-modal-body">
@@ -723,8 +723,8 @@
 
                 </div>
                 <div class="admin-modal-footer">
-                    <button type="button" class="admin-btn admin-btn-outline" onclick="window.ProductsModule.closeEditor()">Annuler</button>
-                    <button type="submit" class="admin-btn admin-btn-primary">Enregistrer le Produit</button>
+                    <button type="button" id="adminCancelProductBtn" class="admin-btn admin-btn-outline" data-modal-close onclick="window.AdminProducts.closeModal()">Fermer</button>
+                    <button type="submit" class="admin-btn admin-btn-primary">💾 Enregistrer les Modifications</button>
                 </div>
             </form>
         </div>
@@ -840,21 +840,21 @@
     <script src="../supabase-config.js"></script>
 
     <!-- Admin Data Layer & Auth Controller -->
-    <script src="assets/js/admin-api.js?v=20261027_fix"></script>
-    <script src="assets/js/admin-auth.js?v=20261027_fix"></script>
+    <script src="assets/js/admin-api.js?v=20261027_glass"></script>
+    <script src="assets/js/admin-auth.js?v=20261027_glass"></script>
 
     <!-- Admin Feature Modules -->
-    <script src="assets/js/modules/dashboard.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/products.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/orders.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/resellers.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/payouts.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/commissions.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/audit.js?v=20261027_fix"></script>
-    <script src="assets/js/modules/settings.js?v=20261027_fix"></script>
+    <script src="assets/js/modules/dashboard.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/products.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/orders.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/resellers.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/payouts.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/commissions.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/audit.js?v=20261027_glass"></script>
+    <script src="assets/js/modules/settings.js?v=20261027_glass"></script>
 
     <!-- Main Admin Orchestrator -->
-    <script src="assets/js/admin-app.js?v=20261027_fix"></script>
+    <script src="assets/js/admin-app.js?v=20261027_glass"></script>
 
 </body>
 </html>

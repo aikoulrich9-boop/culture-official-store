@@ -112,11 +112,22 @@
         },
 
         bindGlobalEvents() {
+            // Close modals when clicking close button
+            document.querySelectorAll('.admin-modal-close, [data-modal-close]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const modal = btn.closest('.admin-modal');
+                    if (modal) modal.classList.remove('active');
+                    document.body.style.overflow = '';
+                });
+            });
+
             // Close modals when clicking backdrop
             document.querySelectorAll('.admin-modal').forEach(modal => {
                 modal.addEventListener('click', (e) => {
                     if (e.target === modal) {
                         modal.classList.remove('active');
+                        document.body.style.overflow = '';
                     }
                 });
             });
@@ -124,7 +135,10 @@
             // Close modals on Escape key
             document.addEventListener('keydown', (e) => {
                 if (e.key === 'Escape') {
-                    document.querySelectorAll('.admin-modal.active').forEach(m => m.classList.remove('active'));
+                    document.querySelectorAll('.admin-modal.active').forEach(m => {
+                        m.classList.remove('active');
+                        document.body.style.overflow = '';
+                    });
                 }
             });
         },

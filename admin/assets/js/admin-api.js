@@ -22,22 +22,73 @@ window.AdminAPI = {
        1. CATALOGUE & PRODUITS
        ========================================================================== */
     async getProducts() {
-        // En priorité : localStorage 'culture_products' (avec fallback sur le catalogue de démo)
         const stored = localStorage.getItem('culture_products');
+        let products = null;
         if (stored) {
             try {
-                return JSON.parse(stored);
+                products = JSON.parse(stored);
             } catch (e) {}
         }
         
-        // Catalogue d'origine par défaut
-        return [
-            { id: "p1", name: "Terra Icon Crossbody", price: 8000, category: "bags", image: "../IMAGE/Sac 1.png", description: "Sac crossbody compact haute résistance avec logo brodé en relief.", sizes: ["Unique"], status: "available" },
-            { id: "p2", name: "CULTURE Core Shoulder Bag", price: 8000, category: "bags", image: "../IMAGE/Sac 2.png", description: "Sac bandoulière urbain avec multiples rangements zippés sécurisés.", sizes: ["Unique"], status: "available" },
-            { id: "p3", name: "Phantom Utility Sacoche", price: 8000, category: "bags", image: "../IMAGE/Sac 3.png", description: "Sacoche technique imperméable pour vos essentiels du quotidien.", sizes: ["Unique"], status: "available" },
-            { id: "p4", name: "Heavyweight Boxy Hoodie", price: 20000, category: "hoodies", image: "../IMAGE/logo P.png", description: "Molleton lourd 450 GSM avec coupe boxy oversize premium.", sizes: ["S", "M", "L", "XL"], status: "available" },
-            { id: "p5", name: "Raw Edge Studio Tee", price: 12000, category: "tees", image: "../IMAGE/logo P.png", description: "Coton peigné 240 GSM, col épais résistant au lavage.", sizes: ["S", "M", "L", "XL"], status: "available" }
+        // Catalogue officiel Streetwear CULTURE avec vraies images
+        const defaultCatalog = [
+            { id: "c1", name: "Terra Icon Crossbody", price: 8000, category: "bags", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "c2", name: "Aero Character Crossbody", price: 8000, category: "bags", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, category: "bags", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ DROP IMMINENT", releaseDate: "28 Oct. 2026" },
+            { id: "c4", name: "Minimalist Utility Crossbody", price: 8000, category: "bags", image: "IMAGE/c 4.png", description: "Structure ultra-épurée en tissage balistique ultra-durable 1680D.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
+            { id: "t1", name: "Creator Studio Tee", price: 8000, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ DROP / PRÉVENTE", releaseDate: "28 Oct. 2026" },
+            { id: "cap1", name: "Urban Explorer Cap", price: 8000, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, category: "hoodies", image: "IMAGE/denim_jacket.jpg", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, category: "bags", image: "IMAGE/sac_illegal_black.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, category: "bags", image: "IMAGE/sac_illegal_star.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 14000, category: "bags", image: "IMAGE/sac_illegal_blue.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ DROP LIMITÉ", releaseDate: "28 Oct. 2026" }
         ];
+
+        if (!Array.isArray(products) || products.length === 0) {
+            localStorage.setItem('culture_products', JSON.stringify(defaultCatalog));
+            return defaultCatalog;
+        }
+
+        // Auto-réparation des images manquantes ou obsolètes dans le cache utilisateur
+        let updated = false;
+        const imageRepairs = {
+            'terra icon': 'IMAGE/c 1.png',
+            'aero character': 'IMAGE/c 2.png',
+            'portrait editorial': 'IMAGE/c 3.png',
+            'minimalist utility': 'IMAGE/c 4.png',
+            'heavyweight boxy': 'IMAGE/hoodie.jpg',
+            'creator studio': 'IMAGE/tee.jpg',
+            'raw edge studio': 'IMAGE/tee.jpg',
+            'urban explorer': 'IMAGE/cap.jpg',
+            'raw indigo denim': 'IMAGE/denim_jacket.jpg',
+            'illegal blackout': 'IMAGE/sac_illegal_black.png',
+            'illegal star': 'IMAGE/sac_illegal_star.png',
+            'illegal ocean': 'IMAGE/sac_illegal_blue.png',
+            'culture core': 'IMAGE/c 2.png',
+            'phantom utility': 'IMAGE/c 3.png'
+        };
+
+        products = products.map(p => {
+            const nameLower = (p.name || '').toLowerCase();
+            const badImg = !p.image || p.image.includes('Sac ') || p.image.includes('logo P.png');
+            if (badImg) {
+                for (const [key, validImg] of Object.entries(imageRepairs)) {
+                    if (nameLower.includes(key)) {
+                        p.image = validImg;
+                        updated = true;
+                        break;
+                    }
+                }
+            }
+            return p;
+        });
+
+        if (updated) {
+            localStorage.setItem('culture_products', JSON.stringify(products));
+        }
+
+        return products;
     },
 
     async saveProduct(productPayload) {
