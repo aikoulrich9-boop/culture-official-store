@@ -11,7 +11,6 @@ window.ENV_CONFIG = {
     STORE_NAME: "CULTURE Streetwear Official",
     DEFAULT_CURRENCY: "FCFA",
     DEFAULT_COUNTRY: "Bénin",
-    DEFAULT_ADMIN_PIN: "1234",
     DEFAULT_MIN_PAYOUT: 10000,
     
     // Gateways Configurations

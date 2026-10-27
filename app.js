@@ -1500,599 +1500,419 @@ function filterProducts(category) {
 }
 
 /* ==========================================================================
-   UNIFIED DASHBOARD CONTROLLER & RBAC SYSTEM (ADMIN & RESELLER)
+   ESPACE PARTENAIRE REVENDEUR (DEDICATED AFFILIATE PORTAL)
    ========================================================================== */
 
-let currentUserRole = "ROLE_ADMIN"; // "ROLE_ADMIN" ou "ROLE_RESELLER"
-let currentResellerSession = null;  // Stocke le profil du revendeur connecté
+let currentResellerSession = null;
 
-function openAdminAuth() {
-    const modal = document.getElementById("adminLoginModal");
-    if (!modal) return;
-    selectAuthRole('admin');
-    modal.classList.add("active");
+// Vérifier et restaurer automatiquement la session revendeur au chargement
+document.addEventListener("DOMContentLoaded", () => {
+    if (window.AuthService) {
+        const session = window.AuthService.getSession();
+        if (session && session.role === "ROLE_RESELLER" && session.user) {
+            currentResellerSession = session.user;
+        }
+    }
+});
+
+function openResellerAuth() {
+    // Si déjà connecté en tant que revendeur, ouvrir directement le dashboard
+    if (window.AuthService) {
+        const session = window.AuthService.getSession();
+        if (session && session.role === "ROLE_RESELLER" && session.user) {
+            currentResellerSession = session.user;
+            openResellerDashboard();
+            return;
+        }
+    }
+    const modal = document.getElementById("resellerLoginModal");
+    if (modal) modal.classList.add("active");
 }
 
-function closeAdminAuth() {
-    const modal = document.getElementById("adminLoginModal");
+function closeResellerAuth() {
+    const modal = document.getElementById("resellerLoginModal");
     if (modal) modal.classList.remove("active");
 }
 
-function selectAuthRole(role) {
-    const roleInput = document.getElementById("authRoleInput");
-    const adminBtn = document.getElementById("authRoleAdminBtn");
-    const resellerBtn = document.getElementById("authRoleResellerBtn");
-    const pinGroup = document.getElementById("adminPinGroup");
-    const resellerGroup = document.getElementById("resellerCodeGroup");
-    const hintText = document.getElementById("loginHintText");
-
-    if (roleInput) roleInput.value = role;
-
-    if (role === 'admin') {
-        if (adminBtn) adminBtn.classList.add('active');
-        if (resellerBtn) resellerBtn.classList.remove('active');
-        if (pinGroup) pinGroup.style.display = 'block';
-        if (resellerGroup) resellerGroup.style.display = 'none';
-        if (hintText) hintText.innerHTML = "Code PIN Admin par défaut : <strong>1234</strong>";
-    } else {
-        if (adminBtn) adminBtn.classList.remove('active');
-        if (resellerBtn) resellerBtn.classList.add('active');
-        if (pinGroup) pinGroup.style.display = 'none';
-        if (resellerGroup) resellerGroup.style.display = 'block';
-        if (hintText) hintText.innerHTML = "Démo codes revendeurs : <strong>MARIE01</strong>, <strong>KOFFI02</strong>";
-    }
-}
-
-async function handleUnifiedLogin(event) {
+async function handleResellerLogin(event) {
     event.preventDefault();
-    const roleInput = document.getElementById("authRoleInput");
-    const role = roleInput ? roleInput.value : "admin";
+    const input = document.getElementById("resellerCodeLoginInput");
+    const entered = input ? input.value.trim() : "";
+    if (!entered) {
+        showToast("Veuillez renseigner votre code ou email partenaire.");
+        return;
+    }
 
-    if (role === "admin") {
-        const pinInput = document.getElementById("adminPinInput");
-        const enteredPin = pinInput ? pinInput.value.trim() : "";
-        if (enteredPin === adminPin) {
-            currentUserRole = "ROLE_ADMIN";
-            currentResellerSession = null;
-            if (window.AuthService) {
-                await window.AuthService.login("admin@culture.store", "admin123");
-            }
-            closeAdminAuth();
-            openAdminDashboard();
-            showToast("Bienvenue dans l'Espace Administration 🔑");
-        } else {
-            showToast("❌ Code PIN Administrateur incorrect !");
-        }
-    } else {
-        const codeInput = document.getElementById("resellerCodeLoginInput");
-        const enteredCode = codeInput ? codeInput.value.trim().toUpperCase() : "";
-        
-        if (!enteredCode) {
-            showToast("Veuillez entrer votre code revendeur.");
+    try {
+        if (!window.AuthService) {
+            showToast("Service d'authentification non disponible.");
             return;
         }
 
-        if (window.SupabaseService) {
-            const res = await window.SupabaseService.verifyResellerCode(enteredCode);
-            if (res.valid) {
-                currentUserRole = "ROLE_RESELLER";
-                currentResellerSession = res.reseller;
-                if (window.AuthService) {
-                    await window.AuthService.login(res.reseller.email || res.reseller.code, res.reseller.code || "reseller123");
-                }
-                closeAdminAuth();
-                openAdminDashboard();
-                showToast(`Bienvenue ${res.reseller.name} dans votre Espace Revendeur 👥`);
-            } else {
-                showToast(`❌ ${res.message || "Code revendeur invalide."}`);
+        const res = await window.AuthService.login(entered, entered);
+        if (res && res.success) {
+            if (res.session.role === "ROLE_ADMIN") {
+                showToast("Compte Administrateur détecté. Redirection vers le Centre d'Administration...");
+                setTimeout(() => {
+                    window.location.href = "admin/index.html";
+                }, 800);
+                return;
             }
+
+            currentResellerSession = res.session.user;
+            closeResellerAuth();
+            openResellerDashboard();
+            showToast(`Bienvenue ${currentResellerSession.name || "Partenaire"} dans votre Espace Revendeur 👥`);
+        } else {
+            showToast(`❌ ${res.error || "Code revendeur ou identifiant invalide."}`);
         }
+    } catch (err) {
+        console.error("Erreur connexion revendeur:", err);
+        showToast(`❌ Erreur: ${err.message}`);
     }
 }
 
-function openAdminDashboard() {
-    const overlay = document.getElementById("adminDashboardOverlay");
+async function openResellerDashboard() {
+    const overlay = document.getElementById("resellerDashboardOverlay");
     if (!overlay) return;
-
     overlay.classList.add("active");
-
-    // Adapter le titre et les badges du header selon le rôle
-    const titleEl = document.getElementById("dashboardHeaderTitle");
-    const badgeEl = document.getElementById("dashboardRoleBadge");
-    
-    const adminButtons = document.querySelectorAll(".admin-only");
-    const resellerButtons = document.querySelectorAll(".reseller-only");
-
-    if (currentUserRole === "ROLE_ADMIN") {
-        if (titleEl) titleEl.textContent = "Espace Administrateur — Dashboard Global";
-        if (badgeEl) {
-            badgeEl.textContent = "● Mode Administrateur Actif";
-            badgeEl.className = "admin-badge-live";
-        }
-        adminButtons.forEach(b => b.style.display = "inline-block");
-        resellerButtons.forEach(b => b.style.display = "none");
-    } else {
-        const resName = currentResellerSession ? currentResellerSession.name : "Revendeur";
-        const resCode = currentResellerSession ? currentResellerSession.code : "";
-        if (titleEl) titleEl.textContent = `Espace Revendeur — ${resName} (${resCode})`;
-        if (badgeEl) {
-            badgeEl.textContent = `● Revendeur Actif (${resCode})`;
-            badgeEl.className = "admin-badge-live stat-value-orange";
-        }
-        adminButtons.forEach(b => b.style.display = "none");
-        resellerButtons.forEach(b => b.style.display = "inline-block");
-    }
-
-    renderRoleStats();
-    renderRoleTabs();
+    await renderResellerDashboard();
 }
 
-function closeAdminDashboard() {
-    const overlay = document.getElementById("adminDashboardOverlay");
+function closeResellerDashboard() {
+    const overlay = document.getElementById("resellerDashboardOverlay");
     if (overlay) overlay.classList.remove("active");
 }
 
-function logoutAdminDashboard() {
-    currentUserRole = null;
-    currentResellerSession = null;
+async function logoutResellerDashboard() {
     if (window.AuthService) {
-        window.AuthService.logout();
+        await window.AuthService.logout();
     }
-    closeAdminDashboard();
+    currentResellerSession = null;
+    closeResellerDashboard();
     showToast("Déconnexion réussie. À bientôt !");
 }
 
-/* ==========================================================================
-   RENDER DYNAMIC STATS & TABS PER ROLE (RBAC)
-   ========================================================================== */
-async function renderRoleStats() {
-    const statsRow = document.getElementById("dashboardStatsRow");
-    if (!statsRow) return;
-
-    if (currentUserRole === "ROLE_ADMIN") {
-        const resellers = await window.SupabaseService.getAllResellers();
-        const payouts = await window.SupabaseService.getAllPayoutRequests();
-        const pendingPayouts = payouts.filter(p => p.status === 'PENDING').length;
-
-        statsRow.innerHTML = `
-            <div class="admin-stat-card">
-                <span class="stat-label">Total Produits</span>
-                <span class="stat-value">${PRODUCTS.length}</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="stat-label">Commandes Reçues</span>
-                <span class="stat-value">${orders.length}</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="stat-label">Revendeurs Actifs</span>
-                <span class="stat-value stat-value-blue">${resellers.length}</span>
-            </div>
-            <div class="admin-stat-card stat-card-highlight">
-                <span class="stat-label">Retraits en Attente</span>
-                <span class="stat-value stat-value-orange">${pendingPayouts}</span>
-            </div>
-        `;
-    } else if (currentResellerSession) {
-        const metrics = await window.SupabaseService.getResellerMetrics(currentResellerSession.id, currentResellerSession.code);
-
-        statsRow.innerHTML = `
-            <div class="admin-stat-card">
-                <span class="stat-label">Total Généré</span>
-                <span class="stat-value">${metrics.totalGenerated.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="stat-label">En Attente Validation</span>
-                <span class="stat-value stat-value-orange">${metrics.pendingBalance.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div class="admin-stat-card stat-card-highlight">
-                <span class="stat-label">Disponible au Retrait</span>
-                <span class="stat-value stat-value-green">${metrics.availableBalance.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="stat-label">Déjà Payé</span>
-                <span class="stat-value stat-value-blue">${metrics.paidBalance.toLocaleString('fr-FR')} FCFA</span>
-            </div>
-        `;
-
-        // Mettre à jour la bannière du modal de retrait
-        const withdrawAvailable = document.getElementById("withdrawAvailableBalance");
-        const withdrawMin = document.getElementById("withdrawMinAmount");
-        const minPayout = Number(localStorage.getItem('culture_min_payout') || 10000);
-        if (withdrawAvailable) withdrawAvailable.textContent = `${metrics.availableBalance.toLocaleString('fr-FR')} FCFA`;
-        if (withdrawMin) withdrawMin.textContent = `${minPayout.toLocaleString('fr-FR')} FCFA`;
+function switchResellerPane(paneId) {
+    const tabsBar = document.getElementById("resellerTabsBar");
+    if (tabsBar) {
+        tabsBar.querySelectorAll(".admin-tab").forEach(tab => {
+            const onclickAttr = tab.getAttribute("onclick") || "";
+            if (onclickAttr.includes(paneId)) {
+                tab.classList.add("active");
+            } else {
+                tab.classList.remove("active");
+            }
+        });
     }
-}
 
-function renderRoleTabs() {
-    const tabsBar = document.getElementById("dashboardTabsBar");
-    if (!tabsBar) return;
-
-    if (currentUserRole === "ROLE_ADMIN") {
-        tabsBar.innerHTML = `
-            <button class="admin-tab active" onclick="switchDashboardPane('paneProducts')">📦 Catalogue</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneOrders')">📋 Commandes Clients</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneResellers')">👥 Revendeurs & Affiliés</button>
-            <button class="admin-tab" onclick="switchDashboardPane('panePayouts')">💸 Demandes de Retrait</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneCommissions')">💰 Suivi Commissions</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneSettings')">⚙️ Sécurité & Config</button>
-        `;
-        switchDashboardPane('paneProducts');
-    } else {
-        tabsBar.innerHTML = `
-            <button class="admin-tab active" onclick="switchDashboardPane('paneResellerSales')">🛒 Mes Ventes</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneResellerCode')">🔑 Mon Code & Lien</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneResellerWithdrawals')">🏦 Mes Retraits</button>
-            <button class="admin-tab" onclick="switchDashboardPane('paneResellerProfile')">👤 Profil de Réception</button>
-        `;
-        switchDashboardPane('paneResellerSales');
-    }
-}
-
-function switchDashboardPane(paneId) {
-    document.querySelectorAll(".admin-tab").forEach(tab => {
-        if (tab.getAttribute('onclick')?.includes(paneId)) {
-            tab.classList.add("active");
-        } else {
-            tab.classList.remove("active");
-        }
-    });
-
-    document.querySelectorAll(".admin-tab-pane").forEach(pane => {
+    const panes = document.querySelectorAll("#resellerDashboardOverlay .admin-tab-pane");
+    panes.forEach(pane => {
         if (pane.id === paneId) {
             pane.classList.add("active");
         } else {
             pane.classList.remove("active");
         }
     });
-
-    // Rendu spécifique au volet ouvert
-    if (paneId === "paneProducts") renderAdminProductsList();
-    else if (paneId === "paneOrders") renderAdminOrdersList();
-    else if (paneId === "paneResellers") renderAdminResellersList();
-    else if (paneId === "panePayouts") renderAdminPayoutsList();
-    else if (paneId === "paneCommissions") renderAdminCommissionsList();
-    else if (paneId === "paneResellerSales") renderResellerSalesList();
-    else if (paneId === "paneResellerCode") renderResellerCodeTab();
-    else if (paneId === "paneResellerWithdrawals") renderResellerWithdrawalsList();
-    else if (paneId === "paneResellerProfile") renderResellerProfileTab();
 }
 
-/* ==========================================================================
-   RENDERERS FOR ADMIN PANES
-   ========================================================================== */
-function renderAdminProductsList() {
-    const tbody = document.getElementById("adminProductsTableBody");
-    if (!tbody) return;
-
-    const searchVal = document.getElementById("adminProductSearch")?.value.toLowerCase().trim() || "";
-    const catVal = document.getElementById("adminCategoryFilter")?.value || "all";
-
-    const filtered = PRODUCTS.filter(p => {
-        const matchCat = catVal === "all" || p.category === catVal;
-        const matchSearch = !searchVal || p.name.toLowerCase().includes(searchVal);
-        return matchCat && matchSearch;
-    });
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="6" style="text-align:center; padding: 2rem;">Aucun produit trouvé.</td></tr>`;
-        return;
+async function renderResellerDashboard() {
+    if (!currentResellerSession && window.AuthService) {
+        const session = window.AuthService.getSession();
+        if (session && session.user) currentResellerSession = session.user;
     }
 
-    tbody.innerHTML = filtered.map(p => `
-        <tr>
-            <td><img src="${p.image}" alt="${p.name}" class="admin-prod-thumb" onerror="this.src='IMAGE/logo P.png'"></td>
-            <td><strong>${p.name}</strong></td>
-            <td><span class="admin-cat-badge">${p.category}</span></td>
-            <td><strong>${formatPrice(p.price)}</strong></td>
-            <td>${p.sizes?.join(", ") || "Unique"}</td>
-            <td>
-                <div class="admin-actions-cell">
-                    <button class="btn btn-sm btn-outline" onclick="openProductEditor('${p.id}')">✏️ Éditer</button>
-                    <button class="btn btn-sm btn-danger" onclick="deleteAdminProduct('${p.id}')">🗑️</button>
-                </div>
-            </td>
-        </tr>
-    `).join("");
-}
+    const resName = currentResellerSession ? (currentResellerSession.name || "Partenaire") : "Partenaire";
+    const resCode = currentResellerSession ? (currentResellerSession.referral_code || currentResellerSession.code || "MONCODE") : "MONCODE";
+    const resId = currentResellerSession ? (currentResellerSession.id || currentResellerSession.reseller_id) : null;
 
-function renderAdminOrdersList() {
-    const tbody = document.getElementById("adminOrdersTableBody");
-    if (!tbody) return;
-
-    const searchVal = document.getElementById("adminOrderSearch")?.value.toLowerCase().trim() || "";
-    const statusVal = document.getElementById("adminOrderStatusFilter")?.value || "all";
-
-    const filtered = orders.filter(o => {
-        const matchStatus = statusVal === "all" || o.order_status === statusVal || o.status === statusVal;
-        const matchSearch = !searchVal || 
-            (o.id && o.id.toLowerCase().includes(searchVal)) || 
-            (o.customer_name && o.customer_name.toLowerCase().includes(searchVal)) ||
-            (o.referral_code && o.referral_code.toLowerCase().includes(searchVal));
-        return matchStatus && matchSearch;
-    });
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Aucune commande trouvée.</td></tr>`;
-        return;
+    const titleEl = document.getElementById("resellerDashboardHeaderTitle");
+    if (titleEl) {
+        titleEl.textContent = `Espace Partenaire — ${resName} (${resCode})`;
     }
 
-    tbody.innerHTML = filtered.map(o => {
-        const itemsText = o.items ? o.items.map(i => `${i.name} (x${i.quantity})`).join("<br>") : "Articles variés";
-        const resellerBadge = o.referral_code 
-            ? `<span class="badge-status badge-validated">🏷️ ${o.referral_code} (${o.commission_rate || 10}%)<br>Comm: ${formatPrice(o.commission_amount || 0)}</span>`
-            : `<span class="badge-status" style="opacity:0.5;">Direct (Sans code)</span>`;
+    const badgeEl = document.getElementById("resellerDashboardRoleBadge");
+    if (badgeEl) {
+        badgeEl.textContent = `● Revendeur Actif (${resCode})`;
+    }
 
-        const currentStatus = o.order_status || o.status || "En attente";
+    let metrics = {
+        totalGenerated: 0,
+        availableBalance: 0,
+        paidBalance: 0,
+        totalSalesCount: 0,
+        orders: [],
+        commissions: [],
+        payouts: []
+    };
 
-        return `
-            <tr>
-                <td><strong>${o.id}</strong></td>
-                <td>${o.date_formatted || o.date || 'Récents'}</td>
-                <td>
-                    <strong>${o.customer_name || 'Client Invité'}</strong><br>
-                    <small style="color:var(--text-muted);">${o.customer_phone || ''} — ${o.country || 'Bénin'}</small>
-                </td>
-                <td><small>${itemsText}</small></td>
-                <td><strong>${formatPrice(o.total_amount || o.total || 0)}</strong></td>
-                <td>
-                    <select class="checkout-input" style="padding: 4px 8px; font-size: 12px;" onchange="handleAdminChangeOrderStatus('${o.id}', this.value)">
-                        <option value="En attente" ${currentStatus === 'En attente' ? 'selected' : ''}>En attente</option>
-                        <option value="Pré-commande" ${currentStatus === 'Pré-commande' ? 'selected' : ''}>Pré-commande</option>
-                        <option value="Livrée" ${currentStatus === 'Livrée' || currentStatus === 'completed' ? 'selected' : ''}>Livrée (Valide Commission)</option>
-                        <option value="Annulée" ${currentStatus === 'Annulée' || currentStatus === 'cancelled' ? 'selected' : ''}>Annulée (Annule Commission)</option>
-                    </select>
-                </td>
-                <td>${resellerBadge}</td>
-            </tr>
+    if (window.SupabaseService && window.SupabaseService.getResellerMetrics && resId) {
+        try {
+            metrics = await window.SupabaseService.getResellerMetrics(resId, resCode);
+        } catch (e) {
+            console.warn("Impossible de charger les métriques revendeur:", e);
+        }
+    }
+
+    // 1. STATS ROW
+    const statsRow = document.getElementById("resellerStatsRow");
+    if (statsRow) {
+        statsRow.innerHTML = `
+            <div class="admin-stat-card">
+                <span class="stat-title">Commissions Totales</span>
+                <span class="stat-value stat-value-orange">${Number(metrics.totalGenerated || 0).toLocaleString("fr-FR")} FCFA</span>
+                <span class="stat-sub">Cumul de tous vos gains</span>
+            </div>
+            <div class="admin-stat-card stat-card-highlight">
+                <span class="stat-title">Solde Disponible</span>
+                <span class="stat-value stat-value-green">${Number(metrics.availableBalance || 0).toLocaleString("fr-FR")} FCFA</span>
+                <span class="stat-sub">Prêt à être retiré via Mobile Money</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title">Commissions Déjà Virées</span>
+                <span class="stat-value">${Number(metrics.paidBalance || 0).toLocaleString("fr-FR")} FCFA</span>
+                <span class="stat-sub">Paiements validés & reçus</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="stat-title">Commandes Validées</span>
+                <span class="stat-value">${metrics.totalSalesCount || 0}</span>
+                <span class="stat-sub">Achats de vos filleuls</span>
+            </div>
         `;
-    }).join("");
-}
-
-async function handleAdminChangeOrderStatus(orderId, newStatus) {
-    if (window.SupabaseService) {
-        await window.SupabaseService.updateOrderStatus(orderId, newStatus);
-        showToast(`Statut de la commande ${orderId} mis à jour : ${newStatus}`);
-        renderAdminOrdersList();
-        renderRoleStats();
-    }
-}
-
-async function renderAdminResellersList() {
-    const tbody = document.getElementById("adminResellersTableBody");
-    if (!tbody) return;
-
-    const resellers = await window.SupabaseService.getAllResellers();
-    const searchVal = document.getElementById("adminResellerSearch")?.value.toLowerCase().trim() || "";
-
-    const filtered = resellers.filter(r => {
-        return !searchVal || r.name.toLowerCase().includes(searchVal) || r.code.toLowerCase().includes(searchVal) || r.email.toLowerCase().includes(searchVal);
-    });
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem;">Aucun revendeur enregistré.</td></tr>`;
-        return;
     }
 
-    tbody.innerHTML = filtered.map(r => `
-        <tr>
-            <td><strong class="highlight-code" style="font-size:14px; padding:4px 8px;">${r.code || r.referral_code}</strong></td>
-            <td><strong>${r.name}</strong><br><small style="color:var(--text-muted);">${r.phone} | ${r.email}</small></td>
-            <td>${r.country || 'Bénin'}</td>
-            <td>
-                <input type="number" value="${r.rate || r.commission_rate || 10}" min="1" max="50" style="width:60px; padding:4px; border-radius:4px;" onchange="handleAdminUpdateRate('${r.id}', this.value)"> %
-            </td>
-            <td><strong>${r.payout_method || 'Mobile Money'}</strong></td>
-            <td><span class="badge-status badge-available">Actif</span></td>
-            <td><span class="badge-status ${r.status === 'Actif' || r.status === 'active' ? 'badge-validated' : 'badge-cancelled'}">${r.status}</span></td>
-            <td>
-                <button class="btn btn-sm btn-outline" onclick="handleAdminToggleResellerStatus('${r.id}', '${r.status}')">
-                    ${r.status === 'Actif' || r.status === 'active' ? 'Suspendre' : 'Réactiver'}
-                </button>
-            </td>
-        </tr>
-    `).join("");
-}
+    // 2. TAB 1: MES VENTES & COMMISSIONS
+    const salesTbody = document.getElementById("resellerSalesTableBody");
+    if (salesTbody) {
+        const orders = metrics.orders || [];
+        const commissions = metrics.commissions || [];
 
-async function handleAdminUpdateRate(resellerId, newRate) {
-    if (window.SupabaseService) {
-        await window.SupabaseService.updateReseller(resellerId, { commission_rate: Number(newRate), rate: Number(newRate) });
-        showToast("Taux de commission mis à jour pour les nouvelles commandes !");
-    }
-}
+        if (orders.length === 0 && commissions.length === 0) {
+            salesTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                Aucune vente enregistrée pour le moment. Partagez votre lien de parrainage pour commencer à gagner !
+            </td></tr>`;
+        } else {
+            salesTbody.innerHTML = commissions.map(c => {
+                const relatedOrder = orders.find(o => o.id === c.order_id) || {};
+                const orderAmount = Number(relatedOrder.total_amount || relatedOrder.total || (c.amount * 10)) || 0;
+                const orderStatus = relatedOrder.payment_status || relatedOrder.status || "CONFIRMED";
+                const commStatus = c.status || "PENDING";
+                const commDate = c.created_at ? new Date(c.created_at).toLocaleDateString("fr-FR") : "-";
 
-async function handleAdminToggleResellerStatus(resellerId, currentStatus) {
-    const newStatus = (currentStatus === 'Actif' || currentStatus === 'active') ? 'Suspendu' : 'Actif';
-    if (window.SupabaseService) {
-        await window.SupabaseService.updateReseller(resellerId, { status: newStatus });
-        showToast(`Statut du revendeur modifié en : ${newStatus}`);
-        renderAdminResellersList();
-    }
-}
+                let statusBadgeClass = "badge-pending";
+                let statusLabel = "En Attente";
+                if (commStatus === "AVAILABLE" || commStatus === "VALIDATED") {
+                    statusBadgeClass = "badge-available";
+                    statusLabel = "Disponible";
+                } else if (commStatus === "PAID") {
+                    statusBadgeClass = "badge-paid";
+                    statusLabel = "Viré";
+                } else if (commStatus === "CANCELLED") {
+                    statusBadgeClass = "badge-cancelled";
+                    statusLabel = "Annulé";
+                }
 
-async function renderAdminPayoutsList() {
-    const tbody = document.getElementById("adminPayoutsTableBody");
-    if (!tbody) return;
-
-    const payouts = await window.SupabaseService.getAllPayoutRequests();
-    const filter = document.getElementById("adminPayoutFilter")?.value || "all";
-
-    const filtered = payouts.filter(p => filter === "all" || p.status === filter);
-
-    if (filtered.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="8" style="text-align:center; padding: 2rem;">Aucune demande de retrait trouvée.</td></tr>`;
-        return;
+                return `<tr>
+                    <td><strong>${c.order_id || "-"}</strong></td>
+                    <td>${commDate}</td>
+                    <td>${orderAmount.toLocaleString("fr-FR")} FCFA</td>
+                    <td>10%</td>
+                    <td style="color: var(--accent-orange); font-weight: 700;">+${Number(c.amount || 0).toLocaleString("fr-FR")} FCFA</td>
+                    <td><span class="admin-order-badge badge-${orderStatus.toLowerCase()}">${orderStatus}</span></td>
+                    <td><span class="admin-order-badge ${statusBadgeClass}">${statusLabel}</span></td>
+                </tr>`;
+            }).join("");
+        }
     }
 
-    tbody.innerHTML = filtered.map(p => {
-        let statusBadge = `<span class="badge-status badge-pending">PENDING</span>`;
-        if (p.status === 'APPROVED') statusBadge = `<span class="badge-status badge-available">APPROVED</span>`;
-        if (p.status === 'PAID') statusBadge = `<span class="badge-status badge-paid">PAID (Réf: ${p.transaction_reference || 'N/A'})</span>`;
-        if (p.status === 'REJECTED') statusBadge = `<span class="badge-status badge-rejected">REJECTED</span>`;
+    // 3. TAB 2: MON CODE & LIEN
+    const displayCode = document.getElementById("displayResellerCode");
+    if (displayCode) displayCode.textContent = resCode;
 
-        const actions = p.status === 'PENDING' || p.status === 'APPROVED' ? `
-            <button class="btn btn-sm btn-success" onclick="openAdminPayModal('${p.id}')">✅ Payer</button>
-            <button class="btn btn-sm btn-danger" onclick="handleAdminRejectPayout('${p.id}')">❌ Rejeter</button>
-        ` : `<small style="color:var(--text-muted);">Traitée</small>`;
-
-        return `
-            <tr>
-                <td><strong>${p.id}</strong></td>
-                <td><strong>${p.referral_code}</strong></td>
-                <td><strong class="stat-value-green">${Number(p.amount).toLocaleString('fr-FR')} FCFA</strong></td>
-                <td>${p.payment_method || 'Mobile Money'}</td>
-                <td>${p.payment_account} (${p.account_name})</td>
-                <td>${p.date_formatted || p.requested_at?.substring(0, 10)}</td>
-                <td>${statusBadge}</td>
-                <td>${actions}</td>
-            </tr>
-        `;
-    }).join("");
-}
-
-async function handleAdminRejectPayout(payoutId) {
-    if (confirm("Voulez-vous vraiment rejeter cette demande de retrait ? Les fonds seront recrédités au revendeur.")) {
-        await window.SupabaseService.updatePayoutStatus(payoutId, 'REJECTED');
-        showToast("Demande de retrait rejetée. Solde recrédité au revendeur.");
-        renderAdminPayoutsList();
-        renderRoleStats();
-    }
-}
-
-async function renderAdminCommissionsList() {
-    const tbody = document.getElementById("adminCommissionsTableBody");
-    if (!tbody) return;
-
-    const commissions = JSON.parse(localStorage.getItem('culture_commissions') || '[]');
-
-    if (commissions.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Aucune commission enregistrée.</td></tr>`;
-        return;
+    const displayLink = document.getElementById("displayResellerLink");
+    if (displayLink) {
+        const baseUrl = window.location.origin + window.location.pathname.replace(/\/+$/, "");
+        displayLink.value = `${baseUrl}?ref=${encodeURIComponent(resCode)}`;
     }
 
-    tbody.innerHTML = commissions.map(c => `
-        <tr>
-            <td><strong>${c.order_id}</strong></td>
-            <td><strong class="highlight-code" style="font-size:12px; padding:2px 6px;">${c.referral_code}</strong></td>
-            <td>${formatPrice(c.order_total || 0)}</td>
-            <td>${c.rate}%</td>
-            <td><strong class="stat-value-green">${formatPrice(c.amount)}</strong></td>
-            <td><span class="badge-status badge-${c.status.toLowerCase()}">${c.status}</span></td>
-            <td>${c.created_at?.substring(0, 10)}</td>
-        </tr>
-    `).join("");
-}
+    // 4. TAB 3: MES RETRAITS
+    const withdrawalsTbody = document.getElementById("resellerWithdrawalsTableBody");
+    if (withdrawalsTbody) {
+        const payouts = metrics.payouts || [];
+        if (payouts.length === 0) {
+            withdrawalsTbody.innerHTML = `<tr><td colspan="7" style="text-align: center; color: var(--text-muted); padding: 2rem;">
+                Aucune demande de retrait effectuée pour le moment.
+            </td></tr>`;
+        } else {
+            withdrawalsTbody.innerHTML = payouts.map(p => {
+                const dateReq = p.requested_at ? new Date(p.requested_at).toLocaleDateString("fr-FR") : (p.date_formatted || "-");
+                const datePaid = p.processed_at ? new Date(p.processed_at).toLocaleDateString("fr-FR") : "-";
+                let badgeClass = "badge-pending";
+                if (p.status === "PAID" || p.status === "COMPLETED") badgeClass = "badge-paid";
+                if (p.status === "CANCELLED" || p.status === "REJECTED") badgeClass = "badge-cancelled";
 
-/* ==========================================================================
-   RENDERERS FOR RESELLER PANES
-   ========================================================================== */
-async function renderResellerSalesList() {
-    const tbody = document.getElementById("resellerSalesTableBody");
-    if (!tbody || !currentResellerSession) return;
-
-    const metrics = await window.SupabaseService.getResellerMetrics(currentResellerSession.id, currentResellerSession.code);
-
-    if (metrics.orders.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Vous n'avez pas encore généré de ventes avec votre code <strong>${currentResellerSession.code}</strong>.</td></tr>`;
-        return;
+                return `<tr>
+                    <td><strong>${p.id}</strong></td>
+                    <td>${dateReq}</td>
+                    <td style="font-weight: 700;">${Number(p.amount || 0).toLocaleString("fr-FR")} FCFA</td>
+                    <td>${p.payment_method || "Mobile Money"} (${p.payment_account || "-"})</td>
+                    <td><span class="admin-order-badge ${badgeClass}">${p.status}</span></td>
+                    <td>${p.transaction_reference || "—"}</td>
+                    <td>${datePaid}</td>
+                </tr>`;
+            }).join("");
+        }
     }
 
-    tbody.innerHTML = metrics.orders.map(o => `
-        <tr>
-            <td><strong>${o.id}</strong></td>
-            <td>${o.date_formatted || o.date || 'Récente'}</td>
-            <td><strong>${formatPrice(o.total_amount || o.total || 0)}</strong></td>
-            <td>${o.commission_rate || currentResellerSession.rate}%</td>
-            <td><strong class="stat-value-green">${formatPrice(o.commission_amount || 0)}</strong></td>
-            <td><span class="badge-status badge-validated">${o.order_status || o.status || 'Validée'}</span></td>
-            <td><span class="badge-status badge-${(o.commission_status || 'PENDING').toLowerCase()}">${o.commission_status || 'PENDING'}</span></td>
-        </tr>
-    `).join("");
-}
-
-function renderResellerCodeTab() {
-    if (!currentResellerSession) return;
-    const codeEl = document.getElementById("displayResellerCode");
-    const linkEl = document.getElementById("displayResellerLink");
-
-    if (codeEl) codeEl.textContent = currentResellerSession.code;
-    if (linkEl) linkEl.value = `${window.location.origin}${window.location.pathname}?ref=${currentResellerSession.code}`;
-}
-
-async function renderResellerWithdrawalsList() {
-    const tbody = document.getElementById("resellerWithdrawalsTableBody");
-    if (!tbody || !currentResellerSession) return;
-
-    const metrics = await window.SupabaseService.getResellerMetrics(currentResellerSession.id, currentResellerSession.code);
-
-    if (metrics.payouts.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="7" style="text-align:center; padding: 2rem;">Aucune demande de retrait effectuée pour le moment.</td></tr>`;
-        return;
-    }
-
-    tbody.innerHTML = metrics.payouts.map(p => `
-        <tr>
-            <td><strong>${p.id}</strong></td>
-            <td>${p.date_formatted || p.requested_at?.substring(0, 10)}</td>
-            <td><strong class="stat-value-green">${Number(p.amount).toLocaleString('fr-FR')} FCFA</strong></td>
-            <td>${p.payment_method} (${p.payment_account})</td>
-            <td><span class="badge-status badge-${p.status.toLowerCase()}">${p.status}</span></td>
-            <td>${p.transaction_reference || 'En cours'}</td>
-            <td>${p.paid_at ? p.paid_at.substring(0, 10) : '-'}</td>
-        </tr>
-    `).join("");
-}
-
-function renderResellerProfileTab() {
-    if (!currentResellerSession) return;
-    const country = document.getElementById("profileCountry");
-    const method = document.getElementById("profilePayoutMethod");
-    const account = document.getElementById("profilePayoutAccount");
-    const name = document.getElementById("profilePayoutName");
-
-    if (country) country.value = currentResellerSession.country || "Bénin";
-    if (method) method.value = currentResellerSession.payout_method || "Wave";
-    if (account) account.value = currentResellerSession.payout_account || currentResellerSession.phone;
-    if (name) name.value = currentResellerSession.payout_name || currentResellerSession.name;
-}
-
-/* ==========================================================================
-   MODALS AND SUBMISSION HANDLERS
-   ========================================================================== */
-function openCreateResellerModal() {
-    const modal = document.getElementById("adminCreateResellerModal");
-    if (modal) modal.classList.add("active");
-}
-
-function closeCreateResellerModal() {
-    const modal = document.getElementById("adminCreateResellerModal");
-    if (modal) modal.classList.remove("active");
-}
-
-async function handleCreateResellerSubmit(event) {
-    event.preventDefault();
-    const name = document.getElementById("newResellerName").value;
-    const phone = document.getElementById("newResellerPhone").value;
-    const email = document.getElementById("newResellerEmail").value;
-    const code = document.getElementById("newResellerCode").value;
-    const rate = document.getElementById("newResellerRate").value;
-    const country = document.getElementById("newResellerCountry").value;
-
-    const created = await window.SupabaseService.createReseller({ name, phone, email, code, rate, country });
-    showToast(`Revendeur ${created.code} créé avec succès !`);
-    closeCreateResellerModal();
-    renderAdminResellersList();
-}
-
-function openResellerWithdrawalModal() {
-    const modal = document.getElementById("resellerWithdrawalModal");
-    if (modal) modal.classList.add("active");
+    // 5. TAB 4: PROFIL DE RÉCEPTION
     if (currentResellerSession) {
-        renderRoleStats();
-        const account = document.getElementById("withdrawAccountInput");
-        const name = document.getElementById("withdrawNameInput");
-        if (account) account.value = currentResellerSession.payout_account || currentResellerSession.phone;
-        if (name) name.value = currentResellerSession.payout_name || currentResellerSession.name;
+        const countryInput = document.getElementById("profileCountry");
+        const methodInput = document.getElementById("profilePayoutMethod");
+        const accountInput = document.getElementById("profilePayoutAccount");
+        const nameInput = document.getElementById("profilePayoutName");
+
+        if (countryInput && currentResellerSession.country) countryInput.value = currentResellerSession.country;
+        if (methodInput && currentResellerSession.payout_method) methodInput.value = currentResellerSession.payout_method;
+        if (accountInput && (currentResellerSession.payout_account || currentResellerSession.phone)) {
+            accountInput.value = currentResellerSession.payout_account || currentResellerSession.phone;
+        }
+        if (nameInput && currentResellerSession.name) nameInput.value = currentResellerSession.name;
     }
+}
+
+function copyResellerCodeToClipboard() {
+    const codeEl = document.getElementById("displayResellerCode");
+    const code = codeEl ? codeEl.textContent.trim() : "";
+    if (!code) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(code).then(() => {
+            showToast(`Code "${code}" copié dans le presse-papier ! 📋`);
+        }).catch(() => {
+            showToast(`Code: ${code}`);
+        });
+    } else {
+        showToast(`Code: ${code}`);
+    }
+}
+
+function copyResellerLinkToClipboard() {
+    const linkEl = document.getElementById("displayResellerLink");
+    const link = linkEl ? linkEl.value.trim() : "";
+    if (!link) return;
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(link).then(() => {
+            showToast("Lien de parrainage copié dans le presse-papier ! 🔗");
+        }).catch(() => {
+            showToast("Lien copié !");
+        });
+    } else {
+        showToast("Lien: " + link);
+    }
+}
+
+async function saveResellerProfile(event) {
+    event.preventDefault();
+    const country = document.getElementById("profileCountry")?.value || "Bénin";
+    const method = document.getElementById("profilePayoutMethod")?.value || "Wave";
+    const account = document.getElementById("profilePayoutAccount")?.value?.trim() || "";
+    const name = document.getElementById("profilePayoutName")?.value?.trim() || "";
+
+    if (!account || !name) {
+        showToast("Veuillez remplir votre numéro et nom complet.");
+        return;
+    }
+
+    if (currentResellerSession) {
+        currentResellerSession.country = country;
+        currentResellerSession.payout_method = method;
+        currentResellerSession.payout_account = account;
+        currentResellerSession.name = name;
+
+        // Mise à jour de la session stockée
+        if (window.AuthService) {
+            const s = window.AuthService.getSession();
+            if (s && s.user) {
+                s.user = { ...s.user, country, payout_method: method, payout_account: account, name };
+                localStorage.setItem(window.AuthService.SESSION_KEY, JSON.stringify(s));
+            }
+        }
+
+        // Persistance locale dans la liste des revendeurs
+        const resellers = JSON.parse(localStorage.getItem("culture_resellers") || "[]");
+        const idx = resellers.findIndex(r => r.id === currentResellerSession.id || r.referral_code === currentResellerSession.referral_code);
+        if (idx !== -1) {
+            resellers[idx] = { ...resellers[idx], country, payout_method: method, payout_account: account, name };
+            localStorage.setItem("culture_resellers", JSON.stringify(resellers));
+        }
+
+        // Mise à jour distante Supabase si configuré
+        if (window.SupabaseService && window.SupabaseService.isConfigured() && currentResellerSession.id) {
+            try {
+                const client = window.SupabaseService.getClient();
+                if (client) {
+                    await client.from("resellers").update({
+                        name,
+                        payout_method: method,
+                        payout_account: account
+                    }).eq("id", currentResellerSession.id);
+                }
+            } catch (e) {
+                console.warn("Mise à jour profil Supabase échouée (sauvegardé localement):", e);
+            }
+        }
+
+        showToast("Profil de réception mis à jour avec succès ! 💾");
+    }
+}
+
+async function openResellerWithdrawalModal() {
+    if (!currentResellerSession && window.AuthService) {
+        const session = window.AuthService.getSession();
+        if (session && session.user) currentResellerSession = session.user;
+    }
+
+    const modal = document.getElementById("resellerWithdrawalModal");
+    if (!modal) return;
+
+    let available = 0;
+    const minPayout = Number(window.ENV_CONFIG?.DEFAULT_MIN_PAYOUT || localStorage.getItem("culture_min_payout") || 10000);
+
+    const resId = currentResellerSession ? (currentResellerSession.id || currentResellerSession.reseller_id) : null;
+    const resCode = currentResellerSession ? (currentResellerSession.referral_code || currentResellerSession.code) : null;
+
+    if (window.SupabaseService && window.SupabaseService.getResellerMetrics && resId) {
+        try {
+            const metrics = await window.SupabaseService.getResellerMetrics(resId, resCode);
+            available = Number(metrics.availableBalance || 0);
+        } catch (e) {}
+    }
+
+    const balanceEl = document.getElementById("withdrawAvailableBalance");
+    if (balanceEl) balanceEl.textContent = `${available.toLocaleString("fr-FR")} FCFA`;
+
+    const minEl = document.getElementById("withdrawMinAmount");
+    if (minEl) minEl.textContent = `${minPayout.toLocaleString("fr-FR")} FCFA`;
+
+    const amtInput = document.getElementById("withdrawAmountInput");
+    if (amtInput) {
+        amtInput.min = String(minPayout);
+        amtInput.value = available >= minPayout ? String(available) : "";
+    }
+
+    // Pré-remplir depuis le profil revendeur
+    if (currentResellerSession) {
+        const methodSelect = document.getElementById("withdrawMethodSelect");
+        const accountInput = document.getElementById("withdrawAccountInput");
+        const nameInput = document.getElementById("withdrawNameInput");
+
+        if (methodSelect && currentResellerSession.payout_method) methodSelect.value = currentResellerSession.payout_method;
+        if (accountInput && (currentResellerSession.payout_account || currentResellerSession.phone)) {
+            accountInput.value = currentResellerSession.payout_account || currentResellerSession.phone;
+        }
+        if (nameInput && currentResellerSession.name) nameInput.value = currentResellerSession.name;
+    }
+
+    modal.classList.add("active");
 }
 
 function closeResellerWithdrawalModal() {
@@ -2102,385 +1922,46 @@ function closeResellerWithdrawalModal() {
 
 async function handleWithdrawalSubmit(event) {
     event.preventDefault();
-    if (!currentResellerSession) return;
 
-    const amount = Number(document.getElementById("withdrawAmountInput").value);
-    const method = document.getElementById("withdrawMethodSelect").value;
-    const account = document.getElementById("withdrawAccountInput").value;
-    const name = document.getElementById("withdrawNameInput").value;
+    const amtInput = document.getElementById("withdrawAmountInput");
+    const amount = Number(amtInput?.value || 0);
+    const method = document.getElementById("withdrawMethodSelect")?.value || "Wave";
+    const account = document.getElementById("withdrawAccountInput")?.value?.trim() || "";
+    const name = document.getElementById("withdrawNameInput")?.value?.trim() || "";
 
-    const result = await window.SupabaseService.createWithdrawalRequest(
-        currentResellerSession.id,
-        currentResellerSession.code,
-        amount,
-        method,
-        account,
-        name
-    );
+    const minPayout = Number(window.ENV_CONFIG?.DEFAULT_MIN_PAYOUT || localStorage.getItem("culture_min_payout") || 10000);
 
-    if (result.success) {
-        showToast("Demande de retrait enregistrée et transmise à l'administration !");
-        closeResellerWithdrawalModal();
-        renderRoleStats();
-        renderResellerWithdrawalsList();
-    } else {
-        showToast(`❌ ${result.message}`);
+    if (amount < minPayout) {
+        showToast(`❌ Le montant minimum de retrait est de ${minPayout.toLocaleString("fr-FR")} FCFA.`);
+        return;
     }
-}
 
-function openAdminPayModal(payoutId) {
-    const modal = document.getElementById("adminPayModal");
-    const input = document.getElementById("payModalPayoutId");
-    if (input) input.value = payoutId;
-    if (modal) modal.classList.add("active");
-}
-
-function closeAdminPayModal() {
-    const modal = document.getElementById("adminPayModal");
-    if (modal) modal.classList.remove("active");
-}
-
-async function handleConfirmPayoutSubmit(event) {
-    event.preventDefault();
-    const payoutId = document.getElementById("payModalPayoutId").value;
-    const txRef = document.getElementById("payTxRefInput").value;
-    const note = document.getElementById("payAdminNoteInput").value;
-
-    await window.SupabaseService.updatePayoutStatus(payoutId, 'PAID', txRef, note);
-    showToast("Statut du virement mis à jour sur PAYÉ !");
-    closeAdminPayModal();
-    renderAdminPayoutsList();
-    renderRoleStats();
-}
-
-function savePlatformSettings(event) {
-    event.preventDefault();
-    const newPin = document.getElementById("newAdminPinInput")?.value.trim();
-    const minPayout = document.getElementById("minPayoutInput")?.value;
-
-    if (newPin && newPin.length >= 4) {
-        adminPin = newPin;
-        localStorage.setItem("culture_admin_pin", adminPin);
+    if (!account || !name) {
+        showToast("❌ Veuillez renseigner le numéro et le nom du compte de réception.");
+        return;
     }
-    if (minPayout) {
-        localStorage.setItem("culture_min_payout", minPayout);
+
+    const resId = currentResellerSession ? (currentResellerSession.id || currentResellerSession.reseller_id) : null;
+    const resCode = currentResellerSession ? (currentResellerSession.referral_code || currentResellerSession.code) : null;
+
+    if (!resId) {
+        showToast("Session revendeur introuvable. Veuillez vous reconnecter.");
+        return;
     }
-    showToast("Paramètres généraux enregistrés !");
-}
 
-async function saveResellerProfile(event) {
-    event.preventDefault();
-    if (!currentResellerSession) return;
-
-    const country = document.getElementById("profileCountry").value;
-    const method = document.getElementById("profilePayoutMethod").value;
-    const account = document.getElementById("profilePayoutAccount").value;
-    const name = document.getElementById("profilePayoutName").value;
-
-    currentResellerSession.country = country;
-    currentResellerSession.payout_method = method;
-    currentResellerSession.payout_account = account;
-    currentResellerSession.payout_name = name;
-
-    await window.SupabaseService.updateReseller(currentResellerSession.id, {
-        country, payout_method: method, payout_account: account, payout_name: name
-    });
-
-    showToast("Profil de réception mis à jour !");
-}
-
-function copyResellerCodeToClipboard() {
-    if (!currentResellerSession) return;
-    navigator.clipboard.writeText(currentResellerSession.code);
-    showToast(`Code ${currentResellerSession.code} copié dans le presse-papier !`);
-}
-
-function copyResellerLinkToClipboard() {
-    if (!currentResellerSession) return;
-    const link = `${window.location.origin}${window.location.pathname}?ref=${currentResellerSession.code}`;
-    navigator.clipboard.writeText(link);
-    showToast(`Lien ${link} copié !`);
-}
-
-/* --- PRODUCT EDITOR & PHOTO UPLOAD --- */
-
-function toggleAdminPreorderFields() {
-    const isChecked = document.getElementById("prodIsPreorder")?.checked;
-    const subfields = document.getElementById("preorderSubfields");
-    if (subfields) {
-        subfields.style.display = isChecked ? "block" : "none";
-    }
-}
-
-function openProductEditor(productId = null) {
-    const modal = document.getElementById("adminProductModal");
-    const form = document.getElementById("adminProductForm");
-    const modalTitle = document.getElementById("adminProductModalTitle");
-    const previewImg = document.getElementById("imagePreviewImg");
-    const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
-    const removeBtn = document.getElementById("removePhotoBtn");
-
-    if (!modal || !form) return;
-
-    form.reset();
-    currentProductImageData = "";
-
-    const isPreorderCheckbox = document.getElementById("prodIsPreorder");
-    const preorderBadgeInput = document.getElementById("prodPreorderBadge");
-    const releaseDateInput = document.getElementById("prodReleaseDate");
-    const reservedPercentInput = document.getElementById("prodReservedPercent");
-    const dropStatusSelect = document.getElementById("prodDropStatus");
-    const subfields = document.getElementById("preorderSubfields");
-
-    if (productId) {
-        const prod = PRODUCTS.find(p => p.id === productId);
-        if (prod) {
-            document.getElementById("editProductId").value = prod.id;
-            document.getElementById("prodName").value = prod.name;
-            document.getElementById("prodPrice").value = prod.price;
-            document.getElementById("prodCategory").value = prod.category;
-            document.getElementById("prodSizes").value = prod.sizes ? prod.sizes.join(", ") : "";
-            document.getElementById("prodDescription").value = prod.description || "";
-            
-            const isPreorder = prod.status === "preorder" || prod.status === "upcoming";
-            if (isPreorderCheckbox) isPreorderCheckbox.checked = isPreorder;
-            if (preorderBadgeInput) preorderBadgeInput.value = prod.preorderBadge || "";
-            if (releaseDateInput) releaseDateInput.value = prod.releaseDate || "";
-            if (reservedPercentInput) reservedPercentInput.value = prod.reservedPercentage || 85;
-            if (dropStatusSelect) dropStatusSelect.value = prod.status || "preorder";
-            if (subfields) subfields.style.display = isPreorder ? "block" : "none";
-
-            if (prod.image && prod.image.startsWith("http")) {
-                document.getElementById("prodImageUrl").value = prod.image;
+    try {
+        if (window.SupabaseService && window.SupabaseService.createWithdrawalRequest) {
+            const res = await window.SupabaseService.createWithdrawalRequest(resId, resCode, amount, method, account, name);
+            if (res.success) {
+                closeResellerWithdrawalModal();
+                await renderResellerDashboard();
+                showToast("Demande de retrait transmise avec succès ! 💸 Traitement sous 24-48h.");
+            } else {
+                showToast(`❌ ${res.message || "Impossible de créer la demande de retrait."}`);
             }
-            currentProductImageData = prod.image || "";
-
-            if (prod.image && previewImg && previewPlaceholder) {
-                previewImg.src = prod.image;
-                previewImg.style.display = "block";
-                previewPlaceholder.style.display = "none";
-                if (removeBtn) removeBtn.style.display = "inline-flex";
-            } else if (previewImg && previewPlaceholder) {
-                previewImg.src = "";
-                previewImg.style.display = "none";
-                previewPlaceholder.style.display = "block";
-                if (removeBtn) removeBtn.style.display = "none";
-            }
-
-            modalTitle.textContent = "✏️ Modifier le Produit";
         }
-    } else {
-        document.getElementById("editProductId").value = "";
-        if (isPreorderCheckbox) isPreorderCheckbox.checked = false;
-        if (subfields) subfields.style.display = "none";
-        if (previewImg && previewPlaceholder) {
-            previewImg.src = "";
-            previewImg.style.display = "none";
-            previewPlaceholder.style.display = "block";
-        }
-        if (removeBtn) removeBtn.style.display = "none";
-        modalTitle.textContent = "➕ Ajouter un Nouveau Produit";
+    } catch (e) {
+        console.error("Erreur demande de retrait:", e);
+        showToast(`❌ Erreur: ${e.message}`);
     }
-
-    modal.classList.add("active");
-}
-
-function closeProductEditor() {
-    const modal = document.getElementById("adminProductModal");
-    if (modal) modal.classList.remove("active");
-}
-
-function handleImageFileSelect(event) {
-    const file = event.target.files[0];
-    if (!file) return;
-
-    if (!file.type.startsWith("image/")) {
-        showToast("Veuillez sélectionner un fichier image valide.");
-        return;
-    }
-
-    const reader = new FileReader();
-    reader.onload = function(e) {
-        currentProductImageData = e.target.result;
-        const previewImg = document.getElementById("imagePreviewImg");
-        const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
-        const removeBtn = document.getElementById("removePhotoBtn");
-
-        if (previewImg && previewPlaceholder) {
-            previewImg.src = currentProductImageData;
-            previewImg.style.display = "block";
-            previewPlaceholder.style.display = "none";
-        }
-        if (removeBtn) removeBtn.style.display = "inline-flex";
-
-        document.getElementById("prodImageUrl").value = "";
-        showToast("Photo chargée avec succès 📷");
-    };
-    reader.readAsDataURL(file);
-}
-
-function handleImageUrlInput() {
-    const url = document.getElementById("prodImageUrl")?.value.trim();
-    const previewImg = document.getElementById("imagePreviewImg");
-    const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
-    const removeBtn = document.getElementById("removePhotoBtn");
-
-    if (url) {
-        currentProductImageData = url;
-        if (previewImg && previewPlaceholder) {
-            previewImg.src = url;
-            previewImg.style.display = "block";
-            previewPlaceholder.style.display = "none";
-        }
-        if (removeBtn) removeBtn.style.display = "inline-flex";
-    } else if (!currentProductImageData) {
-        if (previewImg && previewPlaceholder) {
-            previewImg.src = "";
-            previewImg.style.display = "none";
-            previewPlaceholder.style.display = "block";
-        }
-        if (removeBtn) removeBtn.style.display = "none";
-    }
-}
-
-function removeCurrentProductPhoto() {
-    currentProductImageData = "";
-    const previewImg = document.getElementById("imagePreviewImg");
-    const previewPlaceholder = document.getElementById("imagePreviewPlaceholder");
-    const removeBtn = document.getElementById("removePhotoBtn");
-    const urlInput = document.getElementById("prodImageUrl");
-    const fileInput = document.getElementById("prodFile");
-
-    if (previewImg) {
-        previewImg.src = "";
-        previewImg.style.display = "none";
-    }
-    if (previewPlaceholder) {
-        previewPlaceholder.textContent = "Photo supprimée - Choisissez une nouvelle photo";
-        previewPlaceholder.style.display = "block";
-    }
-    if (removeBtn) removeBtn.style.display = "none";
-    if (urlInput) urlInput.value = "";
-    if (fileInput) fileInput.value = "";
-    
-    showToast("Photo supprimée du produit 🗑️");
-}
-
-function handleProductFormSubmit(event) {
-    event.preventDefault();
-
-    const editId = document.getElementById("editProductId").value;
-    const name = document.getElementById("prodName").value.trim();
-    const price = Number(document.getElementById("prodPrice").value);
-    const category = document.getElementById("prodCategory").value;
-    const sizesRaw = document.getElementById("prodSizes").value.trim();
-    const description = document.getElementById("prodDescription").value.trim();
-
-    const isPreorder = document.getElementById("prodIsPreorder")?.checked;
-    const preorderBadge = document.getElementById("prodPreorderBadge")?.value.trim() || "⚡ PRÉ-VENTE";
-    const releaseDate = document.getElementById("prodReleaseDate")?.value.trim() || "15 Oct. 2026";
-    const reservedPercentage = Number(document.getElementById("prodReservedPercent")?.value) || 85;
-    const dropStatus = document.getElementById("prodDropStatus")?.value || "preorder";
-
-    if (!name || isNaN(price) || price < 0) {
-        showToast("Veuillez remplir correctement les champs obligatoires.");
-        return;
-    }
-
-    const sizes = sizesRaw ? sizesRaw.split(",").map(s => s.trim()).filter(Boolean) : [];
-    const image = currentProductImageData || "IMAGE/logo P.png";
-    const status = isPreorder ? dropStatus : "available";
-
-    if (editId) {
-        const index = PRODUCTS.findIndex(p => p.id === editId);
-        if (index !== -1) {
-            PRODUCTS[index] = {
-                ...PRODUCTS[index],
-                name,
-                price,
-                category,
-                sizes,
-                description,
-                image,
-                status,
-                preorderBadge,
-                releaseDate,
-                reservedPercentage
-            };
-            showToast(`Produit "${name}" mis à jour avec succès ! ✨`);
-        }
-    } else {
-        const newId = "p_" + Date.now();
-        const newProduct = {
-            id: newId,
-            name,
-            price,
-            category,
-            sizes,
-            description,
-            image,
-            status,
-            preorderBadge,
-            releaseDate,
-            reservedPercentage
-        };
-        PRODUCTS.unshift(newProduct);
-        showToast(`Produit "${name}" ajouté au catalogue ! 🎉`);
-    }
-
-    saveProductsToStorage();
-    closeProductEditor();
-
-    // Refresh Public Shop & Admin
-    filterAndRenderFeaturedProducts();
-    renderDropCarousel(activeDropFilter);
-    updateAdminStats();
-    renderAdminProductsList();
-}
-
-function deleteAdminProduct(productId) {
-    const prod = PRODUCTS.find(p => p.id === productId);
-    if (!prod) return;
-
-    if (confirm(`Êtes-vous sûr de vouloir supprimer "${prod.name}" du catalogue ?`)) {
-        PRODUCTS = PRODUCTS.filter(p => p.id !== productId);
-        saveProductsToStorage();
-
-        filterAndRenderFeaturedProducts();
-        renderDropCarousel(activeDropFilter);
-        updateAdminStats();
-        renderAdminProductsList();
-
-        showToast(`Produit "${prod.name}" supprimé.`);
-    }
-}
-
-function resetDefaultCatalogPrompt() {
-    if (confirm("Attention : Cette action va réinitialiser le catalogue avec les produits d'origine. Continuer ?")) {
-        PRODUCTS = [...INITIAL_PRODUCTS];
-        localStorage.removeItem("culture_products");
-        
-        filterAndRenderFeaturedProducts();
-        renderDropCarousel(activeDropFilter);
-        updateAdminStats();
-        renderAdminProductsList();
-
-        showToast("Catalogue réinitialisé aux produits d'origine.");
-    }
-}
-
-function changeAdminPin(event) {
-    event.preventDefault();
-    const newPinInput = document.getElementById("newAdminPinInput");
-    const newPin = newPinInput ? newPinInput.value.trim() : "";
-
-    if (!newPin || newPin.length < 4) {
-        showToast("Le code PIN doit contenir au moins 4 caractères.");
-        return;
-    }
-
-    adminPin = newPin;
-    localStorage.setItem("culture_admin_pin", adminPin);
-    if (newPinInput) newPinInput.value = "";
-    showToast("Nouveau code PIN enregistré avec succès 🔐");
 }
