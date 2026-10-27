@@ -19,9 +19,37 @@ window.AdminAPI = {
     },
 
     /* ==========================================================================
-       1. CATALOGUE & PRODUITS
+       1. CATALOGUE & PRODUITS (SUPABASE CLOUD SYNC + LOCAL FALLBACK)
        ========================================================================== */
     async getProducts() {
+        // 1. Tentative de lecture Supabase si disponible
+        if (this.isOnline()) {
+            try {
+                const { data, error } = await this.getClient().from('products').select('*').order('created_at', { ascending: false });
+                if (!error && Array.isArray(data) && data.length > 0) {
+                    const mapped = data.map(d => ({
+                        id: d.id,
+                        name: d.name,
+                        price: Number(d.price),
+                        category: d.category,
+                        image: d.image,
+                        description: d.description,
+                        sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
+                        status: d.status || "available",
+                        preorderBadge: d.preorder_badge || "DISPONIBLE",
+                        releaseDate: d.release_date || "Immédiat",
+                        reservedPercentage: Number(d.reserved_percentage) || 100,
+                        totalStock: Number(d.total_stock) || 50,
+                        reservedStock: Number(d.reserved_stock) || 0
+                    }));
+                    localStorage.setItem('culture_products', JSON.stringify(mapped));
+                    return mapped;
+                }
+            } catch (err) {
+                console.warn("Lecture Supabase products (table non encore migrée ou hors-ligne), repli local:", err);
+            }
+        }
+
         const stored = localStorage.getItem('culture_products');
         let products = null;
         if (stored) {
@@ -93,24 +121,53 @@ window.AdminAPI = {
 
     async saveProduct(productPayload) {
         let products = await this.getProducts();
-        if (productPayload.id) {
-            const index = products.findIndex(p => String(p.id).trim().toLowerCase() === String(productPayload.id).trim().toLowerCase());
+        let targetId = productPayload.id;
+
+        if (targetId) {
+            const index = products.findIndex(p => String(p.id).trim().toLowerCase() === String(targetId).trim().toLowerCase());
             if (index !== -1) {
                 products[index] = { ...products[index], ...productPayload };
             } else {
                 products.unshift(productPayload);
             }
         } else {
+            targetId = (window.SupabaseService && window.SupabaseService.generateUUID)
+                ? window.SupabaseService.generateUUID()
+                : "p_" + Date.now();
             const newProd = {
                 ...productPayload,
-                id: (window.SupabaseService && window.SupabaseService.generateUUID)
-                    ? window.SupabaseService.generateUUID()
-                    : "p_" + Date.now()
+                id: targetId
             };
             products.unshift(newProd);
+            productPayload.id = targetId;
         }
+
         localStorage.setItem('culture_products', JSON.stringify(products));
         window.dispatchEvent(new CustomEvent('culture_products_updated', { detail: products }));
+
+        // Sync Supabase cloud si connecté
+        if (this.isOnline()) {
+            try {
+                const record = {
+                    id: targetId,
+                    name: productPayload.name,
+                    price: productPayload.price,
+                    category: productPayload.category || 'bags',
+                    image: productPayload.image,
+                    description: productPayload.description,
+                    sizes: productPayload.sizes || ["Unique"],
+                    status: productPayload.status || 'available',
+                    preorder_badge: productPayload.preorderBadge || 'DISPONIBLE',
+                    release_date: productPayload.releaseDate || 'Immédiat',
+                    reserved_percentage: productPayload.reservedPercentage || 100,
+                    updated_at: new Date().toISOString()
+                };
+                await this.getClient().from('products').upsert(record);
+            } catch (err) {
+                console.warn("Sync Supabase saveProduct repli local:", err);
+            }
+        }
+
         return productPayload;
     },
 
@@ -119,6 +176,15 @@ window.AdminAPI = {
         products = products.filter(p => String(p.id).trim().toLowerCase() !== String(productId).trim().toLowerCase());
         localStorage.setItem('culture_products', JSON.stringify(products));
         window.dispatchEvent(new CustomEvent('culture_products_updated', { detail: products }));
+
+        if (this.isOnline()) {
+            try {
+                await this.getClient().from('products').delete().eq('id', productId);
+            } catch (err) {
+                console.warn("Sync Supabase deleteProduct repli local:", err);
+            }
+        }
+
         return true;
     },
 

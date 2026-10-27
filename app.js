@@ -232,6 +232,37 @@ function reloadProductsFromStorage() {
     }
 }
 
+async function syncProductsFromSupabase() {
+    if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
+    try {
+        const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
+        if (!error && Array.isArray(data) && data.length > 0) {
+            const mapped = data.map(d => ({
+                id: d.id,
+                name: d.name,
+                price: Number(d.price),
+                category: d.category,
+                image: d.image,
+                description: d.description,
+                sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
+                status: d.status || "available",
+                preorderBadge: d.preorder_badge || "DISPONIBLE",
+                releaseDate: d.release_date || "Immédiat",
+                reservedPercentage: Number(d.reserved_percentage) || 100,
+                totalStock: Number(d.total_stock) || 50,
+                reservedStock: Number(d.reserved_stock) || 0
+            }));
+            PRODUCTS = mapped;
+            saveProductsToStorage();
+            if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
+            if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
+            if (typeof syncFlagshipDropCard === 'function') syncFlagshipDropCard();
+        }
+    } catch (e) {
+        // Table non migrée ou hors-ligne, repli local transparent
+    }
+}
+
 window.addEventListener("storage", (e) => {
     if (e.key === "culture_products") {
         reloadProductsFromStorage();
@@ -615,6 +646,7 @@ document.addEventListener("DOMContentLoaded", () => {
     renderDropCarousel('all');
     filterAndRenderFeaturedProducts();
     syncFlagshipDropCard();
+    syncProductsFromSupabase();
     updateBadgesCount();
 });
 
