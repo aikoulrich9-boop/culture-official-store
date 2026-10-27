@@ -4,14 +4,30 @@
 
 window.AdminDashboard = {
     async init() {
+        const refreshBtn = document.getElementById('dashboardRefreshBtn');
+        if (refreshBtn && !refreshBtn.dataset.bound) {
+            refreshBtn.dataset.bound = 'true';
+            refreshBtn.addEventListener('click', async () => {
+                const origHtml = refreshBtn.innerHTML;
+                refreshBtn.disabled = true;
+                refreshBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Actualisation...';
+                try {
+                    await Promise.all([this.renderKPIs(), this.renderRecentActivity()]);
+                    if (window.AdminApp?.showToast) {
+                        window.AdminApp.showToast('Indicateurs et commandes actualisés.', 'info');
+                    }
+                } finally {
+                    refreshBtn.disabled = false;
+                    refreshBtn.innerHTML = origHtml;
+                }
+            });
+        }
         await this.renderKPIs();
         await this.renderRecentActivity();
     },
 
     async renderKPIs() {
-        const kpiContainer = document.getElementById("adminKpiGrid");
-        if (!kpiContainer) return;
-
+        // The HTML has individual KPI value elements rather than a replaceable grid container
         const [products, orders, resellers, payouts] = await Promise.all([
             window.AdminAPI.getProducts(),
             window.AdminAPI.getOrders(),
@@ -20,35 +36,19 @@ window.AdminDashboard = {
         ]);
 
         const totalRevenue = orders.reduce((sum, o) => sum + (Number(o.total_amount || o.total) || 0), 0);
-        const pendingPayouts = payouts.filter(p => p.status === 'PENDING').length;
+        const pendingPayoutsAmt = payouts.filter(p => p.status === 'PENDING').reduce((s, p) => s + (Number(p.amount) || 0), 0);
         const activeResellers = resellers.filter(r => r.status === 'Actif' || r.status === 'active').length;
 
-        kpiContainer.innerHTML = `
-            <div class="kpi-card kpi-highlight-orange">
-                <span class="kpi-label">Chiffre d'Affaires</span>
-                <span class="kpi-value">${totalRevenue.toLocaleString('fr-FR')} FCFA</span>
-                <span class="kpi-sub">${orders.length} commandes enregistrées</span>
-            </div>
-            <div class="kpi-card kpi-highlight-blue">
-                <span class="kpi-label">Catalogue Actif</span>
-                <span class="kpi-value">${products.length}</span>
-                <span class="kpi-sub">Articles & drops en vente</span>
-            </div>
-            <div class="kpi-card kpi-highlight-green">
-                <span class="kpi-label">Réseau d'Affiliation</span>
-                <span class="kpi-value">${activeResellers}</span>
-                <span class="kpi-sub">Revendeurs partenaires actifs</span>
-            </div>
-            <div class="kpi-card ${pendingPayouts > 0 ? 'kpi-highlight-orange' : ''}">
-                <span class="kpi-label">Retraits en Attente</span>
-                <span class="kpi-value" style="${pendingPayouts > 0 ? 'color:var(--accent-orange);' : ''}">${pendingPayouts}</span>
-                <span class="kpi-sub">Demandes à valider</span>
-            </div>
-        `;
+        const el = id => document.getElementById(id);
+        if (el('kpiTotalRevenue')) el('kpiTotalRevenue').textContent = totalRevenue.toLocaleString('fr-FR') + ' FCFA';
+        if (el('kpiTotalOrders')) el('kpiTotalOrders').textContent = orders.length;
+        if (el('kpiPendingPayouts')) el('kpiPendingPayouts').textContent = pendingPayoutsAmt.toLocaleString('fr-FR') + ' FCFA';
+        if (el('kpiActiveResellers')) el('kpiActiveResellers').textContent = activeResellers;
     },
 
     async renderRecentActivity() {
-        const tableBody = document.getElementById("recentOrdersTableBody");
+        // ID in HTML is dashboardRecentOrdersBody
+        const tableBody = document.getElementById('dashboardRecentOrdersBody');
         if (!tableBody) return;
 
         const orders = await window.AdminAPI.getOrders();

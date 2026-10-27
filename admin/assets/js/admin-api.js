@@ -161,6 +161,10 @@ window.AdminAPI = {
         return JSON.parse(localStorage.getItem('culture_payouts') || '[]');
     },
 
+    async getPayouts() {
+        return await this.getPayoutRequests();
+    },
+
     async confirmPayoutPaid(payoutId, transactionRef, adminNote) {
         if (typeof window.SupabaseService !== 'undefined') {
             await window.SupabaseService.updatePayoutStatus(payoutId, 'PAID', transactionRef, adminNote);
@@ -203,16 +207,53 @@ window.AdminAPI = {
         return JSON.parse(localStorage.getItem('culture_audit_logs') || '[]');
     },
 
+    async getAuditLog() {
+        return await this.getAuditLogs();
+    },
+
+    async logAuditAction(action, details = {}) {
+        const entry = {
+            id: (window.SupabaseService && window.SupabaseService.generateUUID)
+                ? window.SupabaseService.generateUUID()
+                : "LOG-" + Date.now(),
+            action,
+            details,
+            admin_user: (window.AdminAuth && window.AdminAuth.currentUser?.email) || 'admin@culture.store',
+            created_at: new Date().toISOString()
+        };
+        if (typeof window.SupabaseService !== 'undefined' && window.SupabaseService.logAudit) {
+            try {
+                await window.SupabaseService.logAudit(action, details);
+            } catch (e) {}
+        }
+        const logs = JSON.parse(localStorage.getItem('culture_audit_logs') || '[]');
+        logs.unshift(entry);
+        localStorage.setItem('culture_audit_logs', JSON.stringify(logs.slice(0, 100)));
+        return entry;
+    },
+
     /* ==========================================================================
        7. PARAMÈTRES & CONFIGURATION PLATEFORME
        ========================================================================== */
     getSettings() {
+        const minPayout = Number(localStorage.getItem('culture_min_payout') || (window.ENV_CONFIG?.DEFAULT_MIN_PAYOUT || 10000));
+        const defaultRate = Number(localStorage.getItem('culture_default_rate') || 10);
+        const notifyPhone = localStorage.getItem('culture_notify_phone') || '+229 90 00 00 00';
+        const activeGateway = (typeof window.PaymentService !== 'undefined') 
+            ? window.PaymentService.getActiveProvider().code 
+            : (localStorage.getItem('culture_payment_gateway') || "WHATSAPP_BRIDGE");
+        const adminPin = localStorage.getItem('culture_admin_pin') || (window.ENV_CONFIG?.DEFAULT_ADMIN_PIN || "1234");
+
         return {
-            adminPin: localStorage.getItem('culture_admin_pin') || (window.ENV_CONFIG?.DEFAULT_ADMIN_PIN || "1234"),
-            minPayout: Number(localStorage.getItem('culture_min_payout') || (window.ENV_CONFIG?.DEFAULT_MIN_PAYOUT || 10000)),
-            activeGateway: (typeof window.PaymentService !== 'undefined') 
-                ? window.PaymentService.getActiveProvider().code 
-                : "WHATSAPP_BRIDGE"
+            adminPin,
+            minPayout,
+            min_payout_amount: minPayout,
+            defaultRate,
+            default_reseller_rate: defaultRate,
+            notifyPhone,
+            admin_notify_phone: notifyPhone,
+            activeGateway,
+            active_payment_gateway: activeGateway
         };
     },
 
@@ -220,11 +261,24 @@ window.AdminAPI = {
         if (settings.adminPin) {
             localStorage.setItem('culture_admin_pin', settings.adminPin);
         }
-        if (settings.minPayout) {
-            localStorage.setItem('culture_min_payout', settings.minPayout);
+        const minPayout = settings.min_payout_amount !== undefined ? settings.min_payout_amount : settings.minPayout;
+        if (minPayout !== undefined) {
+            localStorage.setItem('culture_min_payout', minPayout);
         }
-        if (settings.activeGateway && typeof window.PaymentService !== 'undefined') {
-            window.PaymentService.setActiveProvider(settings.activeGateway);
+        const defaultRate = settings.default_reseller_rate !== undefined ? settings.default_reseller_rate : settings.defaultRate;
+        if (defaultRate !== undefined) {
+            localStorage.setItem('culture_default_rate', defaultRate);
+        }
+        const notifyPhone = settings.admin_notify_phone !== undefined ? settings.admin_notify_phone : settings.notifyPhone;
+        if (notifyPhone !== undefined) {
+            localStorage.setItem('culture_notify_phone', notifyPhone);
+        }
+        const gateway = settings.active_payment_gateway || settings.activeGateway;
+        if (gateway) {
+            localStorage.setItem('culture_payment_gateway', gateway);
+            if (typeof window.PaymentService !== 'undefined') {
+                window.PaymentService.setActiveProvider(gateway);
+            }
         }
         return true;
     }

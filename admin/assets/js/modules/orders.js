@@ -139,7 +139,9 @@
             await window.AdminAPI.logAuditAction('ORDER_STATUS_CHANGED', { orderId, newStatus });
             window.AdminApp.showToast(`Statut de la commande #${orderId.substring(0, 8)} mis à jour : ${newStatus}`, 'success');
             await loadOrders();
-            if (window.DashboardModule) {
+            if (window.AdminDashboard?.renderKPIs) {
+                window.AdminDashboard.renderKPIs();
+            } else if (window.DashboardModule?.refreshStats) {
                 window.DashboardModule.refreshStats();
             }
         } catch (err) {

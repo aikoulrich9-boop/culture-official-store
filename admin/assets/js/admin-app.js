@@ -161,8 +161,13 @@
 
         async initAllModules() {
             try {
-                if (window.DashboardModule?.init) await window.DashboardModule.init();
-                if (window.ProductsModule?.init) await window.ProductsModule.init();
+                // Dashboard & Products use AdminDashboard/AdminProducts naming
+                if (window.AdminDashboard?.init) await window.AdminDashboard.init();
+                else if (window.DashboardModule?.init) await window.DashboardModule.init();
+
+                if (window.AdminProducts?.init) await window.AdminProducts.init();
+                else if (window.ProductsModule?.init) await window.ProductsModule.init();
+
                 if (window.OrdersModule?.init) await window.OrdersModule.init();
                 if (window.ResellersModule?.init) await window.ResellersModule.init();
                 if (window.PayoutsModule?.init) await window.PayoutsModule.init();
@@ -214,10 +219,12 @@
             // Trigger data refresh on tab activation
             switch (tabId) {
                 case 'dashboard':
-                    if (window.DashboardModule?.refreshStats) window.DashboardModule.refreshStats();
+                    if (window.AdminDashboard?.renderKPIs) window.AdminDashboard.renderKPIs();
+                    else if (window.DashboardModule?.refreshStats) window.DashboardModule.refreshStats();
                     break;
                 case 'products':
-                    if (window.ProductsModule?.load) window.ProductsModule.load();
+                    if (window.AdminProducts?.render) window.AdminProducts.render();
+                    else if (window.ProductsModule?.load) window.ProductsModule.load();
                     break;
                 case 'orders':
                     if (window.OrdersModule?.load) window.OrdersModule.load();
