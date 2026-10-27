@@ -34,28 +34,24 @@ window.AdminAPI = {
                 const { data, error } = await this.getClient().from('products').select('*').order('created_at', { ascending: false });
                 if (!error && Array.isArray(data) && data.length > 0) {
                     const mapped = data.map(d => {
-                        const localMatch = Array.isArray(localProducts) ? localProducts.find(lp => String(lp.id).toLowerCase() === String(d.id).toLowerCase()) : null;
-
-                        const stk = (localMatch && localMatch.stock !== undefined && localMatch.stock !== null)
-                            ? Number(localMatch.stock)
-                            : ((d.stock !== undefined && d.stock !== null)
-                                ? Number(d.stock)
-                                : ((d.total_stock !== undefined && d.total_stock !== null)
-                                    ? Number(d.total_stock)
-                                    : ((d.id === 'dj1') ? 50 : 10)));
+                        const stk = (d.stock !== undefined && d.stock !== null)
+                            ? Number(d.stock)
+                            : ((d.total_stock !== undefined && d.total_stock !== null)
+                                ? Number(d.total_stock)
+                                : ((d.id === 'dj1') ? 50 : 10));
 
                         return {
                             id: d.id,
-                            name: (localMatch && localMatch.name) ? localMatch.name : d.name,
-                            price: (localMatch && localMatch.price !== undefined) ? Number(localMatch.price) : Number(d.price),
-                            category: (localMatch && localMatch.category) ? localMatch.category : d.category,
-                            image: (localMatch && localMatch.image) ? localMatch.image : d.image,
-                            description: (localMatch && localMatch.description) ? localMatch.description : d.description,
-                            sizes: (localMatch && Array.isArray(localMatch.sizes)) ? localMatch.sizes : (Array.isArray(d.sizes) ? d.sizes : ["Unique"]),
-                            status: (d.id === 'dj1') ? 'upcoming' : ((localMatch && localMatch.status) ? localMatch.status : (d.status || "available")),
-                            preorderBadge: (d.id === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : ((localMatch && localMatch.preorderBadge) ? localMatch.preorderBadge : (d.preorder_badge || "DISPONIBLE")),
-                            releaseDate: (d.id === 'dj1') ? 'Bientôt disponible' : ((localMatch && localMatch.releaseDate) ? localMatch.releaseDate : (d.release_date || "Immédiat")),
-                            reservedPercentage: (localMatch && localMatch.reservedPercentage !== undefined) ? localMatch.reservedPercentage : (Number(d.reserved_percentage) || 100),
+                            name: d.name,
+                            price: Number(d.price),
+                            category: d.category || 'bags',
+                            image: d.image,
+                            description: d.description || '',
+                            sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
+                            status: (d.id === 'dj1') ? 'upcoming' : (d.status || "available"),
+                            preorderBadge: (d.id === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (d.preorder_badge || "DISPONIBLE"),
+                            releaseDate: (d.id === 'dj1') ? 'Bientôt disponible' : (d.release_date || "Immédiat"),
+                            reservedPercentage: Number(d.reserved_percentage) || 100,
                             totalStock: stk,
                             reservedStock: Number(d.reserved_stock) || 0,
                             stock: stk
@@ -210,7 +206,15 @@ window.AdminAPI = {
                     reserved_stock: 0,
                     updated_at: new Date().toISOString()
                 };
-                await this.getClient().from('products').upsert(record);
+                const { error } = await this.getClient().from('products').upsert(record);
+                if (error) {
+                    console.error("❌ Erreur Supabase saveProduct:", error);
+                    if (window.AdminApp?.showToast) {
+                        window.AdminApp.showToast("⚠️ Enregistré localement, mais échec Cloud Supabase: " + (error.message || error.code), 'warning');
+                    }
+                } else {
+                    console.log("✅ Produit synchronisé sur Supabase Cloud:", targetId);
+                }
             } catch (err) {
                 console.warn("Sync Supabase saveProduct repli local:", err);
             }
@@ -227,7 +231,13 @@ window.AdminAPI = {
 
         if (this.isOnline()) {
             try {
-                await this.getClient().from('products').delete().eq('id', productId);
+                const { error } = await this.getClient().from('products').delete().eq('id', productId);
+                if (error) {
+                    console.error("❌ Erreur Supabase deleteProduct:", error);
+                    if (window.AdminApp?.showToast) {
+                        window.AdminApp.showToast("⚠️ Supprimé localement, mais échec Cloud Supabase: " + (error.message || error.code), 'warning');
+                    }
+                }
             } catch (err) {
                 console.warn("Sync Supabase deleteProduct repli local:", err);
             }
