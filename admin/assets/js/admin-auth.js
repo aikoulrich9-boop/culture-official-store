@@ -41,6 +41,10 @@ window.AdminAuth = {
         }
     },
 
+    getSession() {
+        return this.getCurrentSession();
+    },
+
     isAuthenticated() {
         return this.getCurrentSession() !== null;
     },

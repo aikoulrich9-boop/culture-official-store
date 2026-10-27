@@ -47,7 +47,20 @@
 
             // Form submit
             const form = document.getElementById('adminProductForm');
-            if (form) form.onsubmit = (e) => this.handleSubmit(e);
+            if (form) {
+                form.onsubmit = (e) => this.handleSubmit(e);
+                form.addEventListener('submit', (e) => this.handleSubmit(e));
+                const submitBtn = form.querySelector('button[type="submit"]');
+                if (submitBtn) {
+                    submitBtn.addEventListener('click', (e) => {
+                        if (form.checkValidity && !form.checkValidity()) {
+                            form.reportValidity();
+                            return;
+                        }
+                        this.handleSubmit(e);
+                    });
+                }
+            }
 
             // File input
             const fileInput = document.getElementById('prodFile');
@@ -292,13 +305,14 @@
         },
 
         async handleSubmit(event) {
-            event.preventDefault();
+            if (event && event.preventDefault) event.preventDefault();
             const id = document.getElementById("editProductId")?.value;
-            const name = document.getElementById("prodName")?.value.trim();
+            const name = document.getElementById("prodName")?.value.trim() || "Article Streetwear";
             const price = Number(document.getElementById("prodPrice")?.value || 0);
             const category = document.getElementById("prodCategory")?.value || "bags";
-            const sizes = document.getElementById("prodSizes")?.value.split(",").map(s => s.trim()).filter(Boolean);
-            const description = document.getElementById("prodDescription")?.value.trim();
+            const sizesRaw = document.getElementById("prodSizes")?.value;
+            const sizes = sizesRaw ? sizesRaw.split(",").map(s => s.trim()).filter(Boolean) : ["Unique"];
+            const description = document.getElementById("prodDescription")?.value.trim() || "Pièce officielle de la collection Streetwear CULTURE.";
             const isPreorder = document.getElementById("prodIsPreorder")?.checked;
 
             const preorderBadge = document.getElementById("prodPreorderBadge")?.value.trim();
@@ -307,20 +321,27 @@
             const dropStatus = document.getElementById("prodDropStatus")?.value || (isPreorder ? "preorder" : "available");
 
             const urlInputVal = document.getElementById("prodImageUrl")?.value.trim();
-            const finalImage = this.currentImageData || urlInputVal || "../IMAGE/logo P.png";
+            let finalImage = this.currentImageData || urlInputVal || "IMAGE/logo P.png";
+
+            // Normalisation de l'image (enlever le ../ pour la compatibilité avec la boutique racine)
+            if (finalImage.startsWith('../IMAGE/')) {
+                finalImage = finalImage.substring(3);
+            } else if (finalImage.startsWith('../')) {
+                finalImage = finalImage.substring(3);
+            }
 
             const payload = {
                 id: id || undefined,
                 name,
                 price,
                 category,
-                sizes,
+                sizes: (sizes && sizes.length > 0) ? sizes : ["Unique"],
                 description,
                 image: finalImage,
                 status: isPreorder ? dropStatus : "available",
-                preorderBadge: isPreorder ? preorderBadge : undefined,
-                releaseDate: isPreorder ? releaseDate : undefined,
-                reservedPercentage: isPreorder ? reservedPercentage : undefined
+                preorderBadge: isPreorder ? (preorderBadge || "⚡ PRÉ-VENTE") : "DISPONIBLE",
+                releaseDate: isPreorder ? (releaseDate || "15 Oct. 2026") : "Immédiat",
+                reservedPercentage: isPreorder ? reservedPercentage : 100
             };
 
             await window.AdminAPI.saveProduct(payload);

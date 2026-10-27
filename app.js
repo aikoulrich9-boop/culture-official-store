@@ -169,37 +169,78 @@ const INITIAL_PRODUCTS = [
     }
 ];
 
-let PRODUCTS = JSON.parse(localStorage.getItem("culture_products")) || [...INITIAL_PRODUCTS];
+let storedProducts = null;
+try {
+    const raw = localStorage.getItem("culture_products");
+    if (raw) storedProducts = JSON.parse(raw);
+} catch (e) {}
 
-// Ensure initial products always merge up-to-date properties while keeping custom images
-PRODUCTS = PRODUCTS.map(prod => {
-    const initMatch = INITIAL_PRODUCTS.find(i => i.id === prod.id);
-    if (initMatch) {
-        return {
-            ...initMatch,
-            ...prod,
-            image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
-            status: prod.status || initMatch.status,
-            preorderBadge: prod.preorderBadge || initMatch.preorderBadge,
-            releaseDate: prod.releaseDate || initMatch.releaseDate,
-            reservedPercentage: prod.reservedPercentage || initMatch.reservedPercentage
-        };
-    }
-    return prod;
-});
-
-// Inject any new INITIAL_PRODUCTS entries missing from localStorage cache
-INITIAL_PRODUCTS.forEach(initProd => {
-    if (!PRODUCTS.find(p => p.id === initProd.id)) {
-        PRODUCTS.push(initProd);
-    }
-});
-
-saveProductsToStorage();
+let PRODUCTS = [];
+if (Array.isArray(storedProducts) && storedProducts.length > 0) {
+    PRODUCTS = storedProducts.map(prod => {
+        const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === String(prod.id).toLowerCase());
+        if (initMatch) {
+            return {
+                ...initMatch,
+                ...prod,
+                image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
+                status: prod.status || initMatch.status,
+                preorderBadge: prod.status === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge),
+                releaseDate: prod.status === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
+                reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (prod.status === 'available' ? 100 : initMatch.reservedPercentage)
+            };
+        }
+        return prod;
+    });
+} else {
+    PRODUCTS = [...INITIAL_PRODUCTS];
+    saveProductsToStorage();
+}
 
 function saveProductsToStorage() {
     localStorage.setItem("culture_products", JSON.stringify(PRODUCTS));
 }
+
+function reloadProductsFromStorage() {
+    try {
+        const raw = localStorage.getItem("culture_products");
+        if (raw) {
+            const list = JSON.parse(raw);
+            if (Array.isArray(list) && list.length > 0) {
+                PRODUCTS = list.map(prod => {
+                    const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === String(prod.id).toLowerCase());
+                    if (initMatch) {
+                        return {
+                            ...initMatch,
+                            ...prod,
+                            image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
+                            status: prod.status || initMatch.status,
+                            preorderBadge: prod.status === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge),
+                            releaseDate: prod.status === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
+                            reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (prod.status === 'available' ? 100 : initMatch.reservedPercentage)
+                        };
+                    }
+                    return prod;
+                });
+                if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
+                if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
+                if (typeof syncFlagshipDropCard === 'function') syncFlagshipDropCard();
+            }
+        }
+    } catch (e) {
+        console.warn("Erreur synchronisation produits:", e);
+    }
+}
+
+window.addEventListener("storage", (e) => {
+    if (e.key === "culture_products") {
+        reloadProductsFromStorage();
+    }
+});
+
+window.addEventListener("culture_products_updated", () => {
+    reloadProductsFromStorage();
+});
 
 /* ==========================================================================
    APP STATE & UTILITIES
@@ -573,6 +614,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startDropCountdown();
     renderDropCarousel('all');
     filterAndRenderFeaturedProducts();
+    syncFlagshipDropCard();
     updateBadgesCount();
 });
 
@@ -628,6 +670,39 @@ function preorderFlagshipDenimJacket() {
     addItemToCartArray(product, selectedFlagshipSize, true);
     showToast(`⚡ PRÉ-COMMANDE VALIDÉE : ${product.name} (Taille ${selectedFlagshipSize}) ! Expédition le 15 Octobre.`);
     openCartDrawer();
+}
+
+function syncFlagshipDropCard() {
+    const dj = PRODUCTS.find(p => p.id === "dj1");
+    if (!dj) return;
+
+    const titleEl = document.querySelector(".flagship-product-title");
+    if (titleEl) titleEl.textContent = dj.name;
+
+    const priceEl = document.querySelector(".flagship-current-price");
+    if (priceEl) priceEl.textContent = formatPrice(dj.price);
+
+    const descEl = document.querySelector(".flagship-product-desc");
+    if (descEl && dj.description) descEl.textContent = dj.description;
+
+    const imgEl = document.querySelector(".flagship-drop-img");
+    if (imgEl && dj.image) imgEl.src = dj.image;
+
+    const statusPill = document.querySelector(".flagship-status-pill");
+    if (statusPill) {
+        if (dj.status === 'preorder') {
+            statusPill.textContent = "PRÉ-VENTE OUVERTE";
+        } else if (dj.status === 'upcoming') {
+            statusPill.textContent = "DROP IMMINENT";
+        } else {
+            statusPill.textContent = "DISPONIBLE EN STOCK";
+        }
+    }
+
+    const floatingBadge = document.querySelector(".flagship-badge-floating span:last-child");
+    if (floatingBadge) {
+        floatingBadge.textContent = dj.preorderBadge || (dj.status === 'preorder' ? "⚡ PRÉ-VENTE EN COURS" : "⚡ DISPONIBLE");
+    }
 }
 
 let activeDropFilter = "all";

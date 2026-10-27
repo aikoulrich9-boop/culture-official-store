@@ -92,11 +92,13 @@ window.AdminAPI = {
     },
 
     async saveProduct(productPayload) {
-        const products = await this.getProducts();
+        let products = await this.getProducts();
         if (productPayload.id) {
-            const index = products.findIndex(p => p.id === productPayload.id);
+            const index = products.findIndex(p => String(p.id).trim().toLowerCase() === String(productPayload.id).trim().toLowerCase());
             if (index !== -1) {
                 products[index] = { ...products[index], ...productPayload };
+            } else {
+                products.unshift(productPayload);
             }
         } else {
             const newProd = {
@@ -108,19 +110,23 @@ window.AdminAPI = {
             products.unshift(newProd);
         }
         localStorage.setItem('culture_products', JSON.stringify(products));
+        window.dispatchEvent(new CustomEvent('culture_products_updated', { detail: products }));
         return productPayload;
     },
 
     async deleteProduct(productId) {
         let products = await this.getProducts();
-        products = products.filter(p => p.id !== productId);
+        products = products.filter(p => String(p.id).trim().toLowerCase() !== String(productId).trim().toLowerCase());
         localStorage.setItem('culture_products', JSON.stringify(products));
+        window.dispatchEvent(new CustomEvent('culture_products_updated', { detail: products }));
         return true;
     },
 
     async resetCatalog() {
         localStorage.removeItem('culture_products');
-        return await this.getProducts();
+        const defaultList = await this.getProducts();
+        window.dispatchEvent(new CustomEvent('culture_products_updated', { detail: defaultList }));
+        return defaultList;
     },
 
     /* ==========================================================================
