@@ -38,7 +38,7 @@
                     if (errorMsg) errorMsg.style.display = 'none';
                     if (submitBtn) {
                         submitBtn.disabled = true;
-                        submitBtn.textContent = 'Connexion sécurisée en cours...';
+                        submitBtn.textContent = 'Signing in...';
                     }
 
                     try {
@@ -61,7 +61,7 @@
                     } finally {
                         if (submitBtn) {
                             submitBtn.disabled = false;
-                            submitBtn.textContent = 'Se Connecter à l\'Espace Admin';
+                            submitBtn.textContent = 'Sign in';
                         }
                     }
                 });

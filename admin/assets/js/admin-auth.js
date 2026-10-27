@@ -45,6 +45,11 @@ window.AdminAuth = {
         return this.getCurrentSession() !== null;
     },
 
+    async init() {
+        await this.refreshSession();
+        return this.isAuthenticated();
+    },
+
     /* ------------------------------------------------------------------
        AUTHENTIFICATION PRINCIPALE
     ------------------------------------------------------------------ */
@@ -221,6 +226,7 @@ window.AdminAuth = {
         const allowedEmails = [
             'admin@culture.store',
             'direction@culture.store',
+            'admin@culturestreetwear.com',
             'admin'
         ];
         const configPin = (window.ENV_CONFIG?.DEFAULT_ADMIN_PIN) || null;
