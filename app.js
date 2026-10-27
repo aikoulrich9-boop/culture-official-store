@@ -954,23 +954,23 @@ function renderFeaturedProducts(productsList) {
         let stockPillHtml = '';
         if (stockCount > 5) {
             stockPillHtml = `
-                <div class="product-stock-pill in-stock">
-                    <span class="stock-dot in-stock"></span>
-                    <span class="stock-qty-text"><strong>${stockCount}</strong> exemplaires disponibles</span>
+                <div class="product-stock-tag in-stock">
+                    <span class="stock-tag-dot"></span>
+                    <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCES</span>
                 </div>
             `;
         } else if (stockCount > 0) {
             stockPillHtml = `
-                <div class="product-stock-pill low-stock">
-                    <span class="stock-dot low-stock pulse"></span>
-                    <span class="stock-qty-text">🔥 Plus que <strong>${stockCount}</strong> pièces !</span>
+                <div class="product-stock-tag low-stock">
+                    <span class="stock-tag-dot pulse"></span>
+                    <span class="stock-tag-label">⚡ DERNIÈRE CHANCE // <strong>${stockCount}</strong> RESTANTES</span>
                 </div>
             `;
         } else {
             stockPillHtml = `
-                <div class="product-stock-pill out-of-stock">
-                    <span class="stock-dot out-of-stock"></span>
-                    <span class="stock-qty-text">❌ Épuisé pour le moment</span>
+                <div class="product-stock-tag out-of-stock">
+                    <span class="stock-tag-dot"></span>
+                    <span class="stock-tag-label">SOLD OUT // ÉPUISÉ</span>
                 </div>
             `;
         }
@@ -1577,36 +1577,36 @@ function openQuickView(productId) {
     if (isUpcoming) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
-                <div class="product-stock-pill upcoming-pill">
-                    <span class="stock-dot low-stock"></span>
-                    <span class="stock-qty-text">⏳ Bientôt disponible • ${stockCount} exemplaires prévus</span>
+                <div class="product-stock-tag upcoming-tag">
+                    <span class="stock-tag-dot"></span>
+                    <span class="stock-tag-label">⏳ BIENTÔT DISPONIBLE // SÉRIE PRÉVUE : ${stockCount} PIÈCES</span>
                 </div>
             </div>
         `;
     } else if (stockCount > 5) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
-                <div class="product-stock-pill in-stock">
-                    <span class="stock-dot in-stock"></span>
-                    <span class="stock-qty-text">📦 <strong>${stockCount} exemplaires</strong> disponibles</span>
+                <div class="product-stock-tag in-stock">
+                    <span class="stock-tag-dot"></span>
+                    <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>${stockCount} PIÈCES</strong> DISPONIBLES</span>
                 </div>
             </div>
         `;
     } else if (stockCount > 0) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
-                <div class="product-stock-pill low-stock">
-                    <span class="stock-dot low-stock pulse"></span>
-                    <span class="stock-qty-text">🔥 Attention : plus que <strong>${stockCount} pièces</strong> restantes !</span>
+                <div class="product-stock-tag low-stock">
+                    <span class="stock-tag-dot pulse"></span>
+                    <span class="stock-tag-label">⚡ DERNIÈRE CHANCE // PLUS QUE <strong>${stockCount} PIÈCES</strong> RESTANTES !</span>
                 </div>
             </div>
         `;
     } else {
         stockBannerHtml = `
             <div class="qv-stock-banner">
-                <div class="product-stock-pill out-of-stock">
-                    <span class="stock-dot out-of-stock"></span>
-                    <span class="stock-qty-text">❌ Rupture temporaire de stock</span>
+                <div class="product-stock-tag out-of-stock">
+                    <span class="stock-tag-dot"></span>
+                    <span class="stock-tag-label">SOLD OUT // SÉRIE ÉPUISÉE</span>
                 </div>
             </div>
         `;
