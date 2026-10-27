@@ -88,7 +88,11 @@ window.AdminAPI = {
             { id: "c1", name: "Terra Icon Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
             { id: "c2", name: "Aero Character Crossbody", price: 8000, stock: 8, category: "bags", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
             { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, stock: 12, category: "bags", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
-            { id: "c4", name: "Minimalist Utility Crossbody", price: 8000, stock: 15, category: "bags", image: "IMAGE/c 4.png", description: "Structure ultra-épurée en tissage balistique ultra-durable 1680D.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c4", name: "Camo Beanie Crossbody", price: 8000, stock: 15, category: "bags", image: "IMAGE/c 4.png", description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c5", name: "All-Star Shooter Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 4_shooter.png", description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c6", name: "Manga Rebel Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c7", name: "Boxy Silhouette Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 12, category: "bags", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, stock: 10, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
             { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 18, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
             { id: "cap1", name: "Urban Explorer Cap", price: 8000, stock: 20, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
@@ -118,6 +122,11 @@ window.AdminAPI = {
             'illegal blackout': 'IMAGE/sac_illegal_black.png',
             'illegal star': 'IMAGE/sac_illegal_star.png',
             'illegal ocean': 'IMAGE/sac_illegal_blue.png',
+            'camo beanie': 'IMAGE/c 4.png',
+            'all-star shooter': 'IMAGE/c 4_shooter.png',
+            'manga rebel': 'IMAGE/c 5.png',
+            'boxy silhouette': 'IMAGE/c 6.png',
+            'stealth blackout': 'IMAGE/c 7.png',
             'culture core': 'IMAGE/c 2.png',
             'phantom utility': 'IMAGE/c 3.png'
         };
@@ -151,6 +160,14 @@ window.AdminAPI = {
             }
 
             return p;
+        });
+
+        // Compléter avec les nouveautés du catalogue par défaut
+        defaultCatalog.forEach(item => {
+            if (!products.some(p => String(p.id).toLowerCase() === String(item.id).toLowerCase())) {
+                products.push(item);
+                updated = true;
+            }
         });
 
         if (updated) {

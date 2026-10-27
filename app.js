@@ -10,9 +10,9 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/denim_jacket.jpg",
         description: "Veste à capuche zippée en denim brut indigo lourd 480gsm. Coupe boxy streetwear avec capuche anatomique double épaisseur, fermeture éclair métallique renforcée, poignets et ourlet plissés élastiques. Conçue pour résister au temps et offrir une silhouette urbaine sculptée.",
         sizes: ["S", "M", "L", "XL"],
-        status: "preorder",
-        preorderBadge: "⚡ EXCLUSIVITÉ DROP 02",
-        releaseDate: "15 Oct. 2026",
+        status: "upcoming",
+        preorderBadge: "⏳ BIENTÔT DISPONIBLE",
+        releaseDate: "Bientôt disponible",
         reservedPercentage: 85,
         totalStock: 50,
         reservedStock: 42
@@ -64,18 +64,83 @@ const INITIAL_PRODUCTS = [
     },
     {
         id: "c4",
-        name: "Minimalist Utility Crossbody",
+        name: "Camo Beanie Crossbody",
         price: 8000,
         category: "bags",
         image: "IMAGE/c 4.png",
-        description: "Structure ultra-épurée avec de subtils motifs de lignes techniques. Fabriqué en tissage balistique ultra-durable 1680D avec des poches de rangement dissimulées à l'arrière.",
+        description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear. Toile technique déperlante.",
         sizes: [],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 50,
-        reservedStock: 50
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
+    },
+    {
+        id: "c5",
+        name: "All-Star Shooter Crossbody",
+        price: 8000,
+        category: "bags",
+        image: "IMAGE/c 4_shooter.png",
+        description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé. Sangle logotée ajustable et zips étanches.",
+        sizes: [],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 10,
+        reservedStock: 0,
+        stock: 10
+    },
+    {
+        id: "c6",
+        name: "Manga Rebel Crossbody",
+        price: 8000,
+        category: "bags",
+        image: "IMAGE/c 5.png",
+        description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds déstructurés. Toile textile ripstop premium.",
+        sizes: [],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 10,
+        reservedStock: 0,
+        stock: 10
+    },
+    {
+        id: "c7",
+        name: "Boxy Silhouette Crossbody",
+        price: 8000,
+        category: "bags",
+        image: "IMAGE/c 6.png",
+        description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large. Mousquetons métalliques mats.",
+        sizes: [],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 10,
+        reservedStock: 0,
+        stock: 10
+    },
+    {
+        id: "c8",
+        name: "Stealth Blackout Crossbody",
+        price: 8000,
+        category: "bags",
+        image: "IMAGE/c 7.png",
+        description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage. Design tactique ultra-épuré et tirette paracorde.",
+        sizes: [],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 12,
+        reservedStock: 0,
+        stock: 12
     },
     {
         id: "sac1",
@@ -219,6 +284,12 @@ if (Array.isArray(storedProducts) && storedProducts.length > 0) {
             stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
         };
     });
+    // Compléter avec les nouveaux produits éventuels de INITIAL_PRODUCTS absents du stockage local
+    INITIAL_PRODUCTS.forEach(init => {
+        if (!PRODUCTS.some(p => String(p.id).toLowerCase() === String(init.id).toLowerCase())) {
+            PRODUCTS.push({ ...init });
+        }
+    });
 } else {
     PRODUCTS = [...INITIAL_PRODUCTS];
     saveProductsToStorage();
@@ -257,6 +328,11 @@ function reloadProductsFromStorage() {
                         ...prod,
                         stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
                     };
+                });
+                INITIAL_PRODUCTS.forEach(init => {
+                    if (!PRODUCTS.some(p => String(p.id).toLowerCase() === String(init.id).toLowerCase())) {
+                        PRODUCTS.push({ ...init });
+                    }
                 });
                 if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
                 if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
