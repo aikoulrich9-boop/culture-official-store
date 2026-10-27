@@ -1033,6 +1033,8 @@ body {
     .mobile-menu-btn {
         display: block !important;
     }
+}
+
 /* ============================================================
    ADMIN-PREFIXED CSS BRIDGE — Toutes les classes admin-* HTML
    ============================================================ */
