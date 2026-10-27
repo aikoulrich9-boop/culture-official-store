@@ -19,9 +19,13 @@ CREATE TABLE IF NOT EXISTS public.products (
     reserved_percentage NUMERIC DEFAULT 100 CHECK (reserved_percentage >= 0 AND reserved_percentage <= 100),
     total_stock INT DEFAULT 50 CHECK (total_stock >= 0),
     reserved_stock INT DEFAULT 0 CHECK (reserved_stock >= 0),
+    stock INT DEFAULT 10 CHECK (stock >= 0),
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Rétrocompatibilité colonne stock
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS stock INT DEFAULT 10;
 
 -- Index pour filtres par catégorie et statut
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);
@@ -52,19 +56,19 @@ CREATE TRIGGER trg_products_updated_at
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- 4. INSERTION / MISE À JOUR DU CATALOGUE OFFICIEL (SEED)
-INSERT INTO public.products (id, name, price, category, image, description, sizes, status, preorder_badge, release_date, reserved_percentage, total_stock, reserved_stock)
+INSERT INTO public.products (id, name, price, category, image, description, sizes, status, preorder_badge, release_date, reserved_percentage, total_stock, reserved_stock, stock)
 VALUES
-    ('c1', 'Terra Icon Crossbody', 8000, 'bags', 'IMAGE/c 1.png', 'Sac streetwear noir avec illustration colorée d''un personnage sur la Terre.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 85, 50, 42),
-    ('c2', 'Aero Character Crossbody', 8000, 'bags', 'IMAGE/c 2.png', 'Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 90, 50, 45),
-    ('c3', 'Portrait Editorial Crossbody', 8000, 'bags', 'IMAGE/c 3.png', 'Sac portrait artistique premium avec compartiments à double accès rapide.', '["Unique"]'::jsonb, 'upcoming', '⏳ DROP IMMINENT', '28 Oct. 2026', 60, 50, 30),
-    ('c4', 'Minimalist Utility Crossbody', 8000, 'bags', 'IMAGE/c 4.png', 'Structure ultra-épurée en tissage balistique ultra-durable 1680D.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 50, 50),
-    ('h1', 'Heavyweight Boxy Hoodie', 8000, 'hoodies', 'IMAGE/hoodie.jpg', 'Hoodie en coton bio haute densité 450gsm avec coupe ample.', '["S", "M", "L", "XL"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '20 Oct. 2026', 75, 40, 30),
-    ('t1', 'Creator Studio Tee', 8000, 'tees', 'IMAGE/tee.jpg', 'T-shirt en jersey de coton peigné imprimé d''illustrations graphiques.', '["S", "M", "L", "XL"]'::jsonb, 'upcoming', '⏳ DROP / PRÉVENTE', '28 Oct. 2026', 40, 60, 24),
-    ('cap1', 'Urban Explorer Cap', 8000, 'caps', 'IMAGE/cap.jpg', 'Casquette classique utilitaire à 6 panneaux.', '["Taille Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 30, 30),
-    ('dj1', 'Veste Hoodie Raw Indigo Denim 480gsm', 12000, 'hoodies', 'IMAGE/denim_jacket.jpg', 'Veste à capuche zippée en denim brut indigo lourd 480gsm.', '["S", "M", "L", "XL"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 85, 50, 42),
-    ('sac1', 'ILLEGAL Blackout Pack Vol.1', 12000, 'bags', 'IMAGE/sac_illegal_black.png', 'Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 88, 40, 35),
-    ('sac2', 'ILLEGAL Star Pack Vol.2', 12000, 'bags', 'IMAGE/sac_illegal_star.png', 'Version signature de la collection ILLEGAL × Priority.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 92, 40, 37),
-    ('sac3', 'ILLEGAL Ocean Camo Pack', 14000, 'bags', 'IMAGE/sac_illegal_blue.png', 'Edition premium en tissu camo aquatique bleu céruléen.', '["Unique"]'::jsonb, 'upcoming', '⏳ DROP LIMITÉ', '28 Oct. 2026', 65, 30, 20)
+    ('c1', 'Terra Icon Crossbody', 8000, 'bags', 'IMAGE/c 1.png', 'Sac streetwear noir avec illustration colorée d''un personnage sur la Terre.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 85, 50, 42, 10),
+    ('c2', 'Aero Character Crossbody', 8000, 'bags', 'IMAGE/c 2.png', 'Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 90, 50, 45, 8),
+    ('c3', 'Portrait Editorial Crossbody', 8000, 'bags', 'IMAGE/c 3.png', 'Sac portrait artistique premium avec compartiments à double accès rapide.', '["Unique"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', '28 Oct. 2026', 60, 50, 30, 12),
+    ('c4', 'Minimalist Utility Crossbody', 8000, 'bags', 'IMAGE/c 4.png', 'Structure ultra-épurée en tissage balistique ultra-durable 1680D.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 50, 50, 15),
+    ('h1', 'Heavyweight Boxy Hoodie', 8000, 'hoodies', 'IMAGE/hoodie.jpg', 'Hoodie en coton bio haute densité 450gsm avec coupe ample.', '["S", "M", "L", "XL"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '20 Oct. 2026', 75, 40, 30, 10),
+    ('t1', 'Creator Studio Tee', 8000, 'tees', 'IMAGE/tee.jpg', 'T-shirt en jersey de coton peigné imprimé d''illustrations graphiques.', '["S", "M", "L", "XL"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', '28 Oct. 2026', 40, 60, 24, 18),
+    ('cap1', 'Urban Explorer Cap', 8000, 'caps', 'IMAGE/cap.jpg', 'Casquette classique utilitaire à 6 panneaux.', '["Taille Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 30, 30, 20),
+    ('dj1', 'Veste Hoodie Raw Indigo Denim 480gsm', 12000, 'hoodies', 'IMAGE/denim_jacket.jpg', 'Veste à capuche zippée en denim brut indigo lourd 480gsm.', '["S", "M", "L", "XL"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', 'Bientôt disponible', 0, 50, 0, 50),
+    ('sac1', 'ILLEGAL Blackout Pack Vol.1', 12000, 'bags', 'IMAGE/sac_illegal_black.png', 'Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 88, 40, 35, 10),
+    ('sac2', 'ILLEGAL Star Pack Vol.2', 12000, 'bags', 'IMAGE/sac_illegal_star.png', 'Version signature de la collection ILLEGAL × Priority.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 92, 40, 37, 10),
+    ('sac3', 'ILLEGAL Ocean Camo Pack', 14000, 'bags', 'IMAGE/sac_illegal_blue.png', 'Edition premium en tissu camo aquatique bleu céruléen.', '["Unique"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', '28 Oct. 2026', 65, 30, 20, 6)
 ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
     price = EXCLUDED.price,

@@ -165,7 +165,24 @@ const INITIAL_PRODUCTS = [
         releaseDate: "Immédiat",
         reservedPercentage: 100,
         totalStock: 30,
-        reservedStock: 30
+        reservedStock: 30,
+        stock: 20
+    },
+    {
+        id: "dj1",
+        name: "Veste Hoodie Raw Indigo Denim 480gsm",
+        price: 12000,
+        category: "hoodies",
+        image: "IMAGE/denim_jacket.jpg",
+        description: "Veste à capuche zippée en denim brut indigo lourd 480gsm avec capuche anatomique structurée et finitions plissées élastiques.",
+        sizes: ["S", "M", "L", "XL"],
+        status: "upcoming",
+        preorderBadge: "⏳ BIENTÔT DISPONIBLE",
+        releaseDate: "Bientôt disponible",
+        reservedPercentage: 0,
+        totalStock: 50,
+        reservedStock: 0,
+        stock: 50
     }
 ];
 
@@ -178,19 +195,29 @@ try {
 let PRODUCTS = [];
 if (Array.isArray(storedProducts) && storedProducts.length > 0) {
     PRODUCTS = storedProducts.map(prod => {
+        // Règle formelle : si dj1 était en preorder, le basculer automatiquement en upcoming (coming soon)
+        if (String(prod.id).toLowerCase() === 'dj1' && (!prod.status || prod.status === 'preorder')) {
+            prod.status = 'upcoming';
+            prod.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
+            prod.releaseDate = 'Bientôt disponible';
+        }
         const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === String(prod.id).toLowerCase());
         if (initMatch) {
             return {
                 ...initMatch,
                 ...prod,
                 image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
+                stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : (initMatch.stock || 10),
                 status: prod.status || initMatch.status,
                 preorderBadge: prod.status === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge),
                 releaseDate: prod.status === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
                 reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (prod.status === 'available' ? 100 : initMatch.reservedPercentage)
             };
         }
-        return prod;
+        return {
+            ...prod,
+            stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
+        };
     });
 } else {
     PRODUCTS = [...INITIAL_PRODUCTS];
@@ -208,19 +235,28 @@ function reloadProductsFromStorage() {
             const list = JSON.parse(raw);
             if (Array.isArray(list) && list.length > 0) {
                 PRODUCTS = list.map(prod => {
+                    if (String(prod.id).toLowerCase() === 'dj1' && (!prod.status || prod.status === 'preorder')) {
+                        prod.status = 'upcoming';
+                        prod.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
+                        prod.releaseDate = 'Bientôt disponible';
+                    }
                     const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === String(prod.id).toLowerCase());
                     if (initMatch) {
                         return {
                             ...initMatch,
                             ...prod,
                             image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
+                            stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : (initMatch.stock || 10),
                             status: prod.status || initMatch.status,
                             preorderBadge: prod.status === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge),
                             releaseDate: prod.status === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
                             reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (prod.status === 'available' ? 100 : initMatch.reservedPercentage)
                         };
                     }
-                    return prod;
+                    return {
+                        ...prod,
+                        stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
+                    };
                 });
                 if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
                 if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
@@ -235,23 +271,42 @@ function reloadProductsFromStorage() {
 async function syncProductsFromSupabase() {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
     try {
+        let localProducts = [];
+        try {
+            const rawStored = localStorage.getItem('culture_products');
+            if (rawStored) localProducts = JSON.parse(rawStored);
+        } catch(e) {}
+
         const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
         if (!error && Array.isArray(data) && data.length > 0) {
-            const mapped = data.map(d => ({
-                id: d.id,
-                name: d.name,
-                price: Number(d.price),
-                category: d.category,
-                image: d.image,
-                description: d.description,
-                sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
-                status: d.status || "available",
-                preorderBadge: d.preorder_badge || "DISPONIBLE",
-                releaseDate: d.release_date || "Immédiat",
-                reservedPercentage: Number(d.reserved_percentage) || 100,
-                totalStock: Number(d.total_stock) || 50,
-                reservedStock: Number(d.reserved_stock) || 0
-            }));
+            const mapped = data.map(d => {
+                const localMatch = Array.isArray(localProducts) ? localProducts.find(lp => String(lp.id).toLowerCase() === String(d.id).toLowerCase()) : null;
+
+                const stk = (localMatch && localMatch.stock !== undefined && localMatch.stock !== null)
+                    ? Number(localMatch.stock)
+                    : ((d.stock !== undefined && d.stock !== null)
+                        ? Number(d.stock)
+                        : ((d.total_stock !== undefined && d.total_stock !== null)
+                            ? Number(d.total_stock)
+                            : ((d.id === 'dj1') ? 50 : 10)));
+
+                return {
+                    id: d.id,
+                    name: (localMatch && localMatch.name) ? localMatch.name : d.name,
+                    price: (localMatch && localMatch.price !== undefined) ? Number(localMatch.price) : Number(d.price),
+                    category: (localMatch && localMatch.category) ? localMatch.category : d.category,
+                    image: (localMatch && localMatch.image) ? localMatch.image : d.image,
+                    description: (localMatch && localMatch.description) ? localMatch.description : d.description,
+                    sizes: (localMatch && Array.isArray(localMatch.sizes)) ? localMatch.sizes : (Array.isArray(d.sizes) ? d.sizes : ["Unique"]),
+                    status: (d.id === 'dj1') ? 'upcoming' : ((localMatch && localMatch.status) ? localMatch.status : (d.status || "available")),
+                    preorderBadge: (d.id === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : ((localMatch && localMatch.preorderBadge) ? localMatch.preorderBadge : (d.preorder_badge || "DISPONIBLE")),
+                    releaseDate: (d.id === 'dj1') ? 'Bientôt disponible' : ((localMatch && localMatch.releaseDate) ? localMatch.releaseDate : (d.release_date || "Immédiat")),
+                    reservedPercentage: (localMatch && localMatch.reservedPercentage !== undefined) ? localMatch.reservedPercentage : (Number(d.reserved_percentage) || 100),
+                    totalStock: stk,
+                    reservedStock: Number(d.reserved_stock) || 0,
+                    stock: stk
+                };
+            });
             PRODUCTS = mapped;
             saveProductsToStorage();
             if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
@@ -722,10 +777,10 @@ function syncFlagshipDropCard() {
 
     const statusPill = document.querySelector(".flagship-status-pill");
     if (statusPill) {
-        if (dj.status === 'preorder') {
+        if (dj.status === 'upcoming') {
+            statusPill.textContent = "BIENTÔT DISPONIBLE";
+        } else if (dj.status === 'preorder') {
             statusPill.textContent = "PRÉ-VENTE OUVERTE";
-        } else if (dj.status === 'upcoming') {
-            statusPill.textContent = "DROP IMMINENT";
         } else {
             statusPill.textContent = "DISPONIBLE EN STOCK";
         }
@@ -733,7 +788,7 @@ function syncFlagshipDropCard() {
 
     const floatingBadge = document.querySelector(".flagship-badge-floating span:last-child");
     if (floatingBadge) {
-        floatingBadge.textContent = dj.preorderBadge || (dj.status === 'preorder' ? "⚡ PRÉ-VENTE EN COURS" : "⚡ DISPONIBLE");
+        floatingBadge.textContent = dj.preorderBadge || (dj.status === 'upcoming' ? "⏳ BIENTÔT DISPONIBLE" : "⚡ DISPONIBLE");
     }
 }
 
@@ -868,6 +923,10 @@ function filterAndRenderFeaturedProducts() {
     if (!productsGrid) return;
 
     const filtered = PRODUCTS.filter(p => {
+        // Règle formelle : les articles non disponibles immédiatement ('upcoming' / Coming Soon)
+        // ne doivent PAS figurer dans la boutique d'achat direct
+        if (p.status === "upcoming") return false;
+
         const matchesCategory = activeCategoryFilter === "all" || p.category === activeCategoryFilter;
         const matchesSearch = p.name.toLowerCase().includes(activeSearchQuery) || 
                              p.description.toLowerCase().includes(activeSearchQuery);
@@ -892,6 +951,36 @@ function renderFeaturedProducts(productsList) {
 
     productsGrid.innerHTML = productsList.map(product => {
         const isWishlisted = wishlist.includes(product.id);
+        const stockCount = (product.stock !== undefined && product.stock !== null) 
+            ? Number(product.stock) 
+            : 10;
+
+        let stockPillHtml = '';
+        if (stockCount > 5) {
+            stockPillHtml = `
+                <div class="product-stock-pill in-stock">
+                    <span class="stock-dot in-stock"></span>
+                    <span class="stock-qty-text"><strong>${stockCount}</strong> exemplaires disponibles</span>
+                </div>
+            `;
+        } else if (stockCount > 0) {
+            stockPillHtml = `
+                <div class="product-stock-pill low-stock">
+                    <span class="stock-dot low-stock pulse"></span>
+                    <span class="stock-qty-text">🔥 Plus que <strong>${stockCount}</strong> pièces !</span>
+                </div>
+            `;
+        } else {
+            stockPillHtml = `
+                <div class="product-stock-pill out-of-stock">
+                    <span class="stock-dot out-of-stock"></span>
+                    <span class="stock-qty-text">❌ Épuisé pour le moment</span>
+                </div>
+            `;
+        }
+
+        const isOutOfStock = stockCount === 0;
+
         return `
             <div class="product-card reveal-on-scroll active" data-id="${product.id}" data-category="${product.category}">
                 <div class="product-card-img-wrapper">
@@ -907,13 +996,20 @@ function renderFeaturedProducts(productsList) {
                     </div>
                     <div class="product-card-actions">
                         <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Aperçu Rapide</button>
-                        <button class="quick-add-btn" onclick="addToCartDirect('${product.id}')">Ajout Rapide</button>
+                        ${isOutOfStock ? `
+                            <button class="quick-add-btn" disabled style="opacity:0.6; cursor:not-allowed;">Épuisé</button>
+                        ` : `
+                            <button class="quick-add-btn" onclick="addToCartDirect('${product.id}')">Ajout Rapide</button>
+                        `}
                     </div>
                 </div>
                 <div class="product-card-meta">
                     <div class="product-title-row">
                         <h3 class="product-name" onclick="openQuickView('${product.id}')" style="cursor:pointer;">${product.name}</h3>
                         <span class="product-price">${formatPrice(product.price)}</span>
+                    </div>
+                    <div class="product-card-stock-row">
+                        ${stockPillHtml}
                     </div>
                     <p class="product-short-desc">${product.description.split('.')[0]}.</p>
                 </div>
@@ -1475,6 +1571,50 @@ function openQuickView(productId) {
     if (!overlay || !body) return;
 
     const isWishlisted = wishlist.includes(product.id);
+    const isUpcoming = product.status === "upcoming";
+    const stockCount = (product.stock !== undefined && product.stock !== null) 
+        ? Number(product.stock) 
+        : 10;
+    const isOutOfStock = !isUpcoming && stockCount === 0;
+
+    let stockBannerHtml = "";
+    if (isUpcoming) {
+        stockBannerHtml = `
+            <div class="qv-stock-banner">
+                <div class="product-stock-pill upcoming-pill">
+                    <span class="stock-dot low-stock"></span>
+                    <span class="stock-qty-text">⏳ Bientôt disponible • ${stockCount} exemplaires prévus</span>
+                </div>
+            </div>
+        `;
+    } else if (stockCount > 5) {
+        stockBannerHtml = `
+            <div class="qv-stock-banner">
+                <div class="product-stock-pill in-stock">
+                    <span class="stock-dot in-stock"></span>
+                    <span class="stock-qty-text">📦 <strong>${stockCount} exemplaires</strong> disponibles</span>
+                </div>
+            </div>
+        `;
+    } else if (stockCount > 0) {
+        stockBannerHtml = `
+            <div class="qv-stock-banner">
+                <div class="product-stock-pill low-stock">
+                    <span class="stock-dot low-stock pulse"></span>
+                    <span class="stock-qty-text">🔥 Attention : plus que <strong>${stockCount} pièces</strong> restantes !</span>
+                </div>
+            </div>
+        `;
+    } else {
+        stockBannerHtml = `
+            <div class="qv-stock-banner">
+                <div class="product-stock-pill out-of-stock">
+                    <span class="stock-dot out-of-stock"></span>
+                    <span class="stock-qty-text">❌ Rupture temporaire de stock</span>
+                </div>
+            </div>
+        `;
+    }
 
     body.innerHTML = `
         <div class="quick-view-grid">
@@ -1486,6 +1626,9 @@ function openQuickView(productId) {
                 <div class="qv-badge">${product.category}</div>
                 <h3 class="qv-title">${product.name}</h3>
                 <div class="qv-price">${formatPrice(product.price)}</div>
+
+                ${stockBannerHtml}
+
                 <p class="qv-description">${product.description}</p>
                 
                 ${product.sizes && product.sizes.length > 0 ? `
@@ -1500,7 +1643,13 @@ function openQuickView(productId) {
                 ` : ''}
 
                 <div class="qv-actions-row">
-                    <button class="qv-add-to-cart" onclick="addFromModalToCart('${product.id}')">Ajouter au panier</button>
+                    ${isUpcoming ? `
+                        <button class="qv-add-to-cart qv-alert-btn" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--accent-orange); color:#fff;" onclick="triggerDropAlert('${product.id}')">🔔 M'alerter au Drops</button>
+                    ` : isOutOfStock ? `
+                        <button class="qv-add-to-cart" disabled style="opacity:0.6; cursor:not-allowed;">❌ Épuisé pour le moment</button>
+                    ` : `
+                        <button class="qv-add-to-cart" onclick="addFromModalToCart('${product.id}')">Ajouter au panier</button>
+                    `}
                     <button class="qv-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlistItem('${product.id}'); syncModalWishlistBtn(this)" aria-label="Ajouter aux favoris">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>

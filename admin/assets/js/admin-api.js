@@ -22,31 +22,60 @@ window.AdminAPI = {
        1. CATALOGUE & PRODUITS (SUPABASE CLOUD SYNC + LOCAL FALLBACK)
        ========================================================================== */
     async getProducts() {
+        let localProducts = [];
+        try {
+            const rawStored = localStorage.getItem('culture_products');
+            if (rawStored) localProducts = JSON.parse(rawStored);
+        } catch(e) {}
+
         // 1. Tentative de lecture Supabase si disponible
         if (this.isOnline()) {
             try {
                 const { data, error } = await this.getClient().from('products').select('*').order('created_at', { ascending: false });
                 if (!error && Array.isArray(data) && data.length > 0) {
-                    const mapped = data.map(d => ({
-                        id: d.id,
-                        name: d.name,
-                        price: Number(d.price),
-                        category: d.category,
-                        image: d.image,
-                        description: d.description,
-                        sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
-                        status: d.status || "available",
-                        preorderBadge: d.preorder_badge || "DISPONIBLE",
-                        releaseDate: d.release_date || "Immédiat",
-                        reservedPercentage: Number(d.reserved_percentage) || 100,
-                        totalStock: Number(d.total_stock) || 50,
-                        reservedStock: Number(d.reserved_stock) || 0
-                    }));
+                    const mapped = data.map(d => {
+                        const localMatch = Array.isArray(localProducts) ? localProducts.find(lp => String(lp.id).toLowerCase() === String(d.id).toLowerCase()) : null;
+
+                        const stk = (localMatch && localMatch.stock !== undefined && localMatch.stock !== null)
+                            ? Number(localMatch.stock)
+                            : ((d.stock !== undefined && d.stock !== null)
+                                ? Number(d.stock)
+                                : ((d.total_stock !== undefined && d.total_stock !== null)
+                                    ? Number(d.total_stock)
+                                    : ((d.id === 'dj1') ? 50 : 10)));
+
+                        return {
+                            id: d.id,
+                            name: (localMatch && localMatch.name) ? localMatch.name : d.name,
+                            price: (localMatch && localMatch.price !== undefined) ? Number(localMatch.price) : Number(d.price),
+                            category: (localMatch && localMatch.category) ? localMatch.category : d.category,
+                            image: (localMatch && localMatch.image) ? localMatch.image : d.image,
+                            description: (localMatch && localMatch.description) ? localMatch.description : d.description,
+                            sizes: (localMatch && Array.isArray(localMatch.sizes)) ? localMatch.sizes : (Array.isArray(d.sizes) ? d.sizes : ["Unique"]),
+                            status: (d.id === 'dj1') ? 'upcoming' : ((localMatch && localMatch.status) ? localMatch.status : (d.status || "available")),
+                            preorderBadge: (d.id === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : ((localMatch && localMatch.preorderBadge) ? localMatch.preorderBadge : (d.preorder_badge || "DISPONIBLE")),
+                            releaseDate: (d.id === 'dj1') ? 'Bientôt disponible' : ((localMatch && localMatch.releaseDate) ? localMatch.releaseDate : (d.release_date || "Immédiat")),
+                            reservedPercentage: (localMatch && localMatch.reservedPercentage !== undefined) ? localMatch.reservedPercentage : (Number(d.reserved_percentage) || 100),
+                            totalStock: stk,
+                            reservedStock: Number(d.reserved_stock) || 0,
+                            stock: stk
+                        };
+                    });
+
+                    // Si des produits locaux ont été créés manuellement par l'admin, les conserver
+                    if (Array.isArray(localProducts)) {
+                        localProducts.forEach(lp => {
+                            if (!mapped.some(m => String(m.id).toLowerCase() === String(lp.id).toLowerCase())) {
+                                mapped.unshift(lp);
+                            }
+                        });
+                    }
+
                     localStorage.setItem('culture_products', JSON.stringify(mapped));
                     return mapped;
                 }
             } catch (err) {
-                console.warn("Lecture Supabase products (table non encore migrée ou hors-ligne), repli local:", err);
+                console.warn("Lecture Supabase products, repli local:", err);
             }
         }
 
@@ -58,19 +87,19 @@ window.AdminAPI = {
             } catch (e) {}
         }
         
-        // Catalogue officiel Streetwear CULTURE avec vraies images
+        // Catalogue officiel Streetwear CULTURE avec vraies images et stocks disponibles
         const defaultCatalog = [
-            { id: "c1", name: "Terra Icon Crossbody", price: 8000, category: "bags", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "c2", name: "Aero Character Crossbody", price: 8000, category: "bags", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, category: "bags", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ DROP IMMINENT", releaseDate: "28 Oct. 2026" },
-            { id: "c4", name: "Minimalist Utility Crossbody", price: 8000, category: "bags", image: "IMAGE/c 4.png", description: "Structure ultra-épurée en tissage balistique ultra-durable 1680D.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
-            { id: "t1", name: "Creator Studio Tee", price: 8000, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ DROP / PRÉVENTE", releaseDate: "28 Oct. 2026" },
-            { id: "cap1", name: "Urban Explorer Cap", price: 8000, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, category: "hoodies", image: "IMAGE/denim_jacket.jpg", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, category: "bags", image: "IMAGE/sac_illegal_black.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, category: "bags", image: "IMAGE/sac_illegal_star.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 14000, category: "bags", image: "IMAGE/sac_illegal_blue.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ DROP LIMITÉ", releaseDate: "28 Oct. 2026" }
+            { id: "c1", name: "Terra Icon Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "c2", name: "Aero Character Crossbody", price: 8000, stock: 8, category: "bags", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, stock: 12, category: "bags", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "c4", name: "Minimalist Utility Crossbody", price: 8000, stock: 15, category: "bags", image: "IMAGE/c 4.png", description: "Structure ultra-épurée en tissage balistique ultra-durable 1680D.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, stock: 10, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
+            { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 18, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "cap1", name: "Urban Explorer Cap", price: 8000, stock: 20, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, stock: 50, category: "hoodies", image: "IMAGE/denim_jacket.jpg", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
+            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 10, category: "bags", image: "IMAGE/sac_illegal_black.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 10, category: "bags", image: "IMAGE/sac_illegal_star.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 14000, stock: 6, category: "bags", image: "IMAGE/sac_illegal_blue.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" }
         ];
 
         if (!Array.isArray(products) || products.length === 0) {
@@ -109,6 +138,22 @@ window.AdminAPI = {
                     }
                 }
             }
+
+            // Normalisation automatique du stock
+            if (p.stock === undefined || p.stock === null) {
+                p.stock = (p.totalStock && p.reservedStock !== undefined) ? Math.max(0, p.totalStock - p.reservedStock) : 10;
+                updated = true;
+            }
+
+            // dj1 doit être "upcoming" (Coming Soon)
+            if (String(p.id).toLowerCase() === 'dj1' && p.status !== 'upcoming') {
+                p.status = 'upcoming';
+                p.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
+                p.releaseDate = 'Bientôt disponible';
+                p.stock = 50;
+                updated = true;
+            }
+
             return p;
         });
 
@@ -148,6 +193,7 @@ window.AdminAPI = {
         // Sync Supabase cloud si connecté
         if (this.isOnline()) {
             try {
+                const targetStock = (productPayload.stock !== undefined && productPayload.stock !== null) ? Number(productPayload.stock) : (Number(productPayload.totalStock) || 10);
                 const record = {
                     id: targetId,
                     name: productPayload.name,
@@ -160,6 +206,8 @@ window.AdminAPI = {
                     preorder_badge: productPayload.preorderBadge || 'DISPONIBLE',
                     release_date: productPayload.releaseDate || 'Immédiat',
                     reserved_percentage: productPayload.reservedPercentage || 100,
+                    total_stock: targetStock,
+                    reserved_stock: 0,
                     updated_at: new Date().toISOString()
                 };
                 await this.getClient().from('products').upsert(record);

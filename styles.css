@@ -72,11 +72,17 @@ html {
     background-color: var(--bg-primary);
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
 }
 
 body {
     overflow-x: hidden;
+    width: 100%;
+    max-width: 100vw;
     line-height: 1.6;
+    position: relative;
 }
 
 a {
@@ -3048,8 +3054,32 @@ h1, h2, h3, h4 {
 
 /* Small Smart Phones */
 @media (max-width: 480px) {
+    .header-container {
+        padding: 12px 14px;
+    }
+
+    .header-actions {
+        gap: 8px;
+    }
+
+    .action-btn {
+        padding: 4px;
+    }
+
+    .action-btn svg {
+        width: 19px;
+        height: 19px;
+    }
+
+    .logo-image {
+        height: 34px;
+        max-height: 36px;
+    }
+
     .hero-headline {
-        font-size: 2.8rem;
+        font-size: clamp(2rem, 8.5vw, 2.6rem);
+        line-height: 1.1;
+        word-break: break-word;
     }
     
     .hero-ctas {
@@ -3062,9 +3092,7 @@ h1, h2, h3, h4 {
     }
     
     .hero-tag-floating {
-        bottom: 20px;
-        right: 10px;
-        padding: 10px 16px;
+        display: none;
     }
     
     .category-card {
@@ -3072,15 +3100,95 @@ h1, h2, h3, h4 {
     }
     
     .card-info {
-        padding: 20px;
+        padding: 16px;
     }
     
     .card-title {
-        font-size: 22px;
+        font-size: 20px;
     }
     
     .product-card-img-wrapper {
-        height: 300px;
+        height: 260px;
+    }
+
+    .flagship-drop-card {
+        padding: 24px 16px;
+        margin: 24px 0;
+        border-radius: var(--radius-md);
+        gap: 20px;
+    }
+
+    .flagship-image-wrapper {
+        height: 260px;
+        padding: 12px;
+    }
+
+    .flagship-drop-img {
+        max-height: 220px;
+    }
+
+    .flagship-spec-chips {
+        gap: 6px;
+        justify-content: center;
+        max-width: 100%;
+    }
+
+    .spec-chip {
+        font-size: 10px;
+        padding: 4px 8px;
+        white-space: normal;
+        text-align: center;
+    }
+
+    .drop-countdown {
+        gap: 5px;
+        justify-content: center;
+    }
+
+    .time-block {
+        min-width: 46px;
+        padding: 6px 8px;
+    }
+
+    .time-block .number {
+        font-size: 16px;
+    }
+
+    .time-block .label {
+        font-size: 8px;
+    }
+
+    .flagship-actions-row {
+        flex-direction: column;
+        width: 100%;
+        gap: 10px;
+    }
+
+    .btn-flagship-preorder,
+    .btn-flagship-alert {
+        width: 100%;
+        min-width: 0;
+        padding: 14px 16px;
+        text-align: center;
+        justify-content: center;
+    }
+
+    .vip-drop-pass-card.inline-pass {
+        padding: 20px 16px;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 14px;
+    }
+
+    .vip-pass-form.inline-form {
+        width: 100%;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .vip-pass-form.inline-form input,
+    .vip-pass-form.inline-form button {
+        width: 100%;
     }
     
     .newsletter-form {
@@ -3103,9 +3211,57 @@ h1, h2, h3, h4 {
     }
     
     .toast-container {
-        left: 20px;
-        right: 20px;
-        bottom: 20px;
+        left: 12px;
+        right: 12px;
+        bottom: 12px;
+        max-width: calc(100vw - 24px);
+    }
+}
+
+/* Extra Small Phones (320px - 380px) */
+@media (max-width: 380px) {
+    .header-container {
+        padding: 10px 10px;
+    }
+
+    #accountBtn {
+        display: none;
+    }
+
+    .header-actions {
+        gap: 5px;
+    }
+
+    .action-btn {
+        padding: 3px;
+    }
+
+    .action-btn svg {
+        width: 18px;
+        height: 18px;
+    }
+
+    .logo-image {
+        height: 30px;
+        max-height: 32px;
+    }
+
+    .drop-countdown {
+        gap: 3px;
+    }
+
+    .time-block {
+        min-width: 40px;
+        padding: 4px 6px;
+    }
+
+    .time-block .number {
+        font-size: 14px;
+    }
+
+    .time-colon {
+        font-size: 14px;
+        margin: 0 1px;
     }
 }
 
@@ -3993,4 +4149,91 @@ h1, h2, h3, h4 {
     color: var(--text-muted);
     margin-top: 4px;
 }
+
+/* ==========================================================================
+   STOCK SCARCITY INDICATOR & PILLS (STREETWEAR LUXE)
+   ========================================================================== */
+.product-card-stock-row {
+    margin: 6px 0 8px 0;
+}
+
+.product-stock-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 10px;
+    border-radius: var(--radius-full);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    line-height: 1.4;
+    transition: var(--transition-fast);
+}
+
+.product-stock-pill.in-stock {
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.25);
+}
+
+.product-stock-pill.low-stock {
+    background: rgba(255, 90, 0, 0.12);
+    color: var(--accent-orange);
+    border: 1px solid rgba(255, 90, 0, 0.35);
+    box-shadow: 0 0 14px rgba(255, 90, 0, 0.12);
+}
+
+.product-stock-pill.out-of-stock {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border: 1px solid rgba(239, 68, 68, 0.25);
+}
+
+.product-stock-pill.upcoming-pill {
+    background: rgba(59, 130, 246, 0.12);
+    color: #60a5fa;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.stock-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.stock-dot.in-stock {
+    background-color: #10b981;
+    box-shadow: 0 0 6px #10b981;
+}
+
+.stock-dot.low-stock {
+    background-color: var(--accent-orange);
+    box-shadow: 0 0 6px var(--accent-orange);
+}
+
+.stock-dot.out-of-stock {
+    background-color: #ef4444;
+}
+
+.stock-dot.pulse {
+    animation: stockPulse 1.8s ease-in-out infinite;
+}
+
+@keyframes stockPulse {
+    0% { transform: scale(1); opacity: 1; }
+    50% { transform: scale(1.4); opacity: 0.6; }
+    100% { transform: scale(1); opacity: 1; }
+}
+
+.qv-stock-banner {
+    margin: 8px 0 14px 0;
+}
+
+.qv-stock-banner .product-stock-pill {
+    font-size: 12.5px;
+    padding: 6px 14px;
+}
+
 
