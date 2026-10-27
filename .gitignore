@@ -3,5 +3,7 @@ node_modules/
 *.log
 hf_*.jpg
 pull/
+.temp/
+supabase/.temp/
 
 
