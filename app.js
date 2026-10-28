@@ -21,7 +21,7 @@ const INITIAL_PRODUCTS = [
         id: "c1",
         name: "Terra Icon Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 1.png",
         description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre. Sangle imprimée ajustable et boucle mate à dégagement rapide. Conçu pour un usage quotidien intensif.",
         sizes: [],
@@ -36,7 +36,7 @@ const INITIAL_PRODUCTS = [
         id: "c2",
         name: "Aero Character Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 2.png",
         description: "Sac bandoulière technique résistant aux intempéries avec imprimé emblématique du personnage à capuche rouge. Équipé d'une double fermeture éclair, de poches intérieures et d'un porte-clés.",
         sizes: [],
@@ -51,7 +51,7 @@ const INITIAL_PRODUCTS = [
         id: "c3",
         name: "Portrait Editorial Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 3.png",
         description: "Sac portrait artistique premium. Conçu avec des compartiments à double accès rapide, des organiseurs internes en filet et une sangle tactile épaisse. Démarquez-vous dans la foule urbaine.",
         sizes: [],
@@ -66,7 +66,7 @@ const INITIAL_PRODUCTS = [
         id: "c4",
         name: "Camo Beanie Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 4.png",
         description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear. Toile technique déperlante.",
         sizes: [],
@@ -82,7 +82,7 @@ const INITIAL_PRODUCTS = [
         id: "c5",
         name: "All-Star Shooter Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 4_shooter.png",
         description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé. Sangle logotée ajustable et zips étanches.",
         sizes: [],
@@ -98,7 +98,7 @@ const INITIAL_PRODUCTS = [
         id: "c6",
         name: "Manga Rebel Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 5.png",
         description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds déstructurés. Toile textile ripstop premium.",
         sizes: [],
@@ -114,7 +114,7 @@ const INITIAL_PRODUCTS = [
         id: "c7",
         name: "Boxy Silhouette Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 6.png",
         description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large. Mousquetons métalliques mats.",
         sizes: [],
@@ -130,7 +130,7 @@ const INITIAL_PRODUCTS = [
         id: "c8",
         name: "Stealth Blackout Crossbody",
         price: 8000,
-        category: "bags",
+        category: "crossbody",
         image: "IMAGE/c 7.png",
         description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage. Design tactique ultra-épuré et tirette paracorde.",
         sizes: [],
@@ -146,7 +146,7 @@ const INITIAL_PRODUCTS = [
         id: "sac1",
         name: "ILLEGAL Blackout Pack Vol.1",
         price: 12000,
-        category: "bags",
+        category: "backpacks",
         image: "IMAGE/sac_illegal_black.png",
         description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé sur patch woven et sigle Priority en rouge sang. Détails Diesel co-brandés, tirette corde tressée, compartiment principal large + poche frontale organisée. Le daily bag du mouvement.",
         sizes: [],
@@ -161,7 +161,7 @@ const INITIAL_PRODUCTS = [
         id: "sac2",
         name: "ILLEGAL Star Pack Vol.2",
         price: 12000,
-        category: "bags",
+        category: "backpacks",
         image: "IMAGE/sac_illegal_star.png",
         description: "Version signature de la collection ILLEGAL × Priority. Sac à dos all-black avec macro-graphic de l'étoile blanche imprimée pleine face. Badge Priority bleu en pendant. Silhouette épurée, bretelles ergonomiques rembourrées, dos aéré maillé. L'icône de la rue.",
         sizes: [],
@@ -176,7 +176,7 @@ const INITIAL_PRODUCTS = [
         id: "sac3",
         name: "ILLEGAL Ocean Camo Pack",
         price: 14000,
-        category: "bags",
+        category: "backpacks",
         image: "IMAGE/sac_illegal_blue.png",
         description: "Edition premium en tissu camo aquatique bleu céruléen avec motif all-over imprimé sublimation. Logo ILLEGAL en patch woven ton-sur-ton blanc. Format mini-pack compact — grand style, haute portabilité. Pièce rare, drop limité 30 unités.",
         sizes: [],
@@ -186,6 +186,22 @@ const INITIAL_PRODUCTS = [
         reservedPercentage: 65,
         totalStock: 30,
         reservedStock: 20
+    },
+    {
+        id: "sac4",
+        name: "ILLEGAL Cobalt Icon Pack",
+        price: 12000,
+        category: "backpacks",
+        image: "IMAGE/sac_illegal_cobalt.png",
+        description: "Édition emblématique de la collaboration ILLEGAL × Priority en toile technique bleu cobalt vibrant. Patch woven ILLEGAL International, macro-étoile emblématique blanche, emblème rouge Diesel en relief et double étiquette collector amovible (Diesel & Priority Star). Dos ergonomique matelassé et tirettes paracorde mouchetées.",
+        sizes: [],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 10,
+        reservedStock: 0,
+        stock: 10
     },
     {
         id: "h1",
@@ -362,11 +378,15 @@ async function syncProductsFromSupabase() {
                         ? Number(d.total_stock)
                         : ((d.id === 'dj1') ? 50 : 10));
 
+                const resolvedCategory = (d.category && d.category !== 'bags')
+                    ? d.category
+                    : (String(d.id).toLowerCase().startsWith('c') ? 'crossbody' : (String(d.id).toLowerCase().startsWith('sac') ? 'backpacks' : (d.category || 'crossbody')));
+
                 return {
                     id: d.id,
                     name: d.name,
                     price: Number(d.price),
-                    category: d.category || 'bags',
+                    category: resolvedCategory,
                     image: d.image,
                     description: d.description || '',
                     sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
@@ -379,6 +399,16 @@ async function syncProductsFromSupabase() {
                     stock: stk
                 };
             });
+
+            // S'assurer que tous les INITIAL_PRODUCTS (ex: sac4) sont préservés même si absents de la table distante
+            if (Array.isArray(INITIAL_PRODUCTS)) {
+                INITIAL_PRODUCTS.forEach(init => {
+                    if (!mapped.some(p => String(p.id).toLowerCase() === String(init.id).toLowerCase())) {
+                        mapped.push({ ...init });
+                    }
+                });
+            }
+
             PRODUCTS = mapped;
             saveProductsToStorage();
             if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
@@ -987,6 +1017,34 @@ function handleVipPassSignup(event) {
     }
 }
 
+function getCategoryLabel(category) {
+    const cat = (category || "").toLowerCase();
+    if (cat === "crossbody" || cat === "sacoches") return "Sacoche";
+    if (cat === "backpacks" || cat === "sac_a_dos") return "Sac à dos";
+    if (cat === "bags") return "Sac";
+    if (cat === "hoodies") return "Hoodie";
+    if (cat === "tees" || cat === "tshirts") return "T-Shirt";
+    if (cat === "caps") return "Casquette";
+    return category || "Streetwear";
+}
+
+function matchesCategoryFilter(productCategory, productId, filter) {
+    if (!filter || filter === "all") return true;
+    const cat = (productCategory || "").toLowerCase();
+    const id = String(productId || "").toLowerCase();
+
+    if (filter === "crossbody" || filter === "sacoches") {
+        return cat === "crossbody" || cat === "sacoches" || (cat === "bags" && id.startsWith("c"));
+    }
+    if (filter === "backpacks" || filter === "sac_a_dos") {
+        return cat === "backpacks" || cat === "sac_a_dos" || (cat === "bags" && id.startsWith("sac"));
+    }
+    if (filter === "bags") {
+        return cat === "bags" || cat === "crossbody" || cat === "backpacks" || id.startsWith("c") || id.startsWith("sac");
+    }
+    return cat === filter;
+}
+
 /* ==========================================================================
    FEATURED PRODUCTS FILTER ENGINE
    ========================================================================== */
@@ -999,7 +1057,7 @@ function filterAndRenderFeaturedProducts() {
         // ne doivent PAS figurer dans la boutique d'achat direct
         if (p.status === "upcoming") return false;
 
-        const matchesCategory = activeCategoryFilter === "all" || p.category === activeCategoryFilter;
+        const matchesCategory = matchesCategoryFilter(p.category, p.id, activeCategoryFilter);
         const matchesSearch = p.name.toLowerCase().includes(activeSearchQuery) || 
                              p.description.toLowerCase().includes(activeSearchQuery);
         return matchesCategory && matchesSearch;
@@ -1568,7 +1626,7 @@ function renderWishlist() {
                     <span class="cart-item-name" onclick="openQuickView('${product.id}'); closeWishlistDrawer()" style="cursor:pointer;">${product.name}</span>
                     <span class="cart-item-price">${formatPrice(product.price)}</span>
                 </div>
-                <div class="cart-item-variant">${product.category}</div>
+                <div class="cart-item-variant">${getCategoryLabel(product.category)}</div>
                 <div class="cart-item-actions" style="margin-top: 10px;">
                     <button class="btn btn-outline" style="padding: 6px 12px; font-size: 10px; border-radius: var(--radius-sm);" onclick="addFromWishlistToCart('${product.id}')">Ajouter au panier</button>
                     <button class="remove-item-btn" onclick="toggleWishlistItem('${product.id}')">Retirer</button>
@@ -1695,7 +1753,7 @@ function openQuickView(productId) {
             </div>
             
             <div class="qv-text-side">
-                <div class="qv-badge">${product.category}</div>
+                <div class="qv-badge">${getCategoryLabel(product.category)}</div>
                 <h3 class="qv-title">${product.name}</h3>
                 <div class="qv-price">${formatPrice(product.price)}</div>
 

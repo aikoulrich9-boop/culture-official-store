@@ -22,6 +22,26 @@ window.AdminAPI = {
        1. CATALOGUE & PRODUITS (SUPABASE CLOUD SYNC + LOCAL FALLBACK)
        ========================================================================== */
     async getProducts() {
+        // Catalogue officiel Streetwear CULTURE avec vraies images et stocks disponibles
+        const defaultCatalog = [
+            { id: "c1", name: "Terra Icon Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "c2", name: "Aero Character Crossbody", price: 8000, stock: 8, category: "crossbody", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, stock: 12, category: "crossbody", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "c4", name: "Camo Beanie Crossbody", price: 8000, stock: 15, category: "crossbody", image: "IMAGE/c 4.png", description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c5", name: "All-Star Shooter Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 4_shooter.png", description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c6", name: "Manga Rebel Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c7", name: "Boxy Silhouette Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 12, category: "crossbody", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, stock: 10, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
+            { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 18, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "cap1", name: "Urban Explorer Cap", price: 8000, stock: 20, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, stock: 50, category: "hoodies", image: "IMAGE/denim_jacket.jpg", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
+            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_black.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_star.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 14000, stock: 6, category: "backpacks", image: "IMAGE/sac_illegal_blue.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "sac4", name: "ILLEGAL Cobalt Icon Pack", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_cobalt.png", description: "Édition emblématique ILLEGAL × Priority en toile technique bleu cobalt avec macro-étoile blanche et emblème Diesel.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" }
+        ];
+
         let localProducts = [];
         try {
             const rawStored = localStorage.getItem('culture_products');
@@ -40,11 +60,16 @@ window.AdminAPI = {
                                 ? Number(d.total_stock)
                                 : ((d.id === 'dj1') ? 50 : 10));
 
+                        const cat = d.category;
+                        const resolvedCat = (cat && cat !== 'bags')
+                            ? cat
+                            : (String(d.id).toLowerCase().startsWith('c') ? 'crossbody' : (String(d.id).toLowerCase().startsWith('sac') ? 'backpacks' : (cat || 'crossbody')));
+
                         return {
                             id: d.id,
                             name: d.name,
                             price: Number(d.price),
-                            category: d.category || 'bags',
+                            category: resolvedCat,
                             image: d.image,
                             description: d.description || '',
                             sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
@@ -67,6 +92,15 @@ window.AdminAPI = {
                         });
                     }
 
+                    // S'assurer que les produits par défaut (ex: sac4, c4-c8) sont également inclus
+                    if (Array.isArray(defaultCatalog)) {
+                        defaultCatalog.forEach(dp => {
+                            if (!mapped.some(m => String(m.id).toLowerCase() === String(dp.id).toLowerCase())) {
+                                mapped.push({ ...dp });
+                            }
+                        });
+                    }
+
                     localStorage.setItem('culture_products', JSON.stringify(mapped));
                     return mapped;
                 }
@@ -82,25 +116,6 @@ window.AdminAPI = {
                 products = JSON.parse(stored);
             } catch (e) {}
         }
-        
-        // Catalogue officiel Streetwear CULTURE avec vraies images et stocks disponibles
-        const defaultCatalog = [
-            { id: "c1", name: "Terra Icon Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "c2", name: "Aero Character Crossbody", price: 8000, stock: 8, category: "bags", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, stock: 12, category: "bags", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
-            { id: "c4", name: "Camo Beanie Crossbody", price: 8000, stock: 15, category: "bags", image: "IMAGE/c 4.png", description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c5", name: "All-Star Shooter Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 4_shooter.png", description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c6", name: "Manga Rebel Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c7", name: "Boxy Silhouette Crossbody", price: 8000, stock: 10, category: "bags", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 12, category: "bags", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, stock: 10, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
-            { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 18, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
-            { id: "cap1", name: "Urban Explorer Cap", price: 8000, stock: 20, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, stock: 50, category: "hoodies", image: "IMAGE/denim_jacket.jpg", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
-            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 10, category: "bags", image: "IMAGE/sac_illegal_black.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 10, category: "bags", image: "IMAGE/sac_illegal_star.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 14000, stock: 6, category: "bags", image: "IMAGE/sac_illegal_blue.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" }
-        ];
 
         if (!Array.isArray(products) || products.length === 0) {
             localStorage.setItem('culture_products', JSON.stringify(defaultCatalog));
@@ -122,6 +137,10 @@ window.AdminAPI = {
             'illegal blackout': 'IMAGE/sac_illegal_black.png',
             'illegal star': 'IMAGE/sac_illegal_star.png',
             'illegal ocean': 'IMAGE/sac_illegal_blue.png',
+            'illegal cobalt': 'IMAGE/sac_illegal_cobalt.png',
+            'cobalt icon': 'IMAGE/sac_illegal_cobalt.png',
+            'cobalt star': 'IMAGE/sac_illegal_cobalt.png',
+            'bleu cobalt': 'IMAGE/sac_illegal_cobalt.png',
             'camo beanie': 'IMAGE/c 4.png',
             'all-star shooter': 'IMAGE/c 4_shooter.png',
             'manga rebel': 'IMAGE/c 5.png',

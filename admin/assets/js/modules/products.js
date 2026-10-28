@@ -121,7 +121,10 @@
             const cat = document.getElementById("adminCategoryFilter")?.value || "all";
 
             const filtered = products.filter(p => {
-                const matchCat = cat === "all" || p.category === cat;
+                const matchCat = cat === "all" || 
+                    p.category === cat ||
+                    (cat === "crossbody" && (p.category === "crossbody" || p.category === "sacoches" || (p.category === "bags" && String(p.id).startsWith("c")))) ||
+                    (cat === "backpacks" && (p.category === "backpacks" || p.category === "sac_a_dos" || (p.category === "bags" && String(p.id).startsWith("sac"))));
                 const matchSearch = !search || p.name.toLowerCase().includes(search) || (p.description && p.description.toLowerCase().includes(search));
                 return matchCat && matchSearch;
             });
@@ -167,7 +170,7 @@
                     </td>
                     <td>
                         <span class="admin-badge admin-badge-neutral" style="font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;">
-                            ${p.category}
+                            ${p.category === 'crossbody' ? 'SACOCHE' : (p.category === 'backpacks' ? 'SAC À DOS' : (p.category || 'ARTICLE'))}
                         </span>
                     </td>
                     <td>
