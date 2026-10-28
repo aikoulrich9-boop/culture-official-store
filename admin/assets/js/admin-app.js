@@ -82,30 +82,58 @@
 
         bindNavigationEvents() {
             const navItems = document.querySelectorAll('.admin-nav-item[data-tab]');
+            const sidebar = document.querySelector('.admin-sidebar');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+            const menuToggle = document.getElementById('adminMobileMenuToggle');
+
+            const closeSidebar = () => {
+                if (sidebar) sidebar.classList.remove('active');
+                if (backdrop) backdrop.classList.remove('active');
+                document.body.style.overflow = '';
+            };
+
+            const toggleSidebar = () => {
+                if (!sidebar) return;
+                const willOpen = !sidebar.classList.contains('active');
+                sidebar.classList.toggle('active', willOpen);
+                if (backdrop) backdrop.classList.toggle('active', willOpen);
+                document.body.style.overflow = willOpen ? 'hidden' : '';
+            };
+
+            this.closeSidebar = closeSidebar;
+            this.toggleSidebar = toggleSidebar;
+
             navItems.forEach(item => {
                 item.addEventListener('click', (e) => {
                     e.preventDefault();
                     const targetTab = item.getAttribute('data-tab');
                     if (targetTab) {
                         this.switchTab(targetTab);
+                        if (window.innerWidth <= 1024) {
+                            closeSidebar();
+                        }
                     }
                 });
             });
 
             // Mobile menu toggle
-            const menuToggle = document.getElementById('adminMobileMenuToggle');
-            const sidebar = document.querySelector('.admin-sidebar');
-            if (menuToggle && sidebar) {
-                menuToggle.addEventListener('click', () => {
-                    sidebar.classList.toggle('active');
+            if (menuToggle) {
+                menuToggle.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    toggleSidebar();
                 });
+            }
+
+            // Close sidebar when clicking backdrop
+            if (backdrop) {
+                backdrop.addEventListener('click', closeSidebar);
             }
 
             // Close sidebar when clicking outside on mobile
             document.addEventListener('click', (e) => {
-                if (window.innerWidth <= 992 && sidebar && sidebar.classList.contains('active')) {
+                if (window.innerWidth <= 1024 && sidebar && sidebar.classList.contains('active')) {
                     if (!sidebar.contains(e.target) && !menuToggle.contains(e.target)) {
-                        sidebar.classList.remove('active');
+                        closeSidebar();
                     }
                 }
             });
@@ -195,6 +223,17 @@
 
         switchTab(tabId) {
             currentTab = tabId;
+
+            // Auto close mobile drawer on tab switch
+            const sidebar = document.querySelector('.admin-sidebar');
+            const backdrop = document.getElementById('adminSidebarBackdrop');
+            if (sidebar && sidebar.classList.contains('active')) {
+                sidebar.classList.remove('active');
+            }
+            if (backdrop && backdrop.classList.contains('active')) {
+                backdrop.classList.remove('active');
+            }
+            document.body.style.overflow = '';
 
             // Update nav item active classes
             document.querySelectorAll('.admin-nav-item').forEach(item => {
