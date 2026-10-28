@@ -25,7 +25,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Syne:wght@600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="styles.css?v=7">
+    <link rel="stylesheet" href="styles.css?v=8">
 </head>
 <body>
 
@@ -222,263 +222,25 @@
                         <button class="filter-tag active" data-filter="all">Tout</button>
                         <button class="filter-tag" data-filter="crossbody">Sacoches</button>
                         <button class="filter-tag" data-filter="backpacks">Sacs à dos</button>
-                        <button class="filter-tag" data-filter="hoodies">Hoodies</button>
-                        <button class="filter-tag" data-filter="tees">Tees</button>
-                        <button class="filter-tag" data-filter="caps">Casquettes</button>
                     </div>
                 </div>
             </div>
 
-            <!-- PRODUCT DISPLAY GRID -->
-            <div class="products-grid" id="productsGrid">
-                <!-- Product C1 -->
-                <div class="product-card reveal-on-scroll" data-id="c1" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 1.png" alt="Terra Icon Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c1')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c1')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac Bandoulière Terra Icon</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>10</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Sac noir avec illustration colorée d'un personnage debout sur la Terre.</p>
-                    </div>
+            <!-- BOUTIQUE GRAND SHOWCASE (NO FRAME, PROMINENT PRODUCT, 3-ZONE LAYOUT & BOTTOM SWITCHER) -->
+            <div class="boutique-showcase-container" id="boutiqueShowcaseContainer">
+                <!-- 3-Zone Stage (Left: Description, Center: Floating Frameless Product, Right: Price & Status) -->
+                <div class="boutique-showcase-arena" id="boutiqueShowcaseArena" role="region" aria-label="Vitrine de présentation produit">
+                    <!-- Populated dynamically via renderBoutiqueGrandShowcase() -->
                 </div>
 
-                <!-- Product C2 -->
-                <div class="product-card reveal-on-scroll" data-id="c2" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 2.png" alt="Aero Character Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c2')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c2')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac Bandoulière Aero Character</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>8</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Coque résistante à l'eau avec illustration de personnage en sweat rouge.</p>
-                    </div>
-                </div>
-
-                <!-- Product C4 -->
-                <div class="product-card reveal-on-scroll" data-id="c4" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 4.png" alt="Camo Beanie Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c4')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c4')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac Camo Beanie Crossbody</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>15</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear.</p>
-                    </div>
-                </div>
-
-                <!-- Product C5 -->
-                <div class="product-card reveal-on-scroll" data-id="c5" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 4_shooter.png" alt="All-Star Shooter Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c5')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c5')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac All-Star Shooter Crossbody</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>10</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé.</p>
-                    </div>
-                </div>
-
-                <!-- Product C6 -->
-                <div class="product-card reveal-on-scroll" data-id="c6" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 5.png" alt="Manga Rebel Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c6')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c6')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac Manga Rebel Crossbody</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>10</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.</p>
-                    </div>
-                </div>
-
-                <!-- Product C7 -->
-                <div class="product-card reveal-on-scroll" data-id="c7" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 6.png" alt="Boxy Silhouette Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c7')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c7')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac Boxy Silhouette Crossbody</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>10</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.</p>
-                    </div>
-                </div>
-
-                <!-- Product C8 -->
-                <div class="product-card reveal-on-scroll" data-id="c8" data-category="crossbody">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/c 7.png" alt="Stealth Blackout Crossbody" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('c8')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('c8')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac Stealth Blackout Crossbody</h3>
-                            <span class="product-price">8 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>12</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.</p>
-                    </div>
-                </div>
-
-                <!-- Product SAC4 -->
-                <div class="product-card reveal-on-scroll" data-id="sac4" data-category="backpacks">
-                    <div class="product-card-img-wrapper">
-                        <button class="wishlist-toggle-btn" aria-label="Add to Wishlist">
-                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                            </svg>
-                        </button>
-                        <div class="product-image-container">
-                            <img src="IMAGE/sac_illegal_cobalt.png" alt="ILLEGAL Cobalt Icon Pack" class="product-img-primary">
-                        </div>
-                        <div class="product-card-actions">
-                            <button class="quick-view-btn" onclick="openQuickView('sac4')">Aperçu Rapide</button>
-                            <button class="quick-add-btn" onclick="addToCartDirect('sac4')">Ajout Rapide</button>
-                        </div>
-                    </div>
-                    <div class="product-card-meta">
-                        <div class="product-title-row">
-                            <h3 class="product-name">Sac à dos ILLEGAL Cobalt Icon Pack</h3>
-                            <span class="product-price">12 000 XOF</span>
-                        </div>
-                        <div class="product-card-stock-row">
-                            <div class="product-stock-tag in-stock">
-                                <span class="stock-tag-dot"></span>
-                                <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>10</strong> PIÈCES</span>
-                            </div>
-                        </div>
-                        <p class="product-short-desc">Édition emblématique ILLEGAL × Priority en toile technique bleu cobalt avec macro-étoile blanche et emblème Diesel.</p>
-                    </div>
+                <!-- Bottom Switcher Track (Flèche en bas pour switcher sur le reste des produits) -->
+                <div class="boutique-bottom-switcher-wrapper" id="boutiqueBottomSwitcherWrapper">
+                    <!-- Populated dynamically -->
                 </div>
             </div>
+
+            <!-- Fallback caché pour compatibilité legacy -->
+            <div class="products-grid" id="productsGrid" style="display: none;" aria-hidden="true"></div>
         </div>
     </section>
 
@@ -491,17 +253,19 @@
                 <p class="section-subtitle">Découvrez en exclusivité la pièce phare de notre prochaine collection streetwear. Bientôt disponible en quantité ultra-limitée.</p>
             </div>
 
-            <!-- FLAGSHIP DROP SHOWCASE STAGE -->
+            <!-- FLAGSHIP DROP SHOWCASE STAGE (FRAMELESS, PROMINENT PRODUCT, EDITORIAL INFO ON SIDE) -->
             <div class="flagship-drop-card reveal-on-scroll">
                 <div class="flagship-drop-glow"></div>
                 
                 <div class="flagship-img-col">
+                    <div class="flagship-ambient-halo"></div>
                     <div class="flagship-badge-floating">
                         <span class="pulse-dot"></span>
                         <span>⏳ BIENTÔT DISPONIBLE</span>
                     </div>
                     <div class="flagship-image-wrapper" onclick="openQuickView('dj1')">
-                        <img src="IMAGE/denim_jacket.jpg" alt="Veste Hoodie Raw Indigo Denim 480gsm" class="flagship-drop-img">
+                        <img src="IMAGE/denim_jacket.jpg.png" alt="Veste Hoodie Raw Indigo Denim 480gsm" class="flagship-drop-img">
+                        <div class="flagship-pedestal-shadow"></div>
                     </div>
                     <div class="flagship-spec-chips">
                         <span class="spec-chip">💎 Raw Indigo Denim 480GSM</span>
@@ -820,18 +584,40 @@
         </div>
     </div>
 
-    <!-- QUICK VIEW MODAL -->
-    <div class="modal-overlay" id="quickViewOverlay">
-        <div class="modal-content" id="quickViewModal">
-            <button class="close-modal" id="closeModalBtn" aria-label="Close Product View">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
+    <!-- IMMERSIVE PRODUCT SHOWCASE STAGE (QUICK VIEW MODAL) -->
+    <div class="modal-overlay immersive-showcase-overlay" id="quickViewOverlay" role="dialog" aria-modal="true" aria-labelledby="immersiveProductTitle">
+        <div class="modal-content immersive-showcase-stage" id="quickViewModal">
+            <div class="immersive-ambient-glow" id="immersiveAmbientGlow"></div>
+
+            <!-- Top Navigation Bar inside Showcase -->
+            <div class="immersive-top-bar">
+                <div class="immersive-nav-cluster">
+                    <button class="immersive-nav-btn" id="immersivePrevBtn" onclick="navigateImmersiveProduct(-1)" aria-label="Produit précédent" title="Produit précédent (←)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <span class="immersive-position-counter" id="immersivePositionCounter">1 / 12</span>
+                    <button class="immersive-nav-btn" id="immersiveNextBtn" onclick="navigateImmersiveProduct(1)" aria-label="Produit suivant" title="Produit suivant (→)">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="immersive-brand-watermark">CULTURE // VITRINE STUDIO</div>
+
+                <button class="close-modal immersive-close-btn" id="closeModalBtn" onclick="closeImmersiveProduct()" aria-label="Fermer la vitrine produit" title="Fermer (Échap)">
+                    <span class="close-label">Fermer</span>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="18" y1="6" x2="6" y2="18"></line>
+                        <line x1="6" y1="6" x2="18" y2="18"></line>
+                    </svg>
+                </button>
+            </div>
             
-            <div class="modal-body" id="quickViewModalBody">
-                <!-- Dynamically loaded layout -->
+            <div class="modal-body immersive-stage-body" id="quickViewModalBody">
+                <!-- Dynamically loaded immersive showcase layout -->
             </div>
         </div>
     </div>
@@ -1090,6 +876,6 @@
     <script src="tests/test-suite.js?v=7"></script>
 
     <!-- Global App JS -->
-    <script src="app.js?v=20261027_sync"></script>
+    <script src="app.js?v=20261028_immersive"></script>
 </body>
 </html>

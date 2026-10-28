@@ -7,7 +7,7 @@ const INITIAL_PRODUCTS = [
         name: "Veste Hoodie Raw Indigo Denim 480gsm",
         price: 12000,
         category: "hoodies",
-        image: "IMAGE/denim_jacket.jpg",
+        image: "IMAGE/denim_jacket.jpg.png",
         description: "Veste à capuche zippée en denim brut indigo lourd 480gsm. Coupe boxy streetwear avec capuche anatomique double épaisseur, fermeture éclair métallique renforcée, poignets et ourlet plissés élastiques. Conçue pour résister au temps et offrir une silhouette urbaine sculptée.",
         sizes: ["S", "M", "L", "XL"],
         status: "upcoming",
@@ -147,7 +147,7 @@ const INITIAL_PRODUCTS = [
         name: "ILLEGAL Blackout Pack Vol.1",
         price: 12000,
         category: "backpacks",
-        image: "IMAGE/sac_illegal_black.png",
+        image: "IMAGE/Sac 1.png",
         description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé sur patch woven et sigle Priority en rouge sang. Détails Diesel co-brandés, tirette corde tressée, compartiment principal large + poche frontale organisée. Le daily bag du mouvement.",
         sizes: [],
         status: "preorder",
@@ -162,7 +162,7 @@ const INITIAL_PRODUCTS = [
         name: "ILLEGAL Star Pack Vol.2",
         price: 12000,
         category: "backpacks",
-        image: "IMAGE/sac_illegal_star.png",
+        image: "IMAGE/Sac 2.png",
         description: "Version signature de la collection ILLEGAL × Priority. Sac à dos all-black avec macro-graphic de l'étoile blanche imprimée pleine face. Badge Priority bleu en pendant. Silhouette épurée, bretelles ergonomiques rembourrées, dos aéré maillé. L'icône de la rue.",
         sizes: [],
         status: "preorder",
@@ -175,17 +175,18 @@ const INITIAL_PRODUCTS = [
     {
         id: "sac3",
         name: "ILLEGAL Ocean Camo Pack",
-        price: 14000,
+        price: 12000,
         category: "backpacks",
-        image: "IMAGE/sac_illegal_blue.png",
-        description: "Edition premium en tissu camo aquatique bleu céruléen avec motif all-over imprimé sublimation. Logo ILLEGAL en patch woven ton-sur-ton blanc. Format mini-pack compact — grand style, haute portabilité. Pièce rare, drop limité 30 unités.",
+        image: "IMAGE/Sac 3.png",
+        description: "Édition exclusive en tissu camo aquatique bleu céruléen avec motif all-over imprimé sublimation. Logo ILLEGAL en patch woven signature, macro-étoile emblématique blanche, zips étanches et bretelles ergonomiques. Sac à dos collector.",
         sizes: [],
-        status: "upcoming",
-        preorderBadge: "⏳ DROP LIMITÉ — 30 pcs",
-        releaseDate: "28 Oct. 2026",
-        reservedPercentage: 65,
-        totalStock: 30,
-        reservedStock: 20
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 10,
+        reservedStock: 0,
+        stock: 10
     },
     {
         id: "sac4",
@@ -204,21 +205,6 @@ const INITIAL_PRODUCTS = [
         stock: 10
     },
     {
-        id: "h1",
-        name: "Heavyweight Boxy Hoodie",
-        price: 8000,
-        category: "hoodies",
-        image: "IMAGE/hoodie.jpg",
-        description: "Hoodie en coton bio haute densité 450gsm avec coupe ample et épaules tombantes. Capuche premium double épaisseur et poches invisibles sur les coutures latérales.",
-        sizes: ["S", "M", "L", "XL"],
-        status: "preorder",
-        preorderBadge: "⚡ PRÉ-VENTE ED. LIMITÉE",
-        releaseDate: "20 Oct. 2026",
-        reservedPercentage: 75,
-        totalStock: 40,
-        reservedStock: 30
-    },
-    {
         id: "t1",
         name: "Creator Studio Tee",
         price: 8000,
@@ -231,41 +217,22 @@ const INITIAL_PRODUCTS = [
         releaseDate: "28 Oct. 2026",
         reservedPercentage: 40,
         totalStock: 60,
+        reservedPercentage: 40,
+        totalStock: 60,
         reservedStock: 24
-    },
-    {
-        id: "cap1",
-        name: "Urban Explorer Cap",
-        price: 8000,
-        category: "caps",
-        image: "IMAGE/cap.jpg",
-        description: "Casquette classique utilitaire à 6 panneaux. Finitions avec détails typographiques brodés épurés, visière pré-incurvée et sangle arrière réglable à boucle métallique.",
-        sizes: ["Taille Unique"],
-        status: "available",
-        preorderBadge: "DISPONIBLE",
-        releaseDate: "Immédiat",
-        reservedPercentage: 100,
-        totalStock: 30,
-        reservedStock: 30,
-        stock: 20
-    },
-    {
-        id: "dj1",
-        name: "Veste Hoodie Raw Indigo Denim 480gsm",
-        price: 12000,
-        category: "hoodies",
-        image: "IMAGE/denim_jacket.jpg",
-        description: "Veste à capuche zippée en denim brut indigo lourd 480gsm avec capuche anatomique structurée et finitions plissées élastiques.",
-        sizes: ["S", "M", "L", "XL"],
-        status: "upcoming",
-        preorderBadge: "⏳ BIENTÔT DISPONIBLE",
-        releaseDate: "Bientôt disponible",
-        reservedPercentage: 0,
-        totalStock: 50,
-        reservedStock: 0,
-        stock: 50
     }
 ];
+
+// Gestion impérative du cache et version du catalogue (invalidation des états obsolètes)
+const CATALOGUE_STORAGE_VERSION = "20261028_v6_uniform_dimensions";
+try {
+    if (typeof localStorage !== "undefined") {
+        if (localStorage.getItem("culture_catalogue_version") !== CATALOGUE_STORAGE_VERSION) {
+            localStorage.removeItem("culture_products");
+            localStorage.setItem("culture_catalogue_version", CATALOGUE_STORAGE_VERSION);
+        }
+    }
+} catch (e) {}
 
 let storedProducts = null;
 try {
@@ -275,24 +242,34 @@ try {
 
 let PRODUCTS = [];
 if (Array.isArray(storedProducts) && storedProducts.length > 0) {
+    // 1. Filtrer formellement les anciens produits supprimés (h1 hoodie, cap1 casquette)
+    storedProducts = storedProducts.filter(p => p && !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
+
     PRODUCTS = storedProducts.map(prod => {
-        // Règle formelle : si dj1 était en preorder, le basculer automatiquement en upcoming (coming soon)
-        if (String(prod.id).toLowerCase() === 'dj1' && (!prod.status || prod.status === 'preorder')) {
+        const idLower = String(prod.id).toLowerCase();
+        if (idLower === 'dj1' && (!prod.status || prod.status === 'preorder')) {
             prod.status = 'upcoming';
             prod.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
             prod.releaseDate = 'Bientôt disponible';
         }
-        const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === String(prod.id).toLowerCase());
+        const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
         if (initMatch) {
+            // sac3 est disponible immédiatement à la vente dans la boutique
+            const resolvedStatus = (idLower === 'sac3') ? 'available' : (prod.status || initMatch.status);
+            const resolvedBadge = (idLower === 'sac3') ? 'DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge));
+            const resolvedCat = (idLower === 'sac3') ? 'backpacks' : (prod.category || initMatch.category);
+            const resolvedImg = initMatch.image || prod.image;
+
             return {
                 ...initMatch,
                 ...prod,
-                image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
+                category: resolvedCat,
+                image: resolvedImg,
                 stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : (initMatch.stock || 10),
-                status: prod.status || initMatch.status,
-                preorderBadge: prod.status === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge),
-                releaseDate: prod.status === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
-                reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (prod.status === 'available' ? 100 : initMatch.reservedPercentage)
+                status: resolvedStatus,
+                preorderBadge: resolvedBadge,
+                releaseDate: resolvedStatus === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
+                reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (resolvedStatus === 'available' ? 100 : initMatch.reservedPercentage)
             };
         }
         return {
@@ -300,14 +277,27 @@ if (Array.isArray(storedProducts) && storedProducts.length > 0) {
             stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
         };
     });
+
     // Compléter avec les nouveaux produits éventuels de INITIAL_PRODUCTS absents du stockage local
     INITIAL_PRODUCTS.forEach(init => {
-        if (!PRODUCTS.some(p => String(p.id).toLowerCase() === String(init.id).toLowerCase())) {
+        const existing = PRODUCTS.find(p => String(p.id).toLowerCase() === String(init.id).toLowerCase());
+        if (!existing) {
             PRODUCTS.push({ ...init });
+        } else {
+            existing.image = init.image;
+            if (String(init.id).toLowerCase() === 'sac3') {
+                existing.status = 'available';
+                existing.preorderBadge = 'DISPONIBLE';
+                existing.category = 'backpacks';
+                existing.price = 12000;
+            }
         }
     });
+
+    PRODUCTS = PRODUCTS.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
+    saveProductsToStorage();
 } else {
-    PRODUCTS = [...INITIAL_PRODUCTS];
+    PRODUCTS = INITIAL_PRODUCTS.map(p => ({ ...p }));
     saveProductsToStorage();
 }
 
@@ -321,23 +311,32 @@ function reloadProductsFromStorage() {
         if (raw) {
             const list = JSON.parse(raw);
             if (Array.isArray(list) && list.length > 0) {
-                PRODUCTS = list.map(prod => {
-                    if (String(prod.id).toLowerCase() === 'dj1' && (!prod.status || prod.status === 'preorder')) {
+                const cleanedList = list.filter(p => p && !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
+
+                PRODUCTS = cleanedList.map(prod => {
+                    const idLower = String(prod.id).toLowerCase();
+                    if (idLower === 'dj1' && (!prod.status || prod.status === 'preorder')) {
                         prod.status = 'upcoming';
                         prod.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
                         prod.releaseDate = 'Bientôt disponible';
                     }
-                    const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === String(prod.id).toLowerCase());
+                    const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
                     if (initMatch) {
+                        const resolvedStatus = (idLower === 'sac3') ? 'available' : (prod.status || initMatch.status);
+                        const resolvedBadge = (idLower === 'sac3') ? 'DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge));
+                        const resolvedCat = (idLower === 'sac3') ? 'backpacks' : (prod.category || initMatch.category);
+                        const resolvedImg = initMatch.image || prod.image;
+
                         return {
                             ...initMatch,
                             ...prod,
-                            image: (prod.image && prod.image.trim()) ? prod.image : initMatch.image,
+                            category: resolvedCat,
+                            image: resolvedImg,
                             stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : (initMatch.stock || 10),
-                            status: prod.status || initMatch.status,
-                            preorderBadge: prod.status === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge),
-                            releaseDate: prod.status === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
-                            reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (prod.status === 'available' ? 100 : initMatch.reservedPercentage)
+                            status: resolvedStatus,
+                            preorderBadge: resolvedBadge,
+                            releaseDate: resolvedStatus === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
+                            reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (resolvedStatus === 'available' ? 100 : initMatch.reservedPercentage)
                         };
                     }
                     return {
@@ -345,11 +344,25 @@ function reloadProductsFromStorage() {
                         stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
                     };
                 });
+
+                PRODUCTS = PRODUCTS.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()) && INITIAL_PRODUCTS.some(init => String(init.id).toLowerCase() === String(p.id).toLowerCase()));
+
                 INITIAL_PRODUCTS.forEach(init => {
-                    if (!PRODUCTS.some(p => String(p.id).toLowerCase() === String(init.id).toLowerCase())) {
+                    const existing = PRODUCTS.find(p => String(p.id).toLowerCase() === String(init.id).toLowerCase());
+                    if (!existing) {
                         PRODUCTS.push({ ...init });
+                    } else {
+                        existing.image = init.image;
+                        if (String(init.id).toLowerCase() === 'sac3') {
+                            existing.status = 'available';
+                            existing.preorderBadge = 'DISPONIBLE';
+                            existing.category = 'backpacks';
+                            existing.price = 12000;
+                        }
                     }
                 });
+
+                saveProductsToStorage();
                 if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
                 if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
                 if (typeof syncFlagshipDropCard === 'function') syncFlagshipDropCard();
@@ -371,45 +384,76 @@ async function syncProductsFromSupabase() {
 
         const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
         if (!error && Array.isArray(data) && data.length > 0) {
-            const mapped = data.map(d => {
+            const filteredData = data.filter(d => d && !['h1', 'cap1'].includes(String(d.id).toLowerCase()));
+
+            const mapped = filteredData.map(d => {
+                const idLower = String(d.id).toLowerCase();
+                const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
+
                 const stk = (d.stock !== undefined && d.stock !== null)
                     ? Number(d.stock)
                     : ((d.total_stock !== undefined && d.total_stock !== null)
                         ? Number(d.total_stock)
-                        : ((d.id === 'dj1') ? 50 : 10));
+                        : ((idLower === 'dj1') ? 50 : 10));
 
-                const resolvedCategory = (d.category && d.category !== 'bags')
-                    ? d.category
-                    : (String(d.id).toLowerCase().startsWith('c') ? 'crossbody' : (String(d.id).toLowerCase().startsWith('sac') ? 'backpacks' : (d.category || 'crossbody')));
+                const resolvedCategory = (idLower === 'sac3')
+                    ? 'backpacks'
+                    : ((d.category && d.category !== 'bags')
+                        ? d.category
+                        : (idLower.startsWith('c') ? 'crossbody' : (idLower.startsWith('sac') ? 'backpacks' : (d.category || 'crossbody'))));
+
+                // sac3 est disponible immédiatement à la vente dans la boutique
+                const resolvedStatus = (idLower === 'sac3')
+                    ? 'available'
+                    : ((idLower === 'dj1') ? 'upcoming' : (d.status || 'available'));
+
+                const resolvedBadge = (idLower === 'sac3')
+                    ? 'DISPONIBLE'
+                    : ((idLower === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (d.preorder_badge || 'DISPONIBLE')));
+
+                const resolvedRelease = (idLower === 'sac3')
+                    ? 'Immédiat'
+                    : ((idLower === 'dj1') ? 'Bientôt disponible' : (d.release_date || 'Immédiat'));
+
+                const resolvedImage = (initMatch && initMatch.image) ? initMatch.image : d.image;
 
                 return {
                     id: d.id,
-                    name: d.name,
-                    price: Number(d.price),
+                    name: (idLower === 'sac3') ? 'ILLEGAL Ocean Camo Pack' : d.name,
+                    price: (idLower === 'sac3') ? 12000 : Number(d.price),
                     category: resolvedCategory,
-                    image: d.image,
-                    description: d.description || '',
+                    image: resolvedImage,
+                    description: (idLower === 'sac3') ? "Édition exclusive en tissu camo aquatique bleu céruléen avec motif all-over imprimé sublimation. Logo ILLEGAL en patch woven signature, macro-étoile emblématique blanche, zips étanches et bretelles ergonomiques. Sac à dos collector." : (d.description || ''),
                     sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
-                    status: (d.id === 'dj1') ? 'upcoming' : (d.status || "available"),
-                    preorderBadge: (d.id === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (d.preorder_badge || "DISPONIBLE"),
-                    releaseDate: (d.id === 'dj1') ? 'Bientôt disponible' : (d.release_date || "Immédiat"),
-                    reservedPercentage: Number(d.reserved_percentage) || 100,
+                    status: resolvedStatus,
+                    preorderBadge: resolvedBadge,
+                    releaseDate: resolvedRelease,
+                    reservedPercentage: (idLower === 'sac3') ? 100 : (Number(d.reserved_percentage) || 100),
                     totalStock: stk,
-                    reservedStock: Number(d.reserved_stock) || 0,
+                    reservedStock: (idLower === 'sac3') ? 0 : (Number(d.reserved_stock) || 0),
                     stock: stk
                 };
             });
 
-            // S'assurer que tous les INITIAL_PRODUCTS (ex: sac4) sont préservés même si absents de la table distante
+            // S'assurer que tous les INITIAL_PRODUCTS (ex: sac4, sac3) sont préservés même si absents de la table distante
             if (Array.isArray(INITIAL_PRODUCTS)) {
                 INITIAL_PRODUCTS.forEach(init => {
-                    if (!mapped.some(p => String(p.id).toLowerCase() === String(init.id).toLowerCase())) {
+                    const existing = mapped.find(p => String(p.id).toLowerCase() === String(init.id).toLowerCase());
+                    if (!existing) {
                         mapped.push({ ...init });
+                    } else {
+                        existing.image = init.image;
+                        if (String(init.id).toLowerCase() === 'sac3') {
+                            existing.status = 'available';
+                            existing.preorderBadge = 'DISPONIBLE';
+                            existing.category = 'backpacks';
+                            existing.price = 12000;
+                        }
                     }
                 });
             }
 
-            PRODUCTS = mapped;
+            PRODUCTS = mapped.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
             saveProductsToStorage();
             if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
             if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
@@ -693,18 +737,19 @@ document.addEventListener("DOMContentLoaded", () => {
     }
 
     /* ==========================================================================
-       QUICK VIEW MODAL CLOSES
+       QUICK VIEW / IMMERSIVE SHOWCASE MODAL CLOSES
        ========================================================================== */
     if (closeModalBtn) {
-        closeModalBtn.addEventListener("click", () => {
-            quickViewOverlay.classList.remove("active");
+        closeModalBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            closeImmersiveProduct();
         });
     }
 
     if (quickViewOverlay) {
         quickViewOverlay.addEventListener("click", (e) => {
             if (e.target === quickViewOverlay) {
-                quickViewOverlay.classList.remove("active");
+                closeImmersiveProduct();
             }
         });
     }
@@ -717,6 +762,7 @@ document.addEventListener("DOMContentLoaded", () => {
             filterTags.forEach(t => t.classList.remove("active"));
             tag.classList.add("active");
             activeCategoryFilter = tag.dataset.filter;
+            currentBoutiqueShowcaseIndex = 0;
             filterAndRenderFeaturedProducts();
         });
     });
@@ -805,6 +851,8 @@ document.addEventListener("DOMContentLoaded", () => {
     syncFlagshipDropCard();
     syncProductsFromSupabase();
     updateBadgesCount();
+    initImmersiveShowcaseListeners();
+    checkInitialProductUrlParam();
 });
 
 /* ==========================================================================
@@ -1034,10 +1082,10 @@ function matchesCategoryFilter(productCategory, productId, filter) {
     const id = String(productId || "").toLowerCase();
 
     if (filter === "crossbody" || filter === "sacoches") {
-        return cat === "crossbody" || cat === "sacoches" || (cat === "bags" && id.startsWith("c"));
+        return cat === "crossbody" || cat === "sacoches" || (cat === "bags" && id.startsWith("c")) || id.startsWith("c");
     }
-    if (filter === "backpacks" || filter === "sac_a_dos") {
-        return cat === "backpacks" || cat === "sac_a_dos" || (cat === "bags" && id.startsWith("sac"));
+    if (filter === "backpacks" || filter === "sac_a_dos" || filter === "sacs") {
+        return cat === "backpacks" || cat === "sac_a_dos" || cat === "sacs" || (cat === "bags" && id.startsWith("sac")) || id.startsWith("sac");
     }
     if (filter === "bags") {
         return cat === "bags" || cat === "crossbody" || cat === "backpacks" || id.startsWith("c") || id.startsWith("sac");
@@ -1048,11 +1096,10 @@ function matchesCategoryFilter(productCategory, productId, filter) {
 /* ==========================================================================
    FEATURED PRODUCTS FILTER ENGINE
    ========================================================================== */
-function filterAndRenderFeaturedProducts() {
-    const productsGrid = document.getElementById("productsGrid");
-    if (!productsGrid) return;
+let currentDisplayedCatalogue = [];
 
-    const filtered = PRODUCTS.filter(p => {
+function getFilteredBoutiqueProducts() {
+    return PRODUCTS.filter(p => {
         // Règle formelle : les articles non disponibles immédiatement ('upcoming' / Coming Soon)
         // ne doivent PAS figurer dans la boutique d'achat direct
         if (p.status === "upcoming") return false;
@@ -1062,91 +1109,334 @@ function filterAndRenderFeaturedProducts() {
                              p.description.toLowerCase().includes(activeSearchQuery);
         return matchesCategory && matchesSearch;
     });
-
-    renderFeaturedProducts(filtered);
 }
 
-function renderFeaturedProducts(productsList) {
-    const productsGrid = document.getElementById("productsGrid");
-    if (!productsGrid) return;
+let currentBoutiqueShowcaseIndex = 0;
+let currentBoutiqueSelectedSize = null;
 
-    if (productsList.length === 0) {
-        productsGrid.innerHTML = `
-            <div class="search-empty-state" style="text-align: center; grid-column: 1/-1; padding: 40px 0;">
+function filterAndRenderFeaturedProducts() {
+    const arenaEl = document.getElementById("boutiqueShowcaseArena");
+    const productsGrid = document.getElementById("productsGrid");
+    if (!arenaEl && !productsGrid) return;
+
+    const filtered = getFilteredBoutiqueProducts();
+    currentDisplayedCatalogue = filtered;
+
+    if (currentBoutiqueShowcaseIndex >= filtered.length) {
+        currentBoutiqueShowcaseIndex = 0;
+    }
+
+    renderBoutiqueGrandShowcase(0);
+}
+
+function handleProductImageError(imgEl) {
+    if (!imgEl || imgEl.dataset.fallbackApplied) return;
+    imgEl.dataset.fallbackApplied = "true";
+    imgEl.src = "IMAGE/logo P.png";
+    imgEl.style.opacity = "0.35";
+    imgEl.style.maxHeight = "120px";
+}
+
+function renderBoutiqueGrandShowcase(direction = 0) {
+    const arenaEl = document.getElementById("boutiqueShowcaseArena");
+    const switcherWrapperEl = document.getElementById("boutiqueBottomSwitcherWrapper");
+    if (!arenaEl) return;
+
+    const list = currentDisplayedCatalogue;
+    if (!list || list.length === 0) {
+        arenaEl.innerHTML = `
+            <div class="search-empty-state" style="text-align: center; grid-column: 1/-1; padding: 60px 0;">
                 <p style="color: var(--text-secondary); font-size: 16px;">Aucun produit ne correspond à vos filtres.</p>
             </div>
         `;
+        if (switcherWrapperEl) switcherWrapperEl.innerHTML = '';
         return;
     }
 
-    productsGrid.innerHTML = productsList.map(product => {
-        const isWishlisted = wishlist.includes(product.id);
-        const stockCount = (product.stock !== undefined && product.stock !== null) 
-            ? Number(product.stock) 
-            : 10;
+    if (currentBoutiqueShowcaseIndex < 0 || currentBoutiqueShowcaseIndex >= list.length) {
+        currentBoutiqueShowcaseIndex = 0;
+    }
 
-        let stockPillHtml = '';
-        if (stockCount > 5) {
-            stockPillHtml = `
-                <div class="product-stock-tag in-stock">
-                    <span class="stock-tag-dot"></span>
-                    <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCES</span>
-                </div>
-            `;
-        } else if (stockCount > 0) {
-            stockPillHtml = `
-                <div class="product-stock-tag low-stock">
-                    <span class="stock-tag-dot pulse"></span>
-                    <span class="stock-tag-label">⚡ DERNIÈRE CHANCE // <strong>${stockCount}</strong> RESTANTES</span>
-                </div>
-            `;
-        } else {
-            stockPillHtml = `
-                <div class="product-stock-tag out-of-stock">
-                    <span class="stock-tag-dot"></span>
-                    <span class="stock-tag-label">SOLD OUT // ÉPUISÉ</span>
-                </div>
-            `;
+    const product = list[currentBoutiqueShowcaseIndex];
+    if (!product) return;
+
+    // Reset or keep selected size
+    if (product.sizes && product.sizes.length > 0) {
+        if (!currentBoutiqueSelectedSize || !product.sizes.includes(currentBoutiqueSelectedSize)) {
+            currentBoutiqueSelectedSize = product.sizes[0];
         }
+    } else {
+        currentBoutiqueSelectedSize = "Unique";
+    }
 
-        const isOutOfStock = stockCount === 0;
+    const isWishlisted = wishlist.includes(product.id);
+    const stockCount = (product.stock !== undefined && product.stock !== null) 
+        ? Number(product.stock) 
+        : 10;
 
-        return `
-            <div class="product-card reveal-on-scroll active" data-id="${product.id}" data-category="${product.category}">
-                <div class="product-card-img-wrapper">
-                    <button class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" 
-                            onclick="event.stopPropagation(); toggleWishlistItem('${product.id}')" 
-                            aria-label="Ajouter aux favoris">
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                        </svg>
-                    </button>
-                    <div class="product-image-container" onclick="openQuickView('${product.id}')">
-                        <img src="${product.image}" alt="${product.name}" class="product-img-primary${product.id.startsWith('sac') ? ' backpack-img' : ''}" loading="lazy" decoding="async">
-                    </div>
-                    <div class="product-card-actions">
-                        <button class="quick-view-btn" onclick="openQuickView('${product.id}')">Aperçu Rapide</button>
-                        ${isOutOfStock ? `
-                            <button class="quick-add-btn" disabled style="opacity:0.6; cursor:not-allowed;">Épuisé</button>
-                        ` : `
-                            <button class="quick-add-btn" onclick="addToCartDirect('${product.id}')">Ajout Rapide</button>
-                        `}
-                    </div>
-                </div>
-                <div class="product-card-meta">
-                    <div class="product-title-row">
-                        <h3 class="product-name" onclick="openQuickView('${product.id}')" style="cursor:pointer;">${product.name}</h3>
-                        <span class="product-price">${formatPrice(product.price)}</span>
-                    </div>
-                    <div class="product-card-stock-row">
-                        ${stockPillHtml}
-                    </div>
-                    <p class="product-short-desc">${product.description.split('.')[0]}.</p>
+    let stockStatusText = "EN STOCK";
+    let stockClass = "in-stock";
+    if (stockCount <= 0) {
+        stockStatusText = "SOLD OUT // ÉPUISÉ";
+        stockClass = "out-of-stock";
+    } else if (stockCount <= 3) {
+        stockStatusText = `DERNIÈRES PIÈCES (${stockCount})`;
+        stockClass = "low-stock";
+    } else if (product.status === "preorder") {
+        stockStatusText = "PRÉ-VENTE // DROP 02";
+        stockClass = "preorder";
+    }
+
+    const categoryLabel = getCategoryLabel(product.category);
+
+    let animClass = "";
+    if (direction > 0) animClass = "animate-from-right";
+    else if (direction < 0) animClass = "animate-from-left";
+
+    // Build sizes HTML ONLY for clothing with multiple sizes (no sizes for bags, crossbodies, caps)
+    const isClothing = (product.category === "hoodies" || product.category === "tees" || product.category === "vetements" || product.category === "jackets");
+    const hasMultipleSizes = product.sizes && product.sizes.length > 1;
+
+    let sizesHtml = "";
+    if (isClothing && hasMultipleSizes) {
+        sizesHtml = `
+            <div class="showcase-size-selector-box">
+                <span class="showcase-size-title">Choose your size :</span>
+                <div class="showcase-size-chips-list">
+                    ${product.sizes.map(size => `
+                        <button type="button" 
+                                class="showcase-size-chip ${size === currentBoutiqueSelectedSize ? 'active' : ''}" 
+                                onclick="selectBoutiqueSize('${size}')" 
+                                aria-label="Taille ${size}">
+                            ${size}
+                        </button>
+                    `).join('')}
                 </div>
             </div>
         `;
-    }).join("");
+    }
+
+    // 1. RENDER ARENA (3 ZONES)
+    arenaEl.innerHTML = `
+        <!-- ZONE 1: INFORMATIONS GAUCHE (DESCRIPTION ÉPURÉE & TITRE) -->
+        <div class="showcase-col-left">
+            <div class="showcase-top-controls">
+                <div class="showcase-arrows-group">
+                    <button type="button" class="showcase-arrow-btn" onclick="switchBoutiqueProduct(-1)" aria-label="Produit précédent">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <button type="button" class="showcase-arrow-btn" onclick="switchBoutiqueProduct(1)" aria-label="Produit suivant">
+                        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+                <div class="showcase-counter-badge">
+                    <span class="counter-current">${String(currentBoutiqueShowcaseIndex + 1).padStart(2, '0')}</span>
+                    <span class="counter-sep">/</span>
+                    <span class="counter-total">${String(list.length).padStart(2, '0')}</span>
+                </div>
+            </div>
+
+            <div class="showcase-brand-tag">
+                <span>CULTURE // DROP OFFICIEL</span>
+                <span class="dot-sep">•</span>
+                <span>${categoryLabel}</span>
+            </div>
+
+            <h1 class="showcase-main-title">${product.name}</h1>
+            <p class="showcase-tagline">STAND OUT WITHOUT TRYING</p>
+
+            <p class="showcase-full-desc">${product.description}</p>
+        </div>
+
+        <!-- ZONE 2: PRODUIT EN GRAND SANS CADRE AU CENTRE (UNIFORME & +50%) -->
+        <div class="showcase-col-center">
+            <div class="showcase-ambient-halo"></div>
+            <div class="showcase-product-float-stage" id="showcaseFloatStage">
+                <img src="${product.image}" 
+                     alt="${product.name}" 
+                     class="showcase-frameless-img ${animClass} ${product.id.startsWith('sac') ? 'backpack-img' : ''}" 
+                     id="showcaseFramelessImg"
+                     loading="eager"
+                     decoding="async"
+                     onerror="handleProductImageError(this)" />
+                <div class="showcase-pedestal-shadow"></div>
+            </div>
+        </div>
+
+        <!-- ZONE 3: PRIX, NOMBRE DISPONIBLE & BOUTONS D'ACHAT À DROITE -->
+        <div class="showcase-col-right">
+            <div class="showcase-price-box">
+                <span class="showcase-price-tag">PRIX OFFICIEL</span>
+                <div class="showcase-price-amount">${formatPrice(product.price)}</div>
+                <div class="showcase-available-count">
+                    SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCES DISPONIBLES
+                </div>
+            </div>
+
+            ${sizesHtml}
+
+            <div class="showcase-action-row">
+                <button type="button" class="showcase-cta-main" onclick="addCurrentShowcaseProductToCart()">
+                    <span>Ajouter au panier</span>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 5 19 12 12 19"></polyline>
+                    </svg>
+                </button>
+                <button type="button" class="showcase-wishlist-toggle ${isWishlisted ? 'active' : ''}" 
+                        onclick="toggleWishlistItem('${product.id}'); this.classList.toggle('active');" 
+                        aria-label="${isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
+                        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    `;
+
+    // 2. RENDER BOTTOM SWITCHER ("flèche en bas pour switcher sur le reste des produits")
+    if (switcherWrapperEl) {
+        switcherWrapperEl.innerHTML = `
+            <div class="bottom-switcher-header">
+                <span class="bottom-switcher-title">EXPLORER LA COLLECTION (${list.length} PIÈCES)</span>
+                <span class="bottom-switcher-hint">Cliquez sur une pièce ou utilisez les flèches pour changer</span>
+            </div>
+
+            <div class="bottom-switcher-row">
+                <button type="button" class="bottom-arrow-nav prev" onclick="switchBoutiqueProduct(-1)" aria-label="Produit précédent">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="19" y1="12" x2="5" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+
+                <div class="bottom-switcher-viewport" id="bottomSwitcherViewport">
+                    <div class="bottom-switcher-rail" id="bottomSwitcherRail">
+                        ${list.map((item, idx) => `
+                            <button type="button" 
+                                    class="bottom-switcher-card ${idx === currentBoutiqueShowcaseIndex ? 'active' : ''}" 
+                                    onclick="selectBoutiqueProductByIndex(${idx})" 
+                                    aria-label="Sélectionner ${item.name}">
+                                <div class="bottom-card-thumb">
+                                    <img src="${item.image}" alt="${item.name}" loading="lazy" onerror="handleProductImageError(this)">
+                                </div>
+                                <div class="bottom-card-info">
+                                    <span class="bottom-card-name">${item.name}</span>
+                                    <span class="bottom-card-price">${formatPrice(item.price)}</span>
+                                </div>
+                                ${idx === currentBoutiqueShowcaseIndex ? '<div class="bottom-card-indicator"></div>' : ''}
+                            </button>
+                        `).join('')}
+                    </div>
+                </div>
+
+                <button type="button" class="bottom-arrow-nav next" onclick="switchBoutiqueProduct(1)" aria-label="Produit suivant">
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                        <polyline points="12 19 5 12 12 5"></polyline>
+                    </svg>
+                </button>
+            </div>
+        `;
+
+        setTimeout(() => {
+            const activeCard = switcherWrapperEl.querySelector('.bottom-switcher-card.active');
+            const viewport = document.getElementById('bottomSwitcherViewport');
+            if (activeCard && viewport) {
+                const cardOffset = activeCard.offsetLeft - viewport.offsetLeft - (viewport.clientWidth / 2) + (activeCard.clientWidth / 2);
+                viewport.scrollTo({ left: Math.max(0, cardOffset), behavior: 'smooth' });
+            }
+        }, 50);
+    }
+
+    // Touch swipe listener on center image
+    const floatImg = document.getElementById('showcaseFramelessImg');
+    if (floatImg) {
+        let touchStartX = 0;
+        let touchStartY = 0;
+        floatImg.addEventListener('touchstart', (e) => {
+            if (e.changedTouches && e.changedTouches[0]) {
+                touchStartX = e.changedTouches[0].screenX;
+                touchStartY = e.changedTouches[0].screenY;
+            }
+        }, { passive: true });
+        floatImg.addEventListener('touchend', (e) => {
+            if (e.changedTouches && e.changedTouches[0]) {
+                const diffX = e.changedTouches[0].screenX - touchStartX;
+                const diffY = e.changedTouches[0].screenY - touchStartY;
+                if (Math.abs(diffX) > 45 && Math.abs(diffX) > Math.abs(diffY)) {
+                    if (diffX < 0) switchBoutiqueProduct(1);
+                    else switchBoutiqueProduct(-1);
+                }
+            }
+        }, { passive: true });
+    }
 }
+
+function switchBoutiqueProduct(delta) {
+    const list = currentDisplayedCatalogue;
+    if (!list || list.length === 0) return;
+
+    currentBoutiqueShowcaseIndex = (currentBoutiqueShowcaseIndex + delta + list.length) % list.length;
+    renderBoutiqueGrandShowcase(delta);
+
+    const currentProduct = list[currentBoutiqueShowcaseIndex];
+    if (currentProduct && window.history && window.history.replaceState) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('product', currentProduct.id);
+        window.history.replaceState({ productId: currentProduct.id }, '', url.toString());
+    }
+}
+
+function selectBoutiqueProductByIndex(index) {
+    const list = currentDisplayedCatalogue;
+    if (!list || index < 0 || index >= list.length) return;
+    const direction = index > currentBoutiqueShowcaseIndex ? 1 : -1;
+    currentBoutiqueShowcaseIndex = index;
+    renderBoutiqueGrandShowcase(direction);
+
+    const currentProduct = list[currentBoutiqueShowcaseIndex];
+    if (currentProduct && window.history && window.history.replaceState) {
+        const url = new URL(window.location.href);
+        url.searchParams.set('product', currentProduct.id);
+        window.history.replaceState({ productId: currentProduct.id }, '', url.toString());
+    }
+}
+
+function selectBoutiqueSize(size) {
+    currentBoutiqueSelectedSize = size;
+    const chips = document.querySelectorAll('.showcase-size-chip');
+    chips.forEach(chip => {
+        if (chip.textContent.trim() === size) {
+            chip.classList.add('active');
+        } else {
+            chip.classList.remove('active');
+        }
+    });
+}
+
+function addCurrentShowcaseProductToCart() {
+    const list = currentDisplayedCatalogue;
+    const product = list[currentBoutiqueShowcaseIndex];
+    if (!product) return;
+
+    const sizeToOrder = currentBoutiqueSelectedSize || (product.sizes && product.sizes[0]) || 'Unique';
+    addItemToCartArray(product, sizeToOrder, product.status === 'preorder');
+    openCartDrawer();
+    showToast(`✓ ${product.name} ajouté au panier !`);
+}
+
+// Global exposes for onclick handlers
+window.switchBoutiqueProduct = switchBoutiqueProduct;
+window.selectBoutiqueProductByIndex = selectBoutiqueProductByIndex;
+window.selectBoutiqueSize = selectBoutiqueSize;
+window.addCurrentShowcaseProductToCart = addCurrentShowcaseProductToCart;
+window.renderFeaturedProducts = function() { renderBoutiqueGrandShowcase(0); };
+
 
 /* ==========================================================================
    GLOBAL SEARCH PANEL REAL-TIME FILTER
@@ -1690,9 +1980,168 @@ function updateBadgesCount() {
 }
 
 /* ==========================================================================
-   QUICK VIEW PANEL LOADER
+   IMMERSIVE PRODUCT SHOWCASE STAGE ENGINE (QUICK VIEW & SHARED TRANSITIONS)
    ========================================================================== */
-function openQuickView(productId) {
+let currentImmersiveProductId = null;
+let currentImmersiveList = [];
+let currentImmersiveIndex = 0;
+let lastTriggerCardImgRect = null;
+let lastFocusedElement = null;
+let immersiveNavigationLock = false;
+let touchStartX = 0;
+let touchStartY = 0;
+
+function prefersReducedMotion() {
+    return window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+}
+
+function getNavigationListForProduct(productId) {
+    const filtered = getFilteredBoutiqueProducts();
+    if (filtered.some(p => p.id === productId)) {
+        return filtered;
+    }
+    // Si ouvert depuis Coming Soon (ex: dj1) ou recherche globale hors filtre actif
+    const allUnique = [];
+    const seen = new Set();
+    PRODUCTS.forEach(p => {
+        const key = String(p.id).toLowerCase();
+        if (!seen.has(key)) {
+            seen.add(key);
+            allUnique.push(p);
+        }
+    });
+    return allUnique;
+}
+
+function getAmbientGlowStyleForProduct(product) {
+    const id = String(product.id || "").toLowerCase();
+    const cat = String(product.category || "").toLowerCase();
+    if (id === "sac4" || id === "sac3") {
+        return "radial-gradient(circle at 50% 50%, rgba(0, 82, 255, 0.22) 0%, rgba(255, 90, 0, 0.06) 45%, transparent 72%)";
+    }
+    if (id === "dj1") {
+        return "radial-gradient(circle at 50% 50%, rgba(30, 64, 175, 0.22) 0%, rgba(255, 90, 0, 0.08) 48%, transparent 72%)";
+    }
+    if (cat === "backpacks" || id.startsWith("sac")) {
+        return "radial-gradient(circle at 50% 50%, rgba(255, 90, 0, 0.16) 0%, rgba(255, 255, 255, 0.05) 48%, transparent 72%)";
+    }
+    return "radial-gradient(circle at 50% 50%, rgba(255, 90, 0, 0.14) 0%, rgba(120, 120, 140, 0.08) 50%, transparent 72%)";
+}
+
+function syncProductUrlParam(productId, replace = false) {
+    try {
+        const url = new URL(window.location.href);
+        if (productId) {
+            url.searchParams.set("product", productId);
+        } else {
+            url.searchParams.delete("product");
+        }
+        if (replace) {
+            window.history.replaceState({ immersiveProduct: productId }, "", url.toString());
+        } else {
+            window.history.pushState({ immersiveProduct: productId }, "", url.toString());
+        }
+    } catch (e) {}
+}
+
+function checkInitialProductUrlParam() {
+    try {
+        const params = new URLSearchParams(window.location.search);
+        const prodId = params.get("product");
+        if (prodId) {
+            const targetProd = PRODUCTS.find(p => String(p.id).toLowerCase() === String(prodId).toLowerCase());
+            if (targetProd) {
+                if (targetProd.id.startsWith("sac")) {
+                    activeCategoryFilter = "backpacks";
+                } else if (targetProd.id.startsWith("c")) {
+                    activeCategoryFilter = "crossbody";
+                } else {
+                    activeCategoryFilter = "all";
+                }
+                const filterTags = document.querySelectorAll(".filter-tag");
+                filterTags.forEach(t => {
+                    if (t.dataset.filter === activeCategoryFilter) t.classList.add("active");
+                    else t.classList.remove("active");
+                });
+                currentDisplayedCatalogue = getFilteredBoutiqueProducts();
+                const idx = currentDisplayedCatalogue.findIndex(p => String(p.id).toLowerCase() === String(prodId).toLowerCase());
+                if (idx !== -1) {
+                    currentBoutiqueShowcaseIndex = idx;
+                    renderBoutiqueGrandShowcase(0);
+                    const boutiqueEl = document.getElementById("boutique");
+                    if (boutiqueEl) boutiqueEl.scrollIntoView({ behavior: "smooth" });
+                    return;
+                }
+            }
+        }
+    } catch (e) {}
+}
+
+function initImmersiveShowcaseListeners() {
+    // Clavier : Flèche Gauche, Flèche Droite, Échap
+    document.addEventListener("keydown", (e) => {
+        const overlay = document.getElementById("quickViewOverlay");
+        if (!overlay || !overlay.classList.contains("active")) {
+            if (document.activeElement && ['INPUT', 'TEXTAREA'].includes(document.activeElement.tagName)) return;
+            if (e.key === "ArrowRight") {
+                switchBoutiqueProduct(1);
+            } else if (e.key === "ArrowLeft") {
+                switchBoutiqueProduct(-1);
+            }
+            return;
+        }
+
+        if (e.key === "Escape") {
+            e.preventDefault();
+            closeImmersiveProduct();
+        } else if (e.key === "ArrowRight") {
+            e.preventDefault();
+            navigateImmersiveProduct(1);
+        } else if (e.key === "ArrowLeft") {
+            e.preventDefault();
+            navigateImmersiveProduct(-1);
+        }
+    });
+
+    // Gestes tactiles (Swipe gauche / droite sur mobile)
+    const stage = document.getElementById("quickViewModal");
+    if (stage) {
+        stage.addEventListener("touchstart", (e) => {
+            if (!e.touches || e.touches.length !== 1) return;
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+        }, { passive: true });
+
+        stage.addEventListener("touchend", (e) => {
+            if (!e.changedTouches || e.changedTouches.length !== 1) return;
+            const deltaX = e.changedTouches[0].clientX - touchStartX;
+            const deltaY = e.changedTouches[0].clientY - touchStartY;
+
+            // Valider un swipe horizontal franc (> 55px et dominant sur le scroll vertical)
+            if (Math.abs(deltaX) > 55 && Math.abs(deltaX) > Math.abs(deltaY) * 1.3) {
+                if (deltaX < 0) {
+                    navigateImmersiveProduct(1);
+                } else {
+                    navigateImmersiveProduct(-1);
+                }
+            }
+        }, { passive: true });
+    }
+
+    // Bouton Précédent du navigateur (popstate)
+    window.addEventListener("popstate", () => {
+        const params = new URLSearchParams(window.location.search);
+        const prodId = params.get("product");
+        const overlay = document.getElementById("quickViewOverlay");
+        if (prodId && PRODUCTS.some(p => p.id === prodId)) {
+            openQuickView(prodId, null, { skipUrlPush: true });
+        } else if (overlay && overlay.classList.contains("active")) {
+            closeImmersiveProduct({ skipUrlSync: true });
+        }
+    });
+}
+
+function openQuickView(productId, triggerEl = null, options = {}) {
     const product = PRODUCTS.find(p => p.id === productId);
     if (!product) return;
 
@@ -1700,8 +2149,97 @@ function openQuickView(productId) {
     const body = document.getElementById("quickViewModalBody");
     if (!overlay || !body) return;
 
+    const wasAlreadyOpen = overlay.classList.contains("active");
+
+    // Sauvegarder l'élément déclencheur pour restaurer le focus à la fermeture
+    if (!wasAlreadyOpen) {
+        lastFocusedElement = triggerEl || document.activeElement;
+    }
+
+    // Capturer la position (bounding box) de l'image dans la carte du catalogue pour l'animation FLIP
+    lastTriggerCardImgRect = null;
+    if (!wasAlreadyOpen && !prefersReducedMotion()) {
+        const cardEl = document.querySelector(`.product-card[data-id="${productId}"] .product-img-primary`) ||
+                       document.querySelector(`.carousel-item[data-id="${productId}"] .carousel-item-img`) ||
+                       (productId === "dj1" ? document.querySelector(".flagship-drop-img") : null);
+        if (cardEl) {
+            const rect = cardEl.getBoundingClientRect();
+            if (rect.width > 0 && rect.height > 0) {
+                lastTriggerCardImgRect = rect;
+            }
+        }
+    }
+
+    // Construire la liste ordonnée de navigation
+    currentImmersiveList = getNavigationListForProduct(productId);
+    const foundIdx = currentImmersiveList.findIndex(p => p.id === productId);
+    currentImmersiveIndex = foundIdx !== -1 ? foundIdx : 0;
+    currentImmersiveProductId = product.id;
+
+    // Rendu du contenu dans la scène immersive
+    renderImmersiveShowcaseContent(product, options.direction || 0);
+
+    // Ouvrir l'overlay et verrouiller le scroll arrière-plan proprement
+    if (!wasAlreadyOpen) {
+        overlay.classList.add("active");
+        document.body.classList.add("immersive-modal-open");
+
+        // Exécuter l'animation Shared Element (FLIP) de la carte vers la scène
+        if (lastTriggerCardImgRect && !prefersReducedMotion()) {
+            requestAnimationFrame(() => {
+                const heroImg = document.getElementById("immersiveHeroImg");
+                if (!heroImg) return;
+                const finalRect = heroImg.getBoundingClientRect();
+                if (finalRect.width > 0 && finalRect.height > 0) {
+                    const deltaX = (lastTriggerCardImgRect.left + lastTriggerCardImgRect.width / 2) - (finalRect.left + finalRect.width / 2);
+                    const deltaY = (lastTriggerCardImgRect.top + lastTriggerCardImgRect.height / 2) - (finalRect.top + finalRect.height / 2);
+                    const scale = Math.max(0.25, Math.min(0.9, lastTriggerCardImgRect.height / finalRect.height));
+
+                    heroImg.style.transition = "none";
+                    heroImg.style.transform = `translate3d(${deltaX}px, ${deltaY}px, 0) scale(${scale})`;
+                    heroImg.style.opacity = "0.65";
+
+                    requestAnimationFrame(() => {
+                        heroImg.style.transition = "transform 0.62s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.45s ease";
+                        heroImg.style.transform = "translate3d(0, 0, 0) scale(1)";
+                        heroImg.style.opacity = "1";
+                    });
+                }
+            });
+        }
+    }
+
+    // Synchroniser l'URL sans recharger la page
+    if (!options.skipUrlPush) {
+        syncProductUrlParam(product.id, wasAlreadyOpen);
+    }
+}
+
+function renderImmersiveShowcaseContent(product, direction = 0) {
+    const body = document.getElementById("quickViewModalBody");
+    const counterEl = document.getElementById("immersivePositionCounter");
+    const glowEl = document.getElementById("immersiveAmbientGlow");
+    if (!body) return;
+
+    const totalItems = currentImmersiveList.length || 1;
+    const currentPos = currentImmersiveIndex + 1;
+    if (counterEl) {
+        counterEl.textContent = `${String(currentPos).padStart(2, "0")} / ${String(totalItems).padStart(2, "0")}`;
+    }
+
+    if (glowEl) {
+        glowEl.style.background = getAmbientGlowStyleForProduct(product);
+    }
+
+    // Produit suivant & précédent pour l'aperçu flottant (inspiré de la vidéo de référence)
+    const nextIdx = (currentImmersiveIndex + 1) % totalItems;
+    const prevIdx = (currentImmersiveIndex - 1 + totalItems) % totalItems;
+    const nextProduct = currentImmersiveList[nextIdx] || product;
+    const prevProduct = currentImmersiveList[prevIdx] || product;
+
     const isWishlisted = wishlist.includes(product.id);
     const isUpcoming = product.status === "upcoming";
+    const isPreorder = product.status === "preorder";
     const stockCount = (product.stock !== undefined && product.stock !== null) 
         ? Number(product.stock) 
         : 10;
@@ -1717,12 +2255,21 @@ function openQuickView(productId) {
                 </div>
             </div>
         `;
+    } else if (isPreorder) {
+        stockBannerHtml = `
+            <div class="qv-stock-banner">
+                <div class="product-stock-tag low-stock">
+                    <span class="stock-tag-dot pulse"></span>
+                    <span class="stock-tag-label">${product.preorderBadge || '⚡ PRÉ-VENTE'} // EXPÉDITION : <strong>${product.releaseDate || 'Immédiat'}</strong></span>
+                </div>
+            </div>
+        `;
     } else if (stockCount > 5) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
                 <div class="product-stock-tag in-stock">
                     <span class="stock-tag-dot"></span>
-                    <span class="stock-tag-label">SÉRIE LIMITÉE // <strong>${stockCount} PIÈCES</strong> DISPONIBLES</span>
+                    <span class="stock-tag-label">EN STOCK // SÉRIE LIMITÉE : <strong>${stockCount} PIÈCES</strong> DISPONIBLES</span>
                 </div>
             </div>
         `;
@@ -1731,7 +2278,7 @@ function openQuickView(productId) {
             <div class="qv-stock-banner">
                 <div class="product-stock-tag low-stock">
                     <span class="stock-tag-dot pulse"></span>
-                    <span class="stock-tag-label">⚡ DERNIÈRE CHANCE // PLUS QUE <strong>${stockCount} PIÈCES</strong> RESTANTES !</span>
+                    <span class="stock-tag-label">⚡ DERNIÈRE CHANCE // PLUS QUE <strong>${stockCount} PIÈCES</strong> RESTANTES</span>
                 </div>
             </div>
         `;
@@ -1746,24 +2293,66 @@ function openQuickView(productId) {
         `;
     }
 
+    const slideClass = direction > 0 ? "slide-from-right" : (direction < 0 ? "slide-from-left" : "initial-entrance");
+
     body.innerHTML = `
-        <div class="quick-view-grid">
-            <div class="qv-img-side">
-                <img src="${product.image}" alt="${product.name}">
+        <div class="quick-view-grid immersive-grid ${slideClass}" data-product-id="${product.id}">
+            <!-- ZONE VISUELLE : Grande image du produit en lévitation -->
+            <div class="qv-img-side immersive-visual-zone">
+                <div class="immersive-stage-backdrop-label" aria-hidden="true">${getCategoryLabel(product.category).toUpperCase()}</div>
+                
+                <div class="immersive-product-pedestal">
+                    <img src="${product.image}" 
+                         alt="${product.name}" 
+                         id="immersiveHeroImg"
+                         class="immersive-hero-img ${product.id.startsWith('sac') ? 'is-backpack' : ''}"
+                         onerror="handleProductImageError(this)">
+                    <div class="immersive-pedestal-shadow"></div>
+                </div>
+
+                <div class="immersive-visual-caption">
+                    <span class="caption-serial">REF // ${String(product.id).toUpperCase()}</span>
+                    <span class="caption- separator">•</span>
+                    <span class="caption-tagline">CULTURE STREETWEAR CO. — COTONOU</span>
+                </div>
+
+                ${totalItems > 1 ? `
+                    <!-- Mini aperçu flottant du produit suivant (clin d'œil à la vidéo de référence) -->
+                    <button class="immersive-next-teaser" onclick="navigateImmersiveProduct(1)" aria-label="Voir suivant : ${nextProduct.name}" title="Suivant : ${nextProduct.name}">
+                        <div class="next-teaser-thumb">
+                            <img src="${nextProduct.image}" alt="${nextProduct.name}" onerror="handleProductImageError(this)">
+                        </div>
+                        <div class="next-teaser-meta">
+                            <span class="next-teaser-label">Suivant →</span>
+                            <span class="next-teaser-name">${nextProduct.name}</span>
+                        </div>
+                    </button>
+                ` : ''}
             </div>
             
-            <div class="qv-text-side">
-                <div class="qv-badge">${getCategoryLabel(product.category)}</div>
-                <h3 class="qv-title">${product.name}</h3>
-                <div class="qv-price">${formatPrice(product.price)}</div>
+            <!-- ZONE INFORMATIVE : Panneau éditorial structuré -->
+            <div class="qv-text-side immersive-info-zone">
+                <div class="immersive-meta-header stagger-item-1">
+                    <span class="qv-badge">${getCategoryLabel(product.category)}</span>
+                    ${product.releaseDate ? `<span class="immersive-release-pill">📦 ${product.releaseDate}</span>` : ''}
+                </div>
 
-                ${stockBannerHtml}
+                <h3 class="qv-title immersive-product-title stagger-item-2" id="immersiveProductTitle">${product.name}</h3>
+                
+                <div class="immersive-price-row stagger-item-2">
+                    <div class="qv-price immersive-price">${formatPrice(product.price)}</div>
+                    ${product.oldPrice ? `<span class="immersive-old-price">${formatPrice(product.oldPrice)}</span>` : ''}
+                </div>
 
-                <p class="qv-description">${product.description}</p>
+                <div class="stagger-item-3">
+                    ${stockBannerHtml}
+                </div>
+
+                <p class="qv-description immersive-description stagger-item-3">${product.description}</p>
                 
                 ${product.sizes && product.sizes.length > 0 ? `
-                    <div class="qv-variants">
-                        <h5>Sélectionner la Taille</h5>
+                    <div class="qv-variants immersive-variants stagger-item-4">
+                        <h5>Choisir votre taille</h5>
                         <div class="qv-sizes-row">
                             ${product.sizes.map((s, idx) => `
                                 <button class="size-btn ${idx === 0 ? 'active' : ''}" onclick="selectModalSize(this)">${s}</button>
@@ -1772,25 +2361,110 @@ function openQuickView(productId) {
                     </div>
                 ` : ''}
 
-                <div class="qv-actions-row">
+                <div class="qv-actions-row immersive-actions-row stagger-item-4">
                     ${isUpcoming ? `
-                        <button class="qv-add-to-cart qv-alert-btn" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--accent-orange); color:#fff;" onclick="triggerDropAlert('${product.id}')">🔔 M'alerter au Drops</button>
+                        <button class="qv-add-to-cart qv-alert-btn" style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); border: 1px solid var(--accent-orange); color:#fff;" onclick="triggerDropAlert('${product.id}')">
+                            <span>🔔 M'alerter au Drops</span>
+                        </button>
                     ` : isOutOfStock ? `
-                        <button class="qv-add-to-cart" disabled style="opacity:0.6; cursor:not-allowed;">❌ Épuisé pour le moment</button>
+                        <button class="qv-add-to-cart" disabled style="opacity:0.6; cursor:not-allowed;">
+                            <span>❌ Épuisé pour le moment</span>
+                        </button>
                     ` : `
-                        <button class="qv-add-to-cart" onclick="addFromModalToCart('${product.id}')">Ajouter au panier</button>
+                        <button class="qv-add-to-cart immersive-buy-btn" onclick="addFromModalToCart('${product.id}')">
+                            <span>${isPreorder ? '⚡ Pré-commander — ' + formatPrice(product.price) : 'Ajouter au Sac — ' + formatPrice(product.price)}</span>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                                <polyline points="12 5 19 12 12 19"></polyline>
+                            </svg>
+                        </button>
                     `}
-                    <button class="qv-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlistItem('${product.id}'); syncModalWishlistBtn(this)" aria-label="Ajouter aux favoris">
+                    <button class="qv-wishlist ${isWishlisted ? 'active' : ''}" onclick="toggleWishlistItem('${product.id}'); syncModalWishlistBtn(this)" aria-label="Ajouter aux favoris" title="Ajouter aux favoris">
                         <svg width="20" height="20" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
                             <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
                         </svg>
                     </button>
                 </div>
+
+                <!-- Navigation rapide de pied de panneau -->
+                ${totalItems > 1 ? `
+                    <div class="immersive-footer-switcher stagger-item-4">
+                        <button class="switcher-link prev" onclick="navigateImmersiveProduct(-1)">
+                            <span>← ${prevProduct.name}</span>
+                        </button>
+                        <button class="switcher-link next" onclick="navigateImmersiveProduct(1)">
+                            <span>${nextProduct.name} →</span>
+                        </button>
+                    </div>
+                ` : ''}
             </div>
         </div>
     `;
+}
 
-    overlay.classList.add("active");
+function navigateImmersiveProduct(step) {
+    if (immersiveNavigationLock) return;
+    if (!currentImmersiveList || currentImmersiveList.length <= 1) return;
+
+    immersiveNavigationLock = true;
+    setTimeout(() => { immersiveNavigationLock = false; }, 220);
+
+    const total = currentImmersiveList.length;
+    currentImmersiveIndex = (currentImmersiveIndex + step + total) % total;
+    const targetProduct = currentImmersiveList[currentImmersiveIndex];
+    if (!targetProduct) return;
+
+    currentImmersiveProductId = targetProduct.id;
+
+    const updateDOM = () => {
+        renderImmersiveShowcaseContent(targetProduct, step);
+        syncProductUrlParam(targetProduct.id, true);
+    };
+
+    // Utiliser View Transitions API si disponible et que l'utilisateur n'a pas activé reduced-motion
+    if (document.startViewTransition && !prefersReducedMotion()) {
+        try {
+            document.startViewTransition(() => {
+                updateDOM();
+            });
+        } catch (e) {
+            updateDOM();
+        }
+    } else {
+        updateDOM();
+    }
+}
+
+function closeImmersiveProduct(options = {}) {
+    const overlay = document.getElementById("quickViewOverlay");
+    if (!overlay || !overlay.classList.contains("active")) return;
+
+    overlay.classList.remove("active");
+    document.body.classList.remove("immersive-modal-open");
+
+    if (!options.skipUrlSync) {
+        syncProductUrlParam(null, true);
+    }
+
+    // Faire défiler doucement la carte du dernier produit consulté dans le champ de vision si besoin
+    if (currentImmersiveProductId) {
+        const activeCard = document.querySelector(`.product-card[data-id="${currentImmersiveProductId}"]`);
+        if (activeCard) {
+            const rect = activeCard.getBoundingClientRect();
+            const isVisible = rect.top >= 0 && rect.bottom <= window.innerHeight;
+            if (!isVisible) {
+                activeCard.scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "nearest" });
+            }
+            activeCard.classList.add("recently-inspected");
+            setTimeout(() => activeCard.classList.remove("recently-inspected"), 1400);
+        }
+    }
+
+    if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
+        try {
+            lastFocusedElement.focus({ preventScroll: true });
+        } catch (e) {}
+    }
 }
 
 function selectModalSize(btn) {
@@ -1826,9 +2500,7 @@ function addFromModalToCart(productId) {
     addItemToCartArray(product, selectedSize);
     showToast(`${product.name} ${selectedSize ? '(' + selectedSize + ')' : ''} ajouté au panier.`);
     
-    const quickViewOverlay = document.getElementById("quickViewOverlay");
-    if (quickViewOverlay) quickViewOverlay.classList.remove("active");
-    
+    closeImmersiveProduct();
     openCartDrawer();
 }
 

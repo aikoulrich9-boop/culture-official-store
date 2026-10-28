@@ -56,6 +56,9 @@ CREATE TRIGGER trg_products_updated_at
     FOR EACH ROW EXECUTE FUNCTION public.set_updated_at();
 
 -- 4. INSERTION / MISE À JOUR DU CATALOGUE OFFICIEL (SEED)
+-- Suppression préalable des anciens produits retirés du catalogue (hoodie & casquette)
+DELETE FROM public.products WHERE id IN ('h1', 'cap1');
+
 INSERT INTO public.products (id, name, price, category, image, description, sizes, status, preorder_badge, release_date, reserved_percentage, total_stock, reserved_stock, stock)
 VALUES
     ('c1', 'Terra Icon Crossbody', 8000, 'crossbody', 'IMAGE/c 1.png', 'Sac streetwear noir avec illustration colorée d''un personnage sur la Terre.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 85, 50, 42, 10),
@@ -66,13 +69,11 @@ VALUES
     ('c6', 'Manga Rebel Crossbody', 8000, 'crossbody', 'IMAGE/c 5.png', 'Graphisme d''auteur façon croquis manga brut aux hachures expressives et cheveux blonds.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 50, 50, 10),
     ('c7', 'Boxy Silhouette Crossbody', 8000, 'crossbody', 'IMAGE/c 6.png', 'Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 50, 50, 10),
     ('c8', 'Stealth Blackout Crossbody', 8000, 'crossbody', 'IMAGE/c 7.png', 'Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 50, 50, 12),
-    ('h1', 'Heavyweight Boxy Hoodie', 8000, 'hoodies', 'IMAGE/hoodie.jpg', 'Hoodie en coton bio haute densité 450gsm avec coupe ample.', '["S", "M", "L", "XL"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '20 Oct. 2026', 75, 40, 30, 10),
     ('t1', 'Creator Studio Tee', 8000, 'tees', 'IMAGE/tee.jpg', 'T-shirt en jersey de coton peigné imprimé d''illustrations graphiques.', '["S", "M", "L", "XL"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', '28 Oct. 2026', 40, 60, 24, 18),
-    ('cap1', 'Urban Explorer Cap', 8000, 'caps', 'IMAGE/cap.jpg', 'Casquette classique utilitaire à 6 panneaux.', '["Taille Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 30, 30, 20),
-    ('dj1', 'Veste Hoodie Raw Indigo Denim 480gsm', 12000, 'hoodies', 'IMAGE/denim_jacket.jpg', 'Veste à capuche zippée en denim brut indigo lourd 480gsm.', '["S", "M", "L", "XL"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', 'Bientôt disponible', 0, 50, 0, 50),
-    ('sac1', 'ILLEGAL Blackout Pack Vol.1', 12000, 'backpacks', 'IMAGE/sac_illegal_black.png', 'Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 88, 40, 35, 10),
-    ('sac2', 'ILLEGAL Star Pack Vol.2', 12000, 'backpacks', 'IMAGE/sac_illegal_star.png', 'Version signature de la collection ILLEGAL × Priority.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 92, 40, 37, 10),
-    ('sac3', 'ILLEGAL Ocean Camo Pack', 14000, 'backpacks', 'IMAGE/sac_illegal_blue.png', 'Edition premium en tissu camo aquatique bleu céruléen.', '["Unique"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', '28 Oct. 2026', 65, 30, 20, 6),
+    ('dj1', 'Veste Hoodie Raw Indigo Denim 480gsm', 12000, 'hoodies', 'IMAGE/denim_jacket.jpg.png', 'Veste à capuche zippée en denim brut indigo lourd 480gsm.', '["S", "M", "L", "XL"]'::jsonb, 'upcoming', '⏳ BIENTÔT DISPONIBLE', 'Bientôt disponible', 85, 50, 42, 50),
+    ('sac1', 'ILLEGAL Blackout Pack Vol.1', 12000, 'backpacks', 'IMAGE/Sac 1.png', 'Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 88, 40, 35, 10),
+    ('sac2', 'ILLEGAL Star Pack Vol.2', 12000, 'backpacks', 'IMAGE/Sac 2.png', 'Version signature de la collection ILLEGAL × Priority.', '["Unique"]'::jsonb, 'preorder', '⚡ DROP / PRÉVENTE', '15 Oct. 2026', 92, 40, 37, 10),
+    ('sac3', 'ILLEGAL Ocean Camo Pack', 12000, 'backpacks', 'IMAGE/Sac 3.png', 'Édition exclusive en tissu camo aquatique bleu céruléen.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 10, 0, 10),
     ('sac4', 'ILLEGAL Cobalt Icon Pack', 12000, 'backpacks', 'IMAGE/sac_illegal_cobalt.png', 'Sac à dos technique bleu cobalt emblématique ILLEGAL avec patch brodé, étoile découpée et tags exclusifs.', '["Unique"]'::jsonb, 'available', 'DISPONIBLE', 'Immédiat', 100, 40, 40, 10)
 ON CONFLICT (id) DO UPDATE SET
     name = EXCLUDED.name,
@@ -87,4 +88,5 @@ ON CONFLICT (id) DO UPDATE SET
     reserved_percentage = EXCLUDED.reserved_percentage,
     total_stock = EXCLUDED.total_stock,
     reserved_stock = EXCLUDED.reserved_stock,
+    stock = EXCLUDED.stock,
     updated_at = NOW();

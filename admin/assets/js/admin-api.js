@@ -32,13 +32,11 @@ window.AdminAPI = {
             { id: "c6", name: "Manga Rebel Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "c7", name: "Boxy Silhouette Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 12, category: "crossbody", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "h1", name: "Heavyweight Boxy Hoodie", price: 8000, stock: 10, category: "hoodies", image: "IMAGE/hoodie.jpg", description: "Hoodie en coton bio haute densité 450gsm avec coupe ample.", sizes: ["S", "M", "L", "XL"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "20 Oct. 2026" },
-            { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 18, category: "tees", image: "IMAGE/tee.jpg", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
-            { id: "cap1", name: "Urban Explorer Cap", price: 8000, stock: 20, category: "caps", image: "IMAGE/cap.jpg", description: "Casquette classique utilitaire à 6 panneaux.", sizes: ["Taille Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, stock: 50, category: "hoodies", image: "IMAGE/denim_jacket.jpg", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
-            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_black.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_star.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
-            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 14000, stock: 6, category: "backpacks", image: "IMAGE/sac_illegal_blue.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 18, category: "tees", image: "IMAGE/logo P.png", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "28 Oct. 2026" },
+            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, stock: 50, category: "hoodies", image: "IMAGE/denim_jacket.jpg.png", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
+            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/Sac 1.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/Sac 2.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "preorder", preorderBadge: "⚡ DROP / PRÉVENTE", releaseDate: "15 Oct. 2026" },
+            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/Sac 3.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "sac4", name: "ILLEGAL Cobalt Icon Pack", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_cobalt.png", description: "Édition emblématique ILLEGAL × Priority en toile technique bleu cobalt avec macro-étoile blanche et emblème Diesel.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" }
         ];
 
@@ -53,32 +51,48 @@ window.AdminAPI = {
             try {
                 const { data, error } = await this.getClient().from('products').select('*').order('created_at', { ascending: false });
                 if (!error && Array.isArray(data) && data.length > 0) {
-                    const mapped = data.map(d => {
+                    const filteredData = data.filter(d => d && !['h1', 'cap1'].includes(String(d.id).toLowerCase()));
+                    const mapped = filteredData.map(d => {
+                        const idLower = String(d.id).toLowerCase();
                         const stk = (d.stock !== undefined && d.stock !== null)
                             ? Number(d.stock)
                             : ((d.total_stock !== undefined && d.total_stock !== null)
                                 ? Number(d.total_stock)
-                                : ((d.id === 'dj1') ? 50 : 10));
+                                : ((idLower === 'dj1') ? 50 : 10));
 
                         const cat = d.category;
-                        const resolvedCat = (cat && cat !== 'bags')
-                            ? cat
-                            : (String(d.id).toLowerCase().startsWith('c') ? 'crossbody' : (String(d.id).toLowerCase().startsWith('sac') ? 'backpacks' : (cat || 'crossbody')));
+                        const resolvedCat = (idLower === 'sac3')
+                            ? 'backpacks'
+                            : ((cat && cat !== 'bags')
+                                ? cat
+                                : (idLower.startsWith('c') ? 'crossbody' : (idLower.startsWith('sac') ? 'backpacks' : (cat || 'crossbody'))));
+
+                        const resolvedStatus = (idLower === 'sac3')
+                            ? 'available'
+                            : ((idLower === 'dj1') ? 'upcoming' : (d.status || 'available'));
+
+                        const resolvedBadge = (idLower === 'sac3')
+                            ? 'DISPONIBLE'
+                            : ((idLower === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (d.preorder_badge || 'DISPONIBLE')));
+
+                        const resolvedRelease = (idLower === 'sac3')
+                            ? 'Immédiat'
+                            : ((idLower === 'dj1') ? 'Bientôt disponible' : (d.release_date || 'Immédiat'));
 
                         return {
                             id: d.id,
-                            name: d.name,
-                            price: Number(d.price),
+                            name: (idLower === 'sac3') ? 'ILLEGAL Ocean Camo Pack' : d.name,
+                            price: (idLower === 'sac3') ? 12000 : Number(d.price),
                             category: resolvedCat,
-                            image: d.image,
+                            image: (idLower === 'sac3') ? 'IMAGE/sac_illegal_blue.png' : d.image,
                             description: d.description || '',
                             sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
-                            status: (d.id === 'dj1') ? 'upcoming' : (d.status || "available"),
-                            preorderBadge: (d.id === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (d.preorder_badge || "DISPONIBLE"),
-                            releaseDate: (d.id === 'dj1') ? 'Bientôt disponible' : (d.release_date || "Immédiat"),
-                            reservedPercentage: Number(d.reserved_percentage) || 100,
+                            status: resolvedStatus,
+                            preorderBadge: resolvedBadge,
+                            releaseDate: resolvedRelease,
+                            reservedPercentage: (idLower === 'sac3') ? 100 : (Number(d.reserved_percentage) || 100),
                             totalStock: stk,
-                            reservedStock: Number(d.reserved_stock) || 0,
+                            reservedStock: (idLower === 'sac3') ? 0 : (Number(d.reserved_stock) || 0),
                             stock: stk
                         };
                     });
@@ -95,14 +109,22 @@ window.AdminAPI = {
                     // S'assurer que les produits par défaut (ex: sac4, c4-c8) sont également inclus
                     if (Array.isArray(defaultCatalog)) {
                         defaultCatalog.forEach(dp => {
-                            if (!mapped.some(m => String(m.id).toLowerCase() === String(dp.id).toLowerCase())) {
+                            const existing = mapped.find(m => String(m.id).toLowerCase() === String(dp.id).toLowerCase());
+                            if (!existing) {
                                 mapped.push({ ...dp });
+                            } else if (String(dp.id).toLowerCase() === 'sac3') {
+                                existing.status = 'available';
+                                existing.preorderBadge = 'DISPONIBLE';
+                                existing.category = 'backpacks';
+                                existing.image = 'IMAGE/sac_illegal_blue.png';
+                                existing.price = 12000;
                             }
                         });
                     }
 
-                    localStorage.setItem('culture_products', JSON.stringify(mapped));
-                    return mapped;
+                    const sanitized = mapped.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
+                    localStorage.setItem('culture_products', JSON.stringify(sanitized));
+                    return sanitized;
                 }
             } catch (err) {
                 console.warn("Lecture Supabase products, repli local:", err);
@@ -129,14 +151,11 @@ window.AdminAPI = {
             'aero character': 'IMAGE/c 2.png',
             'portrait editorial': 'IMAGE/c 3.png',
             'minimalist utility': 'IMAGE/c 4.png',
-            'heavyweight boxy': 'IMAGE/hoodie.jpg',
-            'creator studio': 'IMAGE/tee.jpg',
-            'raw edge studio': 'IMAGE/tee.jpg',
-            'urban explorer': 'IMAGE/cap.jpg',
-            'raw indigo denim': 'IMAGE/denim_jacket.jpg',
-            'illegal blackout': 'IMAGE/sac_illegal_black.png',
-            'illegal star': 'IMAGE/sac_illegal_star.png',
-            'illegal ocean': 'IMAGE/sac_illegal_blue.png',
+            'creator studio': 'IMAGE/logo P.png',
+            'raw indigo denim': 'IMAGE/denim_jacket.jpg.png',
+            'illegal blackout': 'IMAGE/Sac 1.png',
+            'illegal star': 'IMAGE/Sac 2.png',
+            'illegal ocean': 'IMAGE/Sac 3.png',
             'illegal cobalt': 'IMAGE/sac_illegal_cobalt.png',
             'cobalt icon': 'IMAGE/sac_illegal_cobalt.png',
             'cobalt star': 'IMAGE/sac_illegal_cobalt.png',
@@ -152,7 +171,7 @@ window.AdminAPI = {
 
         products = products.map(p => {
             const nameLower = (p.name || '').toLowerCase();
-            const badImg = !p.image || p.image.includes('Sac ') || p.image.includes('logo P.png');
+            const badImg = !p.image || p.image.includes('WhatsApp') || p.image.includes('logo P.png');
             if (badImg) {
                 for (const [key, validImg] of Object.entries(imageRepairs)) {
                     if (nameLower.includes(key)) {
