@@ -29,7 +29,7 @@ class WhatsAppBridgeAdapter extends PaymentProvider {
     }
 
     async processPayment(orderData) {
-        const phone = window.ENV_CONFIG ? window.ENV_CONFIG.WHATSAPP_NUMBER : "2290167411124";
+        const phone = window.ENV_CONFIG ? window.ENV_CONFIG.WHATSAPP_NUMBER : "2290165173634";
         const hasPreorder = orderData.hasPreorder;
         const headerTitle = hasPreorder ? "*NOUVELLE COMMANDE EN PRÉ-VENTE - CULTURE STREETWEAR*" : "*NOUVELLE COMMANDE - CULTURE STREETWEAR*";
 

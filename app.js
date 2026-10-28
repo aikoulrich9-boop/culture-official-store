@@ -1122,18 +1122,96 @@ let currentBoutiqueShowcaseIndex = 0;
 let currentBoutiqueSelectedSize = null;
 
 function filterAndRenderFeaturedProducts() {
-    const arenaEl = document.getElementById("boutiqueShowcaseArena");
     const productsGrid = document.getElementById("productsGrid");
-    if (!arenaEl && !productsGrid) return;
+    if (!productsGrid) return;
 
     const filtered = getFilteredBoutiqueProducts();
     currentDisplayedCatalogue = filtered;
 
-    if (currentBoutiqueShowcaseIndex >= filtered.length) {
-        currentBoutiqueShowcaseIndex = 0;
+    if (!filtered || filtered.length === 0) {
+        productsGrid.innerHTML = `
+            <div class="search-empty-state" style="text-align: center; grid-column: 1/-1; padding: 60px 0;">
+                <p style="color: var(--text-secondary); font-size: 16px;">Aucun produit ne correspond à vos critères de recherche.</p>
+            </div>
+        `;
+        return;
     }
 
-    renderBoutiqueGrandShowcase(0);
+    productsGrid.innerHTML = filtered.map(product => {
+        const isWishlisted = wishlist.includes(product.id);
+        const categoryLabel = getCategoryLabel(product.category);
+        const stockCount = (product.stock !== undefined && product.stock !== null) 
+            ? Number(product.stock) 
+            : 10;
+
+        let stockStatusText = `SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCES`;
+        let stockClass = "in-stock";
+        if (stockCount <= 0) {
+            stockStatusText = "SOLD OUT // ÉPUISÉ";
+            stockClass = "out-of-stock";
+        } else if (stockCount <= 3) {
+            stockStatusText = `DERNIÈRES PIÈCES // <strong>${stockCount}</strong> DISPOS`;
+            stockClass = "low-stock";
+        } else if (product.status === "preorder") {
+            stockStatusText = `PRÉ-VENTE // DROP 02 (${stockCount} PIÈCES)`;
+            stockClass = "preorder";
+        }
+
+        const isBackpack = product.category === "backpacks" || (product.id && product.id.startsWith("sac"));
+
+        return `
+            <div class="product-card" data-id="${product.id}" onclick="openQuickView('${product.id}')">
+                <div class="product-card-img-wrapper">
+                    <button type="button" 
+                            class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" 
+                            onclick="event.stopPropagation(); toggleWishlist('${product.id}')" 
+                            aria-label="Ajouter aux favoris">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="${isWishlisted ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                        </svg>
+                    </button>
+
+                    <div class="product-image-container">
+                        <img src="${product.image}" 
+                             alt="${product.name}" 
+                             class="product-img-primary ${isBackpack ? 'backpack-img' : ''}" 
+                             onerror="handleProductImageError(this)" 
+                             loading="lazy">
+                    </div>
+
+                    <!-- Floating Circular Add Button (Ajout Direct Panier) -->
+                    <button type="button" 
+                            class="card-float-add-btn" 
+                            onclick="event.stopPropagation(); addToCartDirect('${product.id}')" 
+                            aria-label="Ajouter ${product.name} au panier"
+                            title="Ajouter au panier">
+                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="12" y1="5" x2="12" y2="19"></line>
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <div class="product-card-meta">
+                    <span class="card-brand-label">CULTURE // ${categoryLabel.toUpperCase()}</span>
+                    
+                    <div class="product-title-row">
+                        <h3 class="product-name">${product.name}</h3>
+                        <span class="product-price">${formatPrice(product.price)}</span>
+                    </div>
+
+                    <p class="product-short-desc">${product.description || ''}</p>
+
+                    <div class="product-card-stock-row">
+                        <div class="product-stock-tag ${stockClass}">
+                            <span class="stock-tag-dot"></span>
+                            <span class="stock-tag-label">${stockStatusText}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join("");
 }
 
 function handleProductImageError(imgEl) {
@@ -1495,14 +1573,15 @@ function addToCartDirect(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
     if (!product) return;
 
-    if (product.sizes && product.sizes.length > 0) {
+    if (product.sizes && product.sizes.length > 1) {
         openQuickView(productId);
         showToast("Veuillez sélectionner une taille.");
         return;
     }
 
-    addItemToCartArray(product, "");
-    showToast(`${product.name} ajouté au panier.`);
+    const defaultSize = (product.sizes && product.sizes.length === 1) ? product.sizes[0] : "";
+    addItemToCartArray(product, defaultSize);
+    showToast(`${product.name} ajouté au panier !`);
     openCartDrawer();
 }
 
@@ -1878,7 +1957,7 @@ async function processCheckout() {
 
     const defaultWhatsApp = (window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER)
         ? window.ENV_CONFIG.WHATSAPP_NUMBER
-        : "2290167411124";
+        : "2290165173634";
 
     if (window.PaymentService) {
         try {
