@@ -3,7 +3,7 @@
   "outputDirectory": ".",
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/admin.html", "destination": "/admin/index.html" },
-    { "source": "/admin", "destination": "/admin/index.html" }
+    { "source": "/admin/", "destination": "/admin.html" },
+    { "source": "/admin", "destination": "/admin.html" }
   ]
 }

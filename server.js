@@ -28,6 +28,7 @@ const server = http.createServer((req, res) => {
         const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost:3000'}`);
         let pathname = decodeURIComponent(parsedUrl.pathname);
         if (pathname === '/') pathname = '/index.html';
+        if (pathname === '/admin' || pathname === '/admin/') pathname = '/admin.html';
         if (pathname.endsWith('/')) pathname += 'index.html';
 
         const filePath = path.join(ROOT, pathname);
