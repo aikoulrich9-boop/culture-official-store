@@ -38,9 +38,15 @@ const server = http.createServer((req, res) => {
         }
 
         fs.stat(filePath, (err, stats) => {
-            if (err || !stats.isFile()) {
+            if (err) {
                 res.writeHead(404, { 'Content-Type': 'text/plain; charset=utf-8' });
                 res.end('404 Not Found');
+                return;
+            }
+
+            if (stats.isDirectory()) {
+                res.writeHead(301, { 'Location': parsedUrl.pathname + '/' });
+                res.end();
                 return;
             }
             const ext = path.extname(filePath).toLowerCase();
