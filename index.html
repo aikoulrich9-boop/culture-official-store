@@ -91,12 +91,6 @@
                     </svg>
                     <span class="badge" id="cartCount">0</span>
                 </button>
-                <button class="action-btn" id="accountBtn" aria-label="Espace membre">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                        <circle cx="12" cy="7" r="4"></circle>
-                    </svg>
-                </button>
             </div>
         </div>
     </header>
@@ -118,7 +112,6 @@
                     <li><a href="#boutique" class="mobile-nav-link">La Boutique</a></li>
                     <li><a href="#new-arrivals" class="mobile-nav-link">New Drop</a></li>
                     <li><a href="#newsletter" class="mobile-nav-link">Newsletter</a></li>
-                    <li><a href="#" onclick="openResellerAuth(); return false;" class="mobile-nav-link" style="color:var(--accent-orange); font-weight:600;">👥 Espace Partenaire Revendeur</a></li>
                 </ul>
             </nav>
             <div class="mobile-menu-footer">
@@ -259,10 +252,6 @@
                 
                 <div class="flagship-img-col">
                     <div class="flagship-ambient-halo"></div>
-                    <div class="flagship-badge-floating">
-                        <span class="pulse-dot"></span>
-                        <span>⏳ BIENTÔT DISPONIBLE</span>
-                    </div>
                     <div class="flagship-image-wrapper" onclick="openQuickView('dj1')">
                         <img src="IMAGE/denim_jacket.jpg.png" alt="Veste Hoodie Raw Indigo Denim 480gsm" class="flagship-drop-img">
                         <div class="flagship-pedestal-shadow"></div>
@@ -277,7 +266,6 @@
                 <div class="flagship-info-col">
                     <div class="flagship-header-row">
                         <span class="flagship-serial-tag">SERIES 02 // PROCHAIN DROP #042</span>
-                        <span class="flagship-status-pill">BIENTÔT DISPONIBLE</span>
                     </div>
 
                     <h3 class="flagship-product-title">Veste Hoodie Raw Indigo Denim 480gsm</h3>
@@ -437,7 +425,6 @@
                 <div class="footer-bottom-links">
                     <a href="#">Politique de Confidentialité</a>
                     <a href="#">Conditions d'Utilisation</a>
-                    <a href="#" onclick="openResellerAuth(); return false;" class="footer-admin-link">👥 Espace Revendeur</a>
                 </div>
             </div>
         </div>
@@ -446,85 +433,143 @@
     <!-- CART SIDE DRAWER -->
     <div class="cart-drawer-overlay" id="cartDrawerOverlay">
         <div class="cart-drawer" id="cartDrawer">
-            <div class="cart-drawer-header">
-                <h3>Votre Sac (<span id="cartHeaderCount">0</span>)</h3>
-                <button class="close-cart" id="closeCartBtn" aria-label="Fermer le panier">
-                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                        <line x1="18" y1="6" x2="6" y2="18"></line>
-                        <line x1="6" y1="6" x2="18" y2="18"></line>
-                    </svg>
-                </button>
-            </div>
 
-            <!-- FREE SHIPPING PROGRESS BANNER -->
-            <div class="cart-shipping-banner" id="cartShippingBanner">
-                <div class="shipping-bar-text" id="shippingBarText">Livraison OFFERTE dès 25 000 XOF !</div>
-                <div class="shipping-progress-track">
-                    <div class="shipping-progress-fill" id="shippingProgressFill" style="width: 0%;"></div>
+            <!-- STEP 1: MON SAC / ARTICLES EN PANIER -->
+            <div class="cart-panel active" id="cartPanelItems">
+                <div class="cart-drawer-header">
+                    <h3>Votre Sac (<span id="cartHeaderCount">0</span>)</h3>
+                    <button class="close-cart" id="closeCartBtn" aria-label="Fermer le panier">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
+                </div>
+
+                <!-- FREE SHIPPING PROGRESS BANNER -->
+                <div class="cart-shipping-banner" id="cartShippingBanner">
+                    <div class="shipping-bar-text" id="shippingBarText">Livraison OFFERTE dès 25 000 XOF !</div>
+                    <div class="shipping-progress-track">
+                        <div class="shipping-progress-fill" id="shippingProgressFill" style="width: 0%;"></div>
+                    </div>
+                </div>
+                
+                <!-- LISTE COMPLÈTE DES ARTICLES DU PANIER (PLEINE VISIBILITÉ) -->
+                <div class="cart-items-container" id="cartItemsContainer">
+                    <div class="empty-cart-msg">
+                        <p>Votre sac est vide.</p>
+                        <a href="#boutique" class="btn btn-dark" id="shopEmptyBtn" onclick="closeCartDrawer()">Commencer les Achats</a>
+                    </div>
+                </div>
+
+                <!-- PIED DU PANIER : SOUS-TOTAL & BOUTON VERS LIVRAISON -->
+                <div class="cart-drawer-footer" id="cartDrawerFooter">
+                    <div class="subtotal-row">
+                        <span>Sous-total</span>
+                        <span class="subtotal-price" id="cartSubtotal">0 XOF</span>
+                    </div>
+                    <p class="shipping-info">Livraison rapide 24h / 48h à Cotonou & environs.</p>
+
+                    <button class="checkout-btn" id="proceedToShippingBtn" onclick="goToCartStep('checkout')">
+                        Continuer vers la Livraison →
+                    </button>
                 </div>
             </div>
-            
-            <div class="cart-items-container" id="cartItemsContainer">
-                <div class="empty-cart-msg">
-                    <p>Votre sac est vide.</p>
-                    <a href="#boutique" class="btn btn-dark" id="shopEmptyBtn" onclick="closeCartDrawer()">Commencer les Achats</a>
+
+            <!-- STEP 2: FORMULAIRE LIVRAISON & PAIEMENT -->
+            <div class="cart-panel" id="cartPanelCheckout">
+                <div class="cart-drawer-header checkout-step-header">
+                    <button class="cart-back-step-btn" id="backToItemsBtn" onclick="goToCartStep('items')" aria-label="Retour au panier">
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="19" y1="12" x2="5" y2="12"></line>
+                            <polyline points="12 19 5 12 12 5"></polyline>
+                        </svg>
+                        <span>Mon Sac</span>
+                    </button>
+                    <h3>Livraison</h3>
+                    <button class="close-cart" onclick="closeCartDrawer()" aria-label="Fermer">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+                            <line x1="18" y1="6" x2="6" y2="18"></line>
+                            <line x1="6" y1="6" x2="18" y2="18"></line>
+                        </svg>
+                    </button>
                 </div>
-            </div>
 
-            <div class="cart-drawer-footer" id="cartDrawerFooter">
-                <div class="subtotal-row">
-                    <span>Sous-total</span>
-                    <span class="subtotal-price" id="cartSubtotal">0 XOF</span>
+                <!-- MINI RÉCAPITULATIF SYNTHÉTIQUE -->
+                <div class="checkout-summary-mini">
+                    <div class="summary-mini-left">
+                        <span class="summary-mini-label">Total de la commande :</span>
+                        <span class="summary-mini-items" id="checkoutSummaryItemsCount">0 article</span>
+                    </div>
+                    <strong class="summary-mini-total" id="checkoutSummaryTotal">0 XOF</strong>
                 </div>
-                <p class="shipping-info">Livraison rapide 24h / 48h à Cotonou & environs.</p>
 
-                <!-- GUEST CHECKOUT & DELIVERY DETAILS -->
-                <div class="checkout-form-box">
-                    <label class="form-box-title">📍 Informations de Livraison (Checkout Invité)</label>
-                    
-                    <div class="form-row-compact">
-                        <input type="text" id="checkoutName" placeholder="Nom & Prénom *" class="checkout-input" required>
-                        <input type="tel" id="checkoutPhone" placeholder="Téléphone / WhatsApp *" class="checkout-input" required>
-                    </div>
-
-                    <div class="form-row-compact">
-                        <input type="email" id="checkoutEmail" placeholder="Email (facultatif)" class="checkout-input">
-                        <select id="checkoutCountry" class="checkout-input select-country" onchange="updatePaymentMethodsByCountry()">
-                            <option value="Bénin">🇧🇯 Bénin</option>
-                            <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
-                            <option value="Autre">🌍 Autre Pays</option>
-                        </select>
-                    </div>
-
-                    <div class="form-row-compact">
-                        <input type="text" id="checkoutCity" placeholder="Ville (ex: Cotonou, Abidjan)" class="checkout-input">
-                        <input type="text" id="checkoutLocation" placeholder="Quartier / Adresse précise" class="checkout-input">
-                    </div>
-
-                    <!-- PAYMENT METHOD SELECTION -->
-                    <label class="form-box-sublabel">💳 Moyen de Paiement</label>
-                    <select id="checkoutPaymentMethod" class="checkout-input select-payment">
-                        <option value="Mobile Money (MTN / Moov)">📱 Mobile Money (MTN / Moov Bénin)</option>
-                        <option value="Wave / Orange Money">🌊 Wave / Orange Money (Côte d'Ivoire)</option>
-                        <option value="Espèces à la livraison">💵 Paiement à la Livraison</option>
-                        <option value="WhatsApp Direct (Validation Rapide)">💬 Validation Directe via WhatsApp</option>
-                    </select>
-
-                    <!-- DISCRETE RESELLER CODE FIELD -->
-                    <div class="reseller-code-container">
-                        <label class="reseller-code-label">🏷️ Code revendeur (facultatif)</label>
-                        <div class="reseller-code-input-group">
-                            <input type="text" id="checkoutResellerCode" placeholder="ex: MARIE01" class="checkout-input reseller-input" uppercase autocomplete="off">
-                            <button type="button" class="btn-apply-code" id="applyResellerBtn" onclick="applyCheckoutResellerCode()">Appliquer</button>
+                <!-- CORPS DU FORMULAIRE D'EXPÉDITION (AÉRÉ & STRUCTURÉ) -->
+                <div class="checkout-step-body">
+                    <div class="checkout-form-box">
+                        <label class="form-box-title">📍 Coordonnées de Livraison</label>
+                        
+                        <div class="form-row-compact">
+                            <div class="input-wrapper">
+                                <label class="field-micro-label">Nom & Prénom *</label>
+                                <input type="text" id="checkoutName" placeholder="ex: Jean Dossou" class="checkout-input" required>
+                            </div>
+                            <div class="input-wrapper">
+                                <label class="field-micro-label">WhatsApp / Tél *</label>
+                                <input type="tel" id="checkoutPhone" placeholder="ex: +229 97 00 00 00" class="checkout-input" required>
+                            </div>
                         </div>
-                        <div id="resellerCodeFeedback" class="reseller-feedback"></div>
+
+                        <div class="form-row-compact">
+                            <div class="input-wrapper">
+                                <label class="field-micro-label">Email (facultatif)</label>
+                                <input type="email" id="checkoutEmail" placeholder="client@exemple.com" class="checkout-input">
+                            </div>
+                            <div class="input-wrapper">
+                                <label class="field-micro-label">Pays de livraison *</label>
+                                <select id="checkoutCountry" class="checkout-input select-country" onchange="updatePaymentMethodsByCountry()">
+                                    <option value="Bénin">🇧🇯 Bénin</option>
+                                    <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
+                                    <option value="Autre">🌍 Autre Pays</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="form-row-compact">
+                            <div class="input-wrapper">
+                                <label class="field-micro-label">Ville *</label>
+                                <input type="text" id="checkoutCity" placeholder="ex: Cotonou, Abidjan" class="checkout-input">
+                            </div>
+                            <div class="input-wrapper">
+                                <label class="field-micro-label">Quartier / Adresse précise *</label>
+                                <input type="text" id="checkoutLocation" placeholder="ex: Haie Vive, Rue 340" class="checkout-input">
+                            </div>
+                        </div>
+
+                        <!-- PAYMENT METHOD SELECTION -->
+                        <div class="payment-selection-box">
+                            <label class="form-box-sublabel">💳 Mode de Paiement</label>
+                            <select id="checkoutPaymentMethod" class="checkout-input select-payment">
+                                <option value="Mobile Money (MTN / Moov)">📱 Mobile Money (MTN / Moov Bénin)</option>
+                                <option value="Wave / Orange Money">🌊 Wave / Orange Money (Côte d'Ivoire)</option>
+                                <option value="Espèces à la livraison">💵 Paiement à la Livraison</option>
+                                <option value="WhatsApp Direct (Validation Rapide)">💬 Validation Directe via WhatsApp</option>
+                            </select>
+                        </div>
                     </div>
                 </div>
 
-                <button class="checkout-btn" id="checkoutBtn">
-                    🛒 Valider & Passer la Commande
-                </button>
+                <!-- PIED STEP 2 : VALIDATION FINALE & LIEN RETOUR -->
+                <div class="cart-drawer-footer checkout-step-footer">
+                    <button class="checkout-btn" id="checkoutBtn">
+                        🛒 Valider & Passer la Commande
+                    </button>
+                    <button type="button" class="btn-return-to-items" onclick="goToCartStep('items')">
+                        ← Revenir à mon sac pour modifier
+                    </button>
+                </div>
             </div>
+
         </div>
     </div>
 
@@ -619,245 +664,6 @@
             <div class="modal-body immersive-stage-body" id="quickViewModalBody">
                 <!-- Dynamically loaded immersive showcase layout -->
             </div>
-        </div>
-    </div>
-
-    <!-- RESELLER AUTHENTICATION MODAL (DEDICATED PARTNER PORTAL) -->
-    <div class="modal-overlay" id="resellerLoginModal">
-        <div class="modal-content admin-modal-card">
-            <button class="close-modal" id="closeResellerLoginBtn" onclick="closeResellerAuth()" aria-label="Fermer">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-            
-            <div class="admin-auth-header">
-                <div class="admin-auth-badge">👥</div>
-                <h3>Espace Partenaire & Affilié</h3>
-                <p>Connectez-vous pour suivre vos commissions en temps réel et demander vos retraits Mobile Money.</p>
-            </div>
-
-            <form id="resellerLoginForm" onsubmit="handleResellerLogin(event)">
-                <div class="form-group">
-                    <label>Votre Code Revendeur ou Email *</label>
-                    <input type="text" id="resellerCodeLoginInput" placeholder="ex: MARIE01 ou email@partenaire.com" required autocomplete="off" style="text-transform: uppercase;">
-                </div>
-
-                <button type="submit" class="btn btn-primary btn-block">Accéder à mon Espace Partenaire</button>
-                <p class="pin-hint" id="loginHintText">Exemples de codes partenaires : <strong>MARIE01</strong>, <strong>KOFFI02</strong></p>
-            </form>
-        </div>
-    </div>
-
-    <!-- RESELLER DASHBOARD FULLSCREEN OVERLAY -->
-    <div class="admin-dashboard-overlay" id="resellerDashboardOverlay">
-        <div class="admin-dashboard-container">
-            <!-- Dashboard Header -->
-            <div class="admin-header">
-                <div class="admin-brand">
-                    <img src="IMAGE/logo P.png" alt="CULTURE Logo" class="admin-logo">
-                    <div class="admin-title-box">
-                        <h2 id="resellerDashboardHeaderTitle">Espace Partenaire Revendeur</h2>
-                        <span class="admin-badge-live stat-value-orange" id="resellerDashboardRoleBadge">● Revendeur Actif</span>
-                    </div>
-                </div>
-                <div class="admin-header-actions">
-                    <button class="btn btn-sm btn-outline" onclick="openResellerWithdrawalModal()">💸 Demander un Retrait</button>
-                    <button class="btn btn-sm btn-outline" onclick="logoutResellerDashboard()" title="Déconnexion">🚪 Déconnexion</button>
-                    <button class="btn-icon-close" onclick="closeResellerDashboard()" title="Fermer le tableau de bord">
-                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                            <line x1="18" y1="6" x2="6" y2="18"></line>
-                            <line x1="6" y1="6" x2="18" y2="18"></line>
-                        </svg>
-                    </button>
-                </div>
-            </div>
-
-            <!-- DASHBOARD STATS ROW -->
-            <div class="admin-stats-row" id="resellerStatsRow">
-                <!-- Dynamically rendered -->
-            </div>
-
-            <!-- DASHBOARD TABS BAR -->
-            <div class="admin-tabs" id="resellerTabsBar">
-                <button class="admin-tab active" onclick="switchResellerPane('paneResellerSales')">🛒 Mes Ventes</button>
-                <button class="admin-tab" onclick="switchResellerPane('paneResellerCode')">🔑 Mon Code & Lien</button>
-                <button class="admin-tab" onclick="switchResellerPane('paneResellerWithdrawals')">🏦 Mes Retraits</button>
-                <button class="admin-tab" onclick="switchResellerPane('paneResellerProfile')">👤 Profil de Réception</button>
-            </div>
-
-            <!-- PANES CONTENT AREA -->
-            <div class="dashboard-panes-container">
-
-                <!-- RESELLER TAB 1: MY SALES & COMMISSIONS -->
-                <div class="admin-tab-pane active" id="paneResellerSales">
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>N° Commande</th>
-                                    <th>Date</th>
-                                    <th>Montant Commande</th>
-                                    <th>Taux Appliqué</th>
-                                    <th>Ma Commission</th>
-                                    <th>Statut Vente</th>
-                                    <th>Statut Commission</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resellerSalesTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- RESELLER TAB 2: MY CODE & REFERRAL LINK -->
-                <div class="admin-tab-pane" id="paneResellerCode">
-                    <div class="reseller-code-card">
-                        <h3>🔑 Votre Code & Lien de Parrainage Officiel</h3>
-                        <p>Partagez votre code ou votre lien direct. Chaque commande enregistrée crédite automatiquement vos commissions !</p>
-                        
-                        <div class="reseller-share-box">
-                            <div class="share-item">
-                                <span class="share-title">Votre Code Revendeur :</span>
-                                <div class="share-field">
-                                    <strong id="displayResellerCode" class="highlight-code">MARIE01</strong>
-                                    <button class="btn btn-sm btn-accent" onclick="copyResellerCodeToClipboard()">📋 Copier le Code</button>
-                                </div>
-                            </div>
-                            
-                            <div class="share-item">
-                                <span class="share-title">Votre Lien de Recommandation Direct :</span>
-                                <div class="share-field">
-                                    <input type="text" id="displayResellerLink" readonly class="share-link-input" value="">
-                                    <button class="btn btn-sm btn-primary" onclick="copyResellerLinkToClipboard()">🔗 Copier le Lien</button>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- RESELLER TAB 3: MY WITHDRAWALS & PAYOUTS -->
-                <div class="admin-tab-pane" id="paneResellerWithdrawals">
-                    <div class="reseller-withdraw-header">
-                        <div>
-                            <h4>Demandes de Retrait Effectuées</h4>
-                            <p>Les demandes sont traitées chaque semaine par l'équipe administrative via Mobile Money.</p>
-                        </div>
-                        <button class="btn btn-accent" onclick="openResellerWithdrawalModal()">💸 Demander un Retrait</button>
-                    </div>
-                    <div class="admin-table-wrapper">
-                        <table class="admin-table">
-                            <thead>
-                                <tr>
-                                    <th>N° Demande</th>
-                                    <th>Date Demande</th>
-                                    <th>Montant</th>
-                                    <th>Moyen & Numéro</th>
-                                    <th>Statut</th>
-                                    <th>Référence Paiement</th>
-                                    <th>Date de Virement</th>
-                                </tr>
-                            </thead>
-                            <tbody id="resellerWithdrawalsTableBody"></tbody>
-                        </table>
-                    </div>
-                </div>
-
-                <!-- RESELLER TAB 4: MY RECEIVING PROFILE -->
-                <div class="admin-tab-pane" id="paneResellerProfile">
-                    <div class="admin-settings-box">
-                        <h3>Configuration de votre Moyen de Réception</h3>
-                        <p>Renseignez votre compte de réception (Wave, Mobile Money, Orange Money, Moov) pour recevoir vos virements sans délai.</p>
-                        <form onsubmit="saveResellerProfile(event)" class="admin-pin-change-form">
-                            <div class="form-row">
-                                <div class="form-group col-6">
-                                    <label>Pays de Résidence *</label>
-                                    <select id="profileCountry" class="checkout-input">
-                                        <option value="Bénin">🇧🇯 Bénin</option>
-                                        <option value="Côte d'Ivoire">🇨🇮 Côte d'Ivoire</option>
-                                        <option value="Togo">🇹🇬 Togo</option>
-                                        <option value="Sénégal">🇸🇳 Sénégal</option>
-                                        <option value="Autre">🌍 Autre</option>
-                                    </select>
-                                </div>
-                                <div class="form-group col-6">
-                                    <label>Moyen de Réception Préféré *</label>
-                                    <select id="profilePayoutMethod" class="checkout-input">
-                                        <option value="Wave">🌊 Wave</option>
-                                        <option value="MTN Mobile Money">📱 MTN Mobile Money</option>
-                                        <option value="Moov Money">📱 Moov Money</option>
-                                        <option value="Orange Money">📱 Orange Money</option>
-                                    </select>
-                                </div>
-                            </div>
-                            <div class="form-row">
-                                <div class="form-group col-6">
-                                    <label>Numéro de Réception Mobile *</label>
-                                    <input type="tel" id="profilePayoutAccount" placeholder="ex: +229 97 00 11 22" required>
-                                </div>
-                                <div class="form-group col-6">
-                                    <label>Nom Complet du Titulaire du Compte *</label>
-                                    <input type="text" id="profilePayoutName" placeholder="ex: Marie Dossou" required>
-                                </div>
-                            </div>
-                            <button type="submit" class="btn btn-primary">Sauvegarder Mon Profil de Réception</button>
-                        </form>
-                    </div>
-                </div>
-
-            </div>
-        </div>
-    </div>
-
-    <!-- MODAL: REQUEST WITHDRAWAL (RESELLER) -->
-    <div class="modal-overlay" id="resellerWithdrawalModal">
-        <div class="modal-content admin-form-card">
-            <button class="close-modal" onclick="closeResellerWithdrawalModal()">
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                    <line x1="18" y1="6" x2="6" y2="18"></line>
-                    <line x1="6" y1="6" x2="18" y2="18"></line>
-                </svg>
-            </button>
-            
-            <h3>💸 Demander un Retrait de Commission</h3>
-            
-            <div class="withdrawal-info-banner">
-                <div>Solde Disponible au Retrait : <strong id="withdrawAvailableBalance">0 FCFA</strong></div>
-                <div class="sub-hint">Montant minimum de retrait : <span id="withdrawMinAmount">5 000 FCFA</span></div>
-            </div>
-
-            <form id="resellerWithdrawalForm" onsubmit="handleWithdrawalSubmit(event)">
-                <div class="form-group">
-                    <label>Montant Souhaité à Retirer (FCFA) *</label>
-                    <input type="number" id="withdrawAmountInput" placeholder="ex: 10000" min="1000" required step="500">
-                </div>
-
-                <div class="form-row">
-                    <div class="form-group col-6">
-                        <label>Moyen de Réception *</label>
-                        <select id="withdrawMethodSelect" class="checkout-input">
-                            <option value="Wave">🌊 Wave</option>
-                            <option value="MTN Mobile Money">📱 MTN Mobile Money</option>
-                            <option value="Moov Money">📱 Moov Money</option>
-                            <option value="Orange Money">📱 Orange Money</option>
-                        </select>
-                    </div>
-                    <div class="form-group col-6">
-                        <label>Numéro de Réception *</label>
-                        <input type="tel" id="withdrawAccountInput" placeholder="ex: +229 97 00 11 22" required>
-                    </div>
-                </div>
-
-                <div class="form-group">
-                    <label>Nom du Titulaire du Compte *</label>
-                    <input type="text" id="withdrawNameInput" placeholder="ex: Marie Dossou" required>
-                </div>
-
-                <div class="form-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeResellerWithdrawalModal()">Annuler</button>
-                    <button type="submit" class="btn btn-accent">Confirmer la Demande</button>
-                </div>
-            </form>
         </div>
     </div>
 
