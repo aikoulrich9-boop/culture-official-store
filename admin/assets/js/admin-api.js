@@ -22,25 +22,23 @@ window.AdminAPI = {
        1. CATALOGUE & PRODUITS (SUPABASE CLOUD SYNC + LOCAL FALLBACK)
        ========================================================================== */
     async getProducts() {
-        // Catalogue officiel Streetwear PRIORITY avec vraies images et stocks disponibles
+        // Catalogue officiel Streetwear PRIORITY synchronisé avec la base Supabase
         const defaultCatalog = [
-            { id: "c1", name: "Terra Icon Crossbody", price: 8000, stock: 12, category: "crossbody", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c2", name: "Aero Character Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c3", name: "Portrait Editorial Crossbody", price: 8000, stock: 12, category: "crossbody", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c4", name: "Camo Beanie Crossbody", price: 8000, stock: 15, category: "crossbody", image: "IMAGE/c 4.png", description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c5", name: "All-Star Shooter Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 4_shooter.png", description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c6", name: "Manga Rebel Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c7", name: "Boxy Silhouette Crossbody", price: 8000, stock: 10, category: "crossbody", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 12, category: "crossbody", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "t1", name: "Creator Studio Tee", price: 8000, stock: 15, category: "tees", image: "IMAGE/logo P.png", description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques.", sizes: ["S", "M", "L", "XL"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 12000, stock: 50, category: "hoodies", image: "IMAGE/denim_jacket.jpg.png", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
-            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/Sac 1.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/Sac 2.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "sac3", name: "ILLEGAL Ocean Camo Pack", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/Sac 3.png", description: "Edition premium en tissu camo aquatique bleu céruléen.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
-            { id: "sac4", name: "ILLEGAL Cobalt Icon Pack", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_cobalt.png", description: "Édition emblématique ILLEGAL × Priority en toile technique bleu cobalt avec macro-étoile blanche et emblème Diesel.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" }
+            { id: "c1", name: "Terra Icon Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 1.png", description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c2", name: "Aero Character Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 2.png", description: "Sac bandoulière technique résistant aux intempéries avec personnage à capuche rouge.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c3", name: "Portrait Editorial Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 3.png", description: "Sac portrait artistique premium avec compartiments à double accès rapide.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c4", name: "Camo Beanie Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 4.png", description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c5", name: "All-Star Shooter Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 4_shooter.png", description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c6", name: "Manga Rebel Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c7", name: "Boxy Silhouette Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 3, category: "crossbody", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 15000, stock: 10, category: "hoodies", image: "IMAGE/denim_jacket.jpg.png", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
+            { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 3, category: "backpacks", image: "IMAGE/Sac 1.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 3, category: "backpacks", image: "IMAGE/Sac 2.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "sac4", name: "ILLEGAL Cobalt Icon Pack", price: 12000, stock: 3, category: "backpacks", image: "IMAGE/sac_illegal_cobalt.png", description: "Édition emblématique ILLEGAL × Priority en toile technique bleu cobalt avec macro-étoile blanche et emblème Diesel.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" }
         ];
 
-        // 1. Tentative de lecture Supabase si disponible (Source de vérité Cloud)
+        // 1. Lecture directe depuis Supabase (Source de vérité Cloud unique)
         if (this.isOnline()) {
             try {
                 const { data, error } = await this.getClient().from('products').select('*').order('created_at', { ascending: false });
@@ -49,21 +47,26 @@ window.AdminAPI = {
                     const mapped = filteredData.map(d => {
                         const idLower = String(d.id).toLowerCase();
                         const defMatch = defaultCatalog.find(dp => String(dp.id).toLowerCase() === idLower);
-                        const stk = (d.stock !== undefined && d.stock !== null)
-                            ? Number(d.stock)
-                            : ((d.total_stock !== undefined && d.total_stock !== null)
-                                ? Number(d.total_stock)
-                                : (defMatch?.stock || 10));
+                        // Priorité absolue à total_stock de Supabase
+                        const stk = (d.total_stock !== undefined && d.total_stock !== null)
+                            ? Number(d.total_stock)
+                            : ((d.stock !== undefined && d.stock !== null)
+                                ? Number(d.stock)
+                                : (defMatch?.stock ?? 3));
 
                         const cat = d.category || defMatch?.category || 'crossbody';
                         const resolvedCat = (cat && cat !== 'bags')
                             ? cat
                             : (idLower.startsWith('sac') ? 'backpacks' : 'crossbody');
 
-                        const isDenimJacket = idLower === 'dj1';
-                        const resolvedStatus = isDenimJacket ? 'upcoming' : 'available';
-                        const resolvedBadge = isDenimJacket ? '⏳ BIENTÔT DISPONIBLE' : 'DISPONIBLE';
-                        const resolvedRelease = isDenimJacket ? 'Bientôt disponible' : 'Immédiat';
+                        const rawStatus = d.status || defMatch?.status || 'available';
+                        const resolvedStatus = (rawStatus === 'upcoming') ? 'upcoming' : 'available';
+                        const resolvedBadge = (resolvedStatus === 'upcoming')
+                            ? (d.preorder_badge || '⏳ BIENTÔT DISPONIBLE')
+                            : 'DISPONIBLE';
+                        const resolvedRelease = (resolvedStatus === 'upcoming')
+                            ? (d.release_date || 'Bientôt disponible')
+                            : 'Immédiat';
 
                         return {
                             id: d.id,
@@ -106,7 +109,7 @@ window.AdminAPI = {
 
         products = products.map(p => {
             if (p.stock === undefined || p.stock === null) {
-                p.stock = (p.totalStock && p.reservedStock !== undefined) ? Math.max(0, p.totalStock - p.reservedStock) : 10;
+                p.stock = (p.totalStock !== undefined && p.totalStock !== null) ? Number(p.totalStock) : 3;
             }
             return p;
         });
@@ -151,12 +154,15 @@ window.AdminAPI = {
         // Sync Supabase cloud si connecté
         if (this.isOnline()) {
             try {
-                const targetStock = (productPayload.stock !== undefined && productPayload.stock !== null) ? Number(productPayload.stock) : (Number(productPayload.totalStock) || 10);
+                if (window.AdminAuth && typeof window.AdminAuth.refreshSession === 'function') {
+                    await window.AdminAuth.refreshSession();
+                }
+                const targetStock = (productPayload.stock !== undefined && productPayload.stock !== null) ? Number(productPayload.stock) : (Number(productPayload.totalStock) || 3);
                 const record = {
                     id: targetId,
                     name: productPayload.name,
                     price: productPayload.price,
-                    category: productPayload.category || 'bags',
+                    category: productPayload.category || 'crossbody',
                     image: productPayload.image,
                     description: productPayload.description,
                     sizes: productPayload.sizes || ["Unique"],
@@ -168,14 +174,14 @@ window.AdminAPI = {
                     reserved_stock: 0,
                     updated_at: new Date().toISOString()
                 };
-                const { error } = await this.getClient().from('products').upsert(record);
-                if (error) {
-                    console.error("❌ Erreur Supabase saveProduct:", error);
+                const { data: savedRows, error } = await this.getClient().from('products').upsert(record).select();
+                if (error || !savedRows || savedRows.length === 0) {
+                    console.error("❌ Erreur Supabase saveProduct:", error || "0 rows affected (RLS session expirée)");
                     if (window.AdminApp?.showToast) {
-                        window.AdminApp.showToast("⚠️ Enregistré localement, mais échec Cloud Supabase: " + (error.message || error.code), 'warning');
+                        window.AdminApp.showToast("⚠️ Session Cloud expirée : veuillez vous reconnecter pour enregistrer sur Supabase.", 'warning');
                     }
                 } else {
-                    console.log("✅ Produit synchronisé sur Supabase Cloud:", targetId);
+                    console.log("✅ Produit synchronisé sur Supabase Cloud:", targetId, "stock:", savedRows[0]?.total_stock);
                 }
             } catch (err) {
                 console.warn("Sync Supabase saveProduct repli local:", err);
@@ -191,9 +197,9 @@ window.AdminAPI = {
         localStorage.setItem('culture_products', JSON.stringify(products));
         try {
             const rawPurchased = localStorage.getItem('culture_purchased_qty');
-            if (rawPurchased && targetId) {
+            if (rawPurchased && productId) {
                 const map = JSON.parse(rawPurchased);
-                delete map[String(targetId).toLowerCase()];
+                delete map[String(productId).toLowerCase()];
                 localStorage.setItem('culture_purchased_qty', JSON.stringify(map));
             }
         } catch (e) {}
@@ -201,12 +207,17 @@ window.AdminAPI = {
 
         if (this.isOnline()) {
             try {
-                const { error } = await this.getClient().from('products').delete().eq('id', productId);
-                if (error) {
-                    console.error("❌ Erreur Supabase deleteProduct:", error);
+                if (window.AdminAuth && typeof window.AdminAuth.refreshSession === 'function') {
+                    await window.AdminAuth.refreshSession();
+                }
+                const { data: deletedRows, error } = await this.getClient().from('products').delete().eq('id', productId).select();
+                if (error || !deletedRows || deletedRows.length === 0) {
+                    console.error("❌ Erreur Supabase deleteProduct:", error || "0 rows affected (RLS session expirée)");
                     if (window.AdminApp?.showToast) {
-                        window.AdminApp.showToast("⚠️ Supprimé localement, mais échec Cloud Supabase: " + (error.message || error.code), 'warning');
+                        window.AdminApp.showToast("⚠️ Session Cloud expirée : veuillez vous reconnecter pour supprimer sur Supabase.", 'warning');
                     }
+                } else {
+                    console.log("✅ Produit supprimé de Supabase Cloud:", productId);
                 }
             } catch (err) {
                 console.warn("Sync Supabase deleteProduct repli local:", err);

@@ -180,9 +180,9 @@
                     </td>
                     <td>
                         ${(() => {
-                            const stk = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 10;
-                            if (stk > 5) return `<span class="admin-badge admin-badge-success" style="font-size:11px; font-weight:700;">📦 ${stk} ex.</span>`;
-                            if (stk > 0) return `<span class="admin-badge admin-badge-warning" style="font-size:11px; font-weight:700;">🔥 ${stk} restant(s)</span>`;
+                            const stk = (p.stock !== undefined && p.stock !== null) ? Number(p.stock) : 3;
+                            if (stk > 1) return `<span class="admin-badge admin-badge-success" style="font-size:11px; font-weight:700;">📦 ${stk} ex.</span>`;
+                            if (stk === 1) return `<span class="admin-badge admin-badge-warning" style="font-size:11px; font-weight:700;">🔥 1 restant</span>`;
                             return `<span class="admin-badge admin-badge-danger" style="font-size:11px; font-weight:700;">❌ Épuisé</span>`;
                         })()}
                     </td>
@@ -235,7 +235,7 @@
                     setVal("editProductId", prod.id);
                     setVal("prodName", prod.name);
                     setVal("prodPrice", prod.price);
-                    setVal("prodStock", (prod.stock !== undefined && prod.stock !== null) ? prod.stock : 10);
+                    setVal("prodStock", (prod.stock !== undefined && prod.stock !== null) ? prod.stock : 3);
                     setVal("prodCategory", prod.category);
                     setVal("prodSizes", prod.sizes ? prod.sizes.join(", ") : "");
                     setVal("prodDescription", prod.description || "");
@@ -268,7 +268,7 @@
                 const idInput = document.getElementById("editProductId");
                 if (idInput) idInput.value = "";
                 const stockInput = document.getElementById("prodStock");
-                if (stockInput) stockInput.value = "10";
+                if (stockInput) stockInput.value = "3";
                 this.togglePreorderFields(false);
                 if (preview) preview.style.display = "none";
                 if (placeholder) placeholder.style.display = "block";
@@ -345,7 +345,7 @@
             }
 
             const stockRaw = document.getElementById("prodStock")?.value;
-            const stock = (stockRaw !== undefined && stockRaw !== "") ? Math.max(0, parseInt(stockRaw, 10)) : 10;
+            const stock = (stockRaw !== undefined && stockRaw !== "") ? Math.max(0, parseInt(stockRaw, 10)) : 3;
 
             const payload = {
                 id: id || undefined,

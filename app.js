@@ -5,7 +5,7 @@ const INITIAL_PRODUCTS = [
     {
         id: "dj1",
         name: "Veste Hoodie Raw Indigo Denim 480gsm",
-        price: 12000,
+        price: 15000,
         category: "hoodies",
         image: "IMAGE/denim_jacket.jpg.png",
         description: "Veste à capuche zippée en denim brut indigo lourd 480gsm. Coupe boxy streetwear avec capuche anatomique double épaisseur, fermeture éclair métallique renforcée, poignets et ourlet plissés élastiques. Conçue pour résister au temps et offrir une silhouette urbaine sculptée.",
@@ -14,121 +14,121 @@ const INITIAL_PRODUCTS = [
         preorderBadge: "⏳ BIENTÔT DISPONIBLE",
         releaseDate: "Bientôt disponible",
         reservedPercentage: 85,
-        totalStock: 50,
-        reservedStock: 42,
-        stock: 50
+        totalStock: 10,
+        reservedStock: 0,
+        stock: 10
     },
     {
         id: "c1",
         name: "Terra Icon Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 1.png",
         description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre. Sangle imprimée ajustable et boucle mate à dégagement rapide. Conçu pour un usage quotidien intensif.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 15,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 15
+        stock: 3
     },
     {
         id: "c2",
         name: "Aero Character Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 2.png",
         description: "Sac bandoulière technique résistant aux intempéries avec imprimé emblématique du personnage à capuche rouge. Équipé d'une double fermeture éclair, de poches intérieures et d'un porte-clés.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 15,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 15
+        stock: 3
     },
     {
         id: "c3",
         name: "Portrait Editorial Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 3.png",
         description: "Sac portrait artistique premium. Conçu avec des compartiments à double accès rapide, des organiseurs internes en filet et une sangle tactile épaisse. Démarquez-vous dans la foule urbaine.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 15,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 15
+        stock: 3
     },
     {
         id: "c4",
         name: "Camo Beanie Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 4.png",
         description: "Illustration signature du personnage au bonnet camouflage urbain et bandage streetwear. Toile technique déperlante.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 15,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 15
+        stock: 3
     },
     {
         id: "c5",
         name: "All-Star Shooter Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 4_shooter.png",
         description: "Illustration dynamique du joueur All-Star #12 au tir signature et regard étoilé. Sangle logotée ajustable et zips étanches.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 10,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 10
+        stock: 3
     },
     {
         id: "c6",
         name: "Manga Rebel Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 5.png",
         description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds déstructurés. Toile textile ripstop premium.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 10,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 10
+        stock: 3
     },
     {
         id: "c7",
         name: "Boxy Silhouette Crossbody",
-        price: 8000,
+        price: 10000,
         category: "crossbody",
         image: "IMAGE/c 6.png",
         description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large. Mousquetons métalliques mats.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 10,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 10
+        stock: 3
     },
     {
         id: "c8",
@@ -137,14 +137,14 @@ const INITIAL_PRODUCTS = [
         category: "crossbody",
         image: "IMAGE/c 7.png",
         description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage. Design tactique ultra-épuré et tirette paracorde.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 12,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 12
+        stock: 3
     },
     {
         id: "sac1",
@@ -153,14 +153,14 @@ const INITIAL_PRODUCTS = [
         category: "backpacks",
         image: "IMAGE/Sac 1.png",
         description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé sur patch woven et sigle Priority en rouge sang. Détails Diesel co-brandés, tirette corde tressée, compartiment principal large + poche frontale organisée. Le daily bag du mouvement.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 15,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 15
+        stock: 3
     },
     {
         id: "sac2",
@@ -169,30 +169,14 @@ const INITIAL_PRODUCTS = [
         category: "backpacks",
         image: "IMAGE/Sac 2.png",
         description: "Version signature de la collection ILLEGAL × Priority. Sac à dos all-black avec macro-graphic de l'étoile blanche imprimée pleine face. Badge Priority bleu en pendant. Silhouette épurée, bretelles ergonomiques rembourrées, dos aéré maillé. L'icône de la rue.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 15,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 15
-    },
-    {
-        id: "sac3",
-        name: "ILLEGAL Ocean Camo Pack",
-        price: 12000,
-        category: "backpacks",
-        image: "IMAGE/Sac 3.png",
-        description: "Édition exclusive en tissu camo aquatique bleu céruléen avec motif all-over imprimé sublimation. Logo ILLEGAL en patch woven signature, macro-étoile emblématique blanche, zips étanches et bretelles ergonomiques. Sac à dos collector.",
-        sizes: [],
-        status: "available",
-        preorderBadge: "DISPONIBLE",
-        releaseDate: "Immédiat",
-        reservedPercentage: 100,
-        totalStock: 10,
-        reservedStock: 0,
-        stock: 10
+        stock: 3
     },
     {
         id: "sac4",
@@ -201,39 +185,24 @@ const INITIAL_PRODUCTS = [
         category: "backpacks",
         image: "IMAGE/sac_illegal_cobalt.png",
         description: "Édition emblématique de la collaboration ILLEGAL × Priority en toile technique bleu cobalt vibrant. Patch woven ILLEGAL International, macro-étoile emblématique blanche, emblème rouge Diesel en relief et double étiquette collector amovible (Diesel & Priority Star). Dos ergonomique matelassé et tirettes paracorde mouchetées.",
-        sizes: [],
+        sizes: ["Unique"],
         status: "available",
         preorderBadge: "DISPONIBLE",
         releaseDate: "Immédiat",
         reservedPercentage: 100,
-        totalStock: 10,
+        totalStock: 3,
         reservedStock: 0,
-        stock: 10
-    },
-    {
-        id: "t1",
-        name: "Creator Studio Tee",
-        price: 8000,
-        category: "tees",
-        image: "IMAGE/tee.jpg",
-        description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques de sous-culture avec des encres haute fidélité. Offre une silhouette moderne structurée qui conserve sa forme.",
-        sizes: ["S", "M", "L", "XL"],
-        status: "available",
-        preorderBadge: "DISPONIBLE",
-        releaseDate: "Immédiat",
-        reservedPercentage: 100,
-        totalStock: 15,
-        reservedStock: 0,
-        stock: 15
+        stock: 3
     }
 ];
 
-// Gestion impérative du cache et version du catalogue
-const CATALOGUE_STORAGE_VERSION = "20261029_v8_all_available_live_stock";
+// Nettoyage unique des anciens compteurs de test pour refléter l'état réel de Supabase
+const CATALOGUE_STORAGE_VERSION = "20261029_v9_supabase_source_of_truth_stock3";
 try {
     if (typeof localStorage !== "undefined") {
         if (localStorage.getItem("culture_catalogue_version") !== CATALOGUE_STORAGE_VERSION) {
             localStorage.removeItem("culture_products");
+            localStorage.removeItem("culture_purchased_qty");
             localStorage.setItem("culture_catalogue_version", CATALOGUE_STORAGE_VERSION);
         }
     }
@@ -266,13 +235,14 @@ function normalizeProductRecord(prod, options = {}) {
     const idLower = String(prod.id || '').toLowerCase();
     const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
 
-    const rawStk = (prod.stock !== undefined && prod.stock !== null)
-        ? Number(prod.stock)
-        : ((prod.total_stock !== undefined && prod.total_stock !== null)
-            ? Number(prod.total_stock)
+    // Priorité absolue à total_stock (colonne officielle Supabase mise à jour depuis l'Admin)
+    const rawStk = (prod.total_stock !== undefined && prod.total_stock !== null)
+        ? Number(prod.total_stock)
+        : ((prod.stock !== undefined && prod.stock !== null)
+            ? Number(prod.stock)
             : ((prod.totalStock !== undefined && prod.totalStock !== null)
                 ? Number(prod.totalStock)
-                : (initMatch?.stock || 10)));
+                : (initMatch?.stock ?? 3)));
 
     const purchasedOffset = options.applyPurchasedOffset ? getPurchasedQtyForProduct(idLower) : 0;
     const stk = Math.max(0, rawStk - purchasedOffset);
@@ -282,18 +252,16 @@ function normalizeProductRecord(prod, options = {}) {
         ? rawCat
         : (idLower.startsWith('sac') ? 'backpacks' : 'crossbody');
 
-    // Seule la veste en denim (dj1) reste en "upcoming" (Bientôt disponible).
-    // Tous les autres produits de la boutique sont disponibles immédiatement.
-    const resolvedStatus = (idLower === 'dj1')
-        ? (prod.status || 'upcoming')
-        : 'available';
+    // Respecter le statut configuré dans la base Supabase / Admin
+    const rawStatus = prod.status || initMatch?.status || 'available';
+    const resolvedStatus = (rawStatus === 'upcoming') ? 'upcoming' : 'available';
 
     const resolvedBadge = (resolvedStatus === 'upcoming')
-        ? '⏳ BIENTÔT DISPONIBLE'
+        ? (prod.preorder_badge || prod.preorderBadge || '⏳ BIENTÔT DISPONIBLE')
         : 'DISPONIBLE';
 
     const resolvedRelease = (resolvedStatus === 'upcoming')
-        ? 'Bientôt disponible'
+        ? (prod.release_date || prod.releaseDate || 'Bientôt disponible')
         : 'Immédiat';
 
     return {
@@ -1004,7 +972,7 @@ function getEffectiveStock(product) {
     if (!product) return 0;
     const baseStock = (product.stock !== undefined && product.stock !== null)
         ? Number(product.stock)
-        : ((product.totalStock !== undefined && product.totalStock !== null) ? Number(product.totalStock) : 10);
+        : ((product.totalStock !== undefined && product.totalStock !== null) ? Number(product.totalStock) : 3);
     const inCart = getCartQuantityForProduct(product.id);
     return Math.max(0, baseStock - inCart);
 }
@@ -1043,13 +1011,13 @@ function filterAndRenderFeaturedProducts() {
         const categoryLabel = getCategoryLabel(product.category);
         const stockCount = getEffectiveStock(product);
 
-        let stockStatusText = `DISPONIBLE // <strong>${stockCount}</strong> EN STOCK`;
+        let stockStatusText = `DISPONIBLE // <strong>${stockCount}</strong> PIÈCES DISPONIBLES`;
         let stockClass = "in-stock";
         if (stockCount <= 0) {
             stockStatusText = "RUPTURE DE STOCK // ÉPUISÉ";
             stockClass = "out-of-stock";
-        } else if (stockCount <= 3) {
-            stockStatusText = `DERNIÈRES PIÈCES // <strong>${stockCount}</strong> EN STOCK`;
+        } else if (stockCount === 1) {
+            stockStatusText = `DERNIÈRE PIÈCE // <strong>1</strong> DISPONIBLE`;
             stockClass = "low-stock";
         }
 
@@ -2317,21 +2285,21 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
                 </div>
             </div>
         `;
-    } else if (stockCount > 3) {
+    } else if (stockCount > 1) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
                 <div class="product-stock-tag in-stock">
                     <span class="stock-tag-dot"></span>
-                    <span class="stock-tag-label">EN STOCK IMMÉDIAT // <strong>${stockCount} PIÈCE(S) DISPONIBLE(S)</strong></span>
+                    <span class="stock-tag-label">EN STOCK IMMÉDIAT // <strong>${stockCount} PIÈCES DISPONIBLES</strong></span>
                 </div>
             </div>
         `;
-    } else if (stockCount > 0) {
+    } else if (stockCount === 1) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
                 <div class="product-stock-tag low-stock">
                     <span class="stock-tag-dot pulse"></span>
-                    <span class="stock-tag-label">⚡ DERNIÈRES PIÈCES // PLUS QUE <strong>${stockCount} EN STOCK</strong></span>
+                    <span class="stock-tag-label">⚡ DERNIÈRE PIÈCE // PLUS QUE <strong>1 DISPONIBLE</strong></span>
                 </div>
             </div>
         `;
