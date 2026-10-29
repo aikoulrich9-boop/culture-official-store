@@ -15,7 +15,8 @@ const INITIAL_PRODUCTS = [
         releaseDate: "Bientôt disponible",
         reservedPercentage: 85,
         totalStock: 50,
-        reservedStock: 42
+        reservedStock: 42,
+        stock: 50
     },
     {
         id: "c1",
@@ -25,12 +26,13 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/c 1.png",
         description: "Sac streetwear noir avec illustration colorée d'un personnage sur la Terre. Sangle imprimée ajustable et boucle mate à dégagement rapide. Conçu pour un usage quotidien intensif.",
         sizes: [],
-        status: "preorder",
-        preorderBadge: "⚡ PRÉ-VENTE DROPS 02",
-        releaseDate: "15 Oct. 2026",
-        reservedPercentage: 85,
-        totalStock: 50,
-        reservedStock: 42
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
     },
     {
         id: "c2",
@@ -40,12 +42,13 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/c 2.png",
         description: "Sac bandoulière technique résistant aux intempéries avec imprimé emblématique du personnage à capuche rouge. Équipé d'une double fermeture éclair, de poches intérieures et d'un porte-clés.",
         sizes: [],
-        status: "preorder",
-        preorderBadge: "⚡ PRÉ-VENTE DROPS 02",
-        releaseDate: "15 Oct. 2026",
-        reservedPercentage: 90,
-        totalStock: 50,
-        reservedStock: 45
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
     },
     {
         id: "c3",
@@ -55,12 +58,13 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/c 3.png",
         description: "Sac portrait artistique premium. Conçu avec des compartiments à double accès rapide, des organiseurs internes en filet et une sangle tactile épaisse. Démarquez-vous dans la foule urbaine.",
         sizes: [],
-        status: "upcoming",
-        preorderBadge: "⏳ DROP IMMINENT",
-        releaseDate: "28 Oct. 2026",
-        reservedPercentage: 60,
-        totalStock: 50,
-        reservedStock: 30
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
     },
     {
         id: "c4",
@@ -150,12 +154,13 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/Sac 1.png",
         description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé sur patch woven et sigle Priority en rouge sang. Détails Diesel co-brandés, tirette corde tressée, compartiment principal large + poche frontale organisée. Le daily bag du mouvement.",
         sizes: [],
-        status: "preorder",
-        preorderBadge: "⚡ COLLAB EXCLUSIVE",
-        releaseDate: "15 Oct. 2026",
-        reservedPercentage: 88,
-        totalStock: 40,
-        reservedStock: 35
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
     },
     {
         id: "sac2",
@@ -165,12 +170,13 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/Sac 2.png",
         description: "Version signature de la collection ILLEGAL × Priority. Sac à dos all-black avec macro-graphic de l'étoile blanche imprimée pleine face. Badge Priority bleu en pendant. Silhouette épurée, bretelles ergonomiques rembourrées, dos aéré maillé. L'icône de la rue.",
         sizes: [],
-        status: "preorder",
-        preorderBadge: "⚡ COLLAB EXCLUSIVE",
-        releaseDate: "15 Oct. 2026",
-        reservedPercentage: 92,
-        totalStock: 40,
-        reservedStock: 37
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
     },
     {
         id: "sac3",
@@ -212,19 +218,18 @@ const INITIAL_PRODUCTS = [
         image: "IMAGE/tee.jpg",
         description: "T-shirt en jersey de coton peigné imprimé d'illustrations graphiques de sous-culture avec des encres haute fidélité. Offre une silhouette moderne structurée qui conserve sa forme.",
         sizes: ["S", "M", "L", "XL"],
-        status: "upcoming",
-        preorderBadge: "⏳ NOUVEAU DROP",
-        releaseDate: "28 Oct. 2026",
-        reservedPercentage: 40,
-        totalStock: 60,
-        reservedPercentage: 40,
-        totalStock: 60,
-        reservedStock: 24
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 15,
+        reservedStock: 0,
+        stock: 15
     }
 ];
 
 // Gestion impérative du cache et version du catalogue
-const CATALOGUE_STORAGE_VERSION = "20261029_v7_live_admin_sync";
+const CATALOGUE_STORAGE_VERSION = "20261029_v8_all_available_live_stock";
 try {
     if (typeof localStorage !== "undefined") {
         if (localStorage.getItem("culture_catalogue_version") !== CATALOGUE_STORAGE_VERSION) {
@@ -234,11 +239,34 @@ try {
     }
 } catch (e) {}
 
-function normalizeProductRecord(prod) {
+function getPurchasedQtyForProduct(productId) {
+    try {
+        if (typeof localStorage === "undefined") return 0;
+        const raw = localStorage.getItem("culture_purchased_qty");
+        if (!raw) return 0;
+        const map = JSON.parse(raw);
+        return Number(map[String(productId).toLowerCase()]) || 0;
+    } catch (e) {
+        return 0;
+    }
+}
+
+function recordPurchasedQty(productId, qty) {
+    try {
+        if (typeof localStorage === "undefined") return;
+        const raw = localStorage.getItem("culture_purchased_qty");
+        const map = raw ? JSON.parse(raw) : {};
+        const key = String(productId).toLowerCase();
+        map[key] = (Number(map[key]) || 0) + (Number(qty) || 1);
+        localStorage.setItem("culture_purchased_qty", JSON.stringify(map));
+    } catch (e) {}
+}
+
+function normalizeProductRecord(prod, options = {}) {
     const idLower = String(prod.id || '').toLowerCase();
     const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
 
-    const stk = (prod.stock !== undefined && prod.stock !== null)
+    const rawStk = (prod.stock !== undefined && prod.stock !== null)
         ? Number(prod.stock)
         : ((prod.total_stock !== undefined && prod.total_stock !== null)
             ? Number(prod.total_stock)
@@ -246,20 +274,27 @@ function normalizeProductRecord(prod) {
                 ? Number(prod.totalStock)
                 : (initMatch?.stock || 10)));
 
+    const purchasedOffset = options.applyPurchasedOffset ? getPurchasedQtyForProduct(idLower) : 0;
+    const stk = Math.max(0, rawStk - purchasedOffset);
+
     const rawCat = prod.category || initMatch?.category || 'crossbody';
     const resolvedCategory = (rawCat && rawCat !== 'bags')
         ? rawCat
         : (idLower.startsWith('sac') ? 'backpacks' : 'crossbody');
 
-    const resolvedStatus = prod.status || initMatch?.status || 'available';
-    const resolvedBadge = prod.preorder_badge || prod.preorderBadge || (
-        resolvedStatus === 'available'
-            ? 'DISPONIBLE'
-            : (resolvedStatus === 'upcoming' ? '⏳ BIENTÔT DISPONIBLE' : 'PRÉ-COMMANDE')
-    );
-    const resolvedRelease = prod.release_date || prod.releaseDate || (
-        resolvedStatus === 'available' ? 'Immédiat' : (initMatch?.releaseDate || 'Bientôt disponible')
-    );
+    // Seule la veste en denim (dj1) reste en "upcoming" (Bientôt disponible).
+    // Tous les autres produits de la boutique sont disponibles immédiatement.
+    const resolvedStatus = (idLower === 'dj1')
+        ? (prod.status || 'upcoming')
+        : 'available';
+
+    const resolvedBadge = (resolvedStatus === 'upcoming')
+        ? '⏳ BIENTÔT DISPONIBLE'
+        : 'DISPONIBLE';
+
+    const resolvedRelease = (resolvedStatus === 'upcoming')
+        ? 'Bientôt disponible'
+        : 'Immédiat';
 
     return {
         ...(initMatch || {}),
@@ -296,7 +331,7 @@ if (Array.isArray(storedProducts) && storedProducts.length > 0) {
         .map(normalizeProductRecord);
     saveProductsToStorage();
 } else {
-    PRODUCTS = INITIAL_PRODUCTS.map(p => ({ ...p }));
+    PRODUCTS = INITIAL_PRODUCTS.map(p => normalizeProductRecord(p, { applyPurchasedOffset: true }));
     saveProductsToStorage();
 }
 
@@ -333,7 +368,7 @@ async function syncProductsFromSupabase() {
         if (!error && Array.isArray(data) && data.length > 0) {
             PRODUCTS = data
                 .filter(d => d && !['h1', 'cap1'].includes(String(d.id).toLowerCase()))
-                .map(normalizeProductRecord);
+                .map(d => normalizeProductRecord(d, { applyPurchasedOffset: true }));
 
             saveProductsToStorage();
             if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
@@ -764,9 +799,7 @@ function preorderFlagshipDenimJacket() {
     const product = PRODUCTS.find(p => p.id === "dj1") || INITIAL_PRODUCTS[0];
     if (!product) return;
 
-    addItemToCartArray(product, selectedFlagshipSize, true);
-    showToast(`⚡ PRÉ-COMMANDE VALIDÉE : ${product.name} (Taille ${selectedFlagshipSize}) ! Expédition le 15 Octobre.`);
-    openCartDrawer();
+    triggerDropAlert(product.id);
 }
 
 function syncFlagshipDropCard() {
@@ -864,7 +897,7 @@ function renderDropCarousel(filterType = "all") {
                         <span class="carousel-item-price">${formatPrice(product.price)}</span>
                     </div>
                     <div class="carousel-item-shipping-tag">
-                        📦 Expédition : <strong>${product.releaseDate || '15 Oct. 2026'}</strong>
+                        📦 Disponibilité : <strong>${isUpcoming ? 'Bientôt disponible' : 'Immédiate'}</strong>
                     </div>
                 </div>
 
@@ -892,18 +925,7 @@ function renderDropCarousel(filterType = "all") {
 }
 
 function addToPreorderDirect(productId) {
-    const product = PRODUCTS.find(p => p.id === productId);
-    if (!product) return;
-
-    if (product.sizes && product.sizes.length > 0) {
-        openQuickView(productId);
-        showToast("⚡ Pré-commande : Veuillez choisir votre taille !");
-        return;
-    }
-
-    addItemToCartArray(product, "", true);
-    showToast(`⚡ PRÉ-COMMANDE : ${product.name} ajouté ! Expédition le ${product.releaseDate || '15 Oct.'}`);
-    openCartDrawer();
+    addToCartDirect(productId);
 }
 
 function triggerDropAlert(productId) {
@@ -971,6 +993,32 @@ function getFilteredBoutiqueProducts() {
     });
 }
 
+function getCartQuantityForProduct(productId) {
+    if (!Array.isArray(cart)) return 0;
+    return cart
+        .filter(item => item && item.product && String(item.product.id).toLowerCase() === String(productId).toLowerCase())
+        .reduce((sum, item) => sum + (Number(item.quantity) || 0), 0);
+}
+
+function getEffectiveStock(product) {
+    if (!product) return 0;
+    const baseStock = (product.stock !== undefined && product.stock !== null)
+        ? Number(product.stock)
+        : ((product.totalStock !== undefined && product.totalStock !== null) ? Number(product.totalStock) : 10);
+    const inCart = getCartQuantityForProduct(product.id);
+    return Math.max(0, baseStock - inCart);
+}
+
+function refreshActiveProductModalIfOpen() {
+    const overlay = document.getElementById("quickViewOverlay");
+    if (overlay && overlay.classList.contains("active") && typeof currentImmersiveProductId !== "undefined" && currentImmersiveProductId) {
+        const activeProduct = PRODUCTS.find(p => String(p.id).toLowerCase() === String(currentImmersiveProductId).toLowerCase());
+        if (activeProduct && typeof renderImmersiveShowcaseContent === "function") {
+            renderImmersiveShowcaseContent(activeProduct, 0);
+        }
+    }
+}
+
 let currentBoutiqueShowcaseIndex = 0;
 let currentBoutiqueSelectedSize = null;
 
@@ -993,21 +1041,16 @@ function filterAndRenderFeaturedProducts() {
     productsGrid.innerHTML = filtered.map(product => {
         const isWishlisted = wishlist.includes(product.id);
         const categoryLabel = getCategoryLabel(product.category);
-        const stockCount = (product.stock !== undefined && product.stock !== null) 
-            ? Number(product.stock) 
-            : 10;
+        const stockCount = getEffectiveStock(product);
 
-        let stockStatusText = `SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCES`;
+        let stockStatusText = `DISPONIBLE // <strong>${stockCount}</strong> EN STOCK`;
         let stockClass = "in-stock";
         if (stockCount <= 0) {
-            stockStatusText = "SOLD OUT // ÉPUISÉ";
+            stockStatusText = "RUPTURE DE STOCK // ÉPUISÉ";
             stockClass = "out-of-stock";
         } else if (stockCount <= 3) {
-            stockStatusText = `DERNIÈRES PIÈCES // <strong>${stockCount}</strong> DISPOS`;
+            stockStatusText = `DERNIÈRES PIÈCES // <strong>${stockCount}</strong> EN STOCK`;
             stockClass = "low-stock";
-        } else if (product.status === "preorder") {
-            stockStatusText = `PRÉ-VENTE // DROP 02 (${stockCount} PIÈCES)`;
-            stockClass = "preorder";
         }
 
         const isBackpack = product.category === "backpacks" || (product.id && product.id.startsWith("sac"));
@@ -1035,9 +1078,10 @@ function filterAndRenderFeaturedProducts() {
                     <!-- Floating Circular Add Button (Ajout Direct Panier) -->
                     <button type="button" 
                             class="card-float-add-btn" 
+                            ${stockCount <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}
                             onclick="event.stopPropagation(); addToCartDirect('${product.id}')" 
                             aria-label="Ajouter ${product.name} au panier"
-                            title="Ajouter au panier">
+                            title="${stockCount <= 0 ? 'Rupture de stock' : 'Ajouter au panier'}">
                         <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
                             <line x1="12" y1="5" x2="12" y2="19"></line>
                             <line x1="5" y1="12" x2="19" y2="12"></line>
@@ -1108,11 +1152,9 @@ function renderBoutiqueGrandShowcase(direction = 0) {
     }
 
     const isWishlisted = wishlist.includes(product.id);
-    const stockCount = (product.stock !== undefined && product.stock !== null) 
-        ? Number(product.stock) 
-        : 10;
+    const stockCount = getEffectiveStock(product);
 
-    let stockStatusText = "EN STOCK";
+    let stockStatusText = "DISPONIBLE EN STOCK";
     let stockClass = "in-stock";
     if (stockCount <= 0) {
         stockStatusText = "SOLD OUT // ÉPUISÉ";
@@ -1120,9 +1162,6 @@ function renderBoutiqueGrandShowcase(direction = 0) {
     } else if (stockCount <= 3) {
         stockStatusText = `DERNIÈRES PIÈCES (${stockCount})`;
         stockClass = "low-stock";
-    } else if (product.status === "preorder") {
-        stockStatusText = "PRÉ-VENTE // DROP 02";
-        stockClass = "preorder";
     }
 
     const categoryLabel = getCategoryLabel(product.category);
@@ -1426,6 +1465,11 @@ function addToCartDirect(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
     if (!product) return;
 
+    if (getEffectiveStock(product) <= 0) {
+        showToast("Cet article est épuisé (rupture de stock).");
+        return;
+    }
+
     if (product.sizes && product.sizes.length > 1) {
         openQuickView(productId);
         showToast("Veuillez sélectionner une taille.");
@@ -1433,34 +1477,51 @@ function addToCartDirect(productId) {
     }
 
     const defaultSize = (product.sizes && product.sizes.length === 1) ? product.sizes[0] : "";
-    addItemToCartArray(product, defaultSize);
-    showToast(`${product.name} ajouté au panier !`);
-    openCartDrawer();
+    const added = addItemToCartArray(product, defaultSize);
+    if (added !== false) {
+        const remaining = getEffectiveStock(product);
+        showToast(`${product.name} ajouté ! (${remaining} restant${remaining > 1 ? 's' : ''} en stock)`);
+        openCartDrawer();
+    }
 }
 
 function addItemToCartArray(product, size, isPreorder = false) {
+    const liveProduct = PRODUCTS.find(p => String(p.id).toLowerCase() === String(product.id).toLowerCase()) || product;
+    if (getEffectiveStock(liveProduct) <= 0) {
+        showToast("Stock maximum disponible atteint pour cet article.");
+        return false;
+    }
+
     const existingIndex = cart.findIndex(item => item.product.id === product.id && item.size === size);
     
     if (existingIndex > -1) {
         cart[existingIndex].quantity += 1;
-        if (isPreorder || product.status === "preorder") cart[existingIndex].isPreorder = true;
     } else {
         cart.push({
-            product: product,
+            product: liveProduct,
             quantity: 1,
             size: size,
-            isPreorder: isPreorder || product.status === "preorder"
+            isPreorder: false
         });
     }
 
     saveCart();
     renderCart();
     updateBadgesCount();
+    filterAndRenderFeaturedProducts();
+    refreshActiveProductModalIfOpen();
+    return true;
 }
 
 function updateCartQty(productId, size, change) {
     const index = cart.findIndex(item => item.product.id === productId && item.size === size);
     if (index === -1) return;
+
+    const liveProduct = PRODUCTS.find(p => String(p.id).toLowerCase() === String(productId).toLowerCase()) || cart[index].product;
+    if (change > 0 && getEffectiveStock(liveProduct) <= 0) {
+        showToast("Stock maximum disponible atteint pour cet article.");
+        return;
+    }
 
     cart[index].quantity += change;
 
@@ -1472,6 +1533,8 @@ function updateCartQty(productId, size, change) {
     saveCart();
     renderCart();
     updateBadgesCount();
+    filterAndRenderFeaturedProducts();
+    refreshActiveProductModalIfOpen();
 }
 
 function removeCartItem(productId, size) {
@@ -1479,6 +1542,8 @@ function removeCartItem(productId, size) {
     saveCart();
     renderCart();
     updateBadgesCount();
+    filterAndRenderFeaturedProducts();
+    refreshActiveProductModalIfOpen();
     showToast("Article retiré du panier.");
 }
 
@@ -1598,8 +1663,6 @@ function renderCart() {
 
     container.innerHTML = cart.map(item => {
         const itemTotal = item.product.price * item.quantity;
-        const isPreorder = item.isPreorder || item.product.status === "preorder";
-        const preorderBadgeHtml = isPreorder ? `<div class="cart-preorder-badge">⚡ PRÉ-VENTE (Expédition le ${item.product.releaseDate || '15 Oct.'})</div>` : '';
 
         return `
             <div class="cart-item">
@@ -1612,7 +1675,6 @@ function renderCart() {
                         <span class="cart-item-price">${formatPrice(itemTotal)}</span>
                     </div>
                     <div class="cart-item-variant">${item.size ? 'Taille : ' + item.size : 'Taille Unique'}</div>
-                    ${preorderBadgeHtml}
                     <div class="cart-item-actions">
                         <div class="qty-control">
                             <button class="qty-btn" onclick="updateCartQty('${item.product.id}', '${item.size}', -1)" aria-label="Diminuer la quantité">-</button>
@@ -1747,11 +1809,8 @@ async function processCheckout() {
         const itemTotal = item.product.price * item.quantity;
         total += itemTotal;
         const sizeText = item.size ? ` (Taille: ${item.size})` : "";
-        const isPreorder = item.isPreorder || item.product.status === "preorder";
-        if (isPreorder) hasPreorder = true;
-        const preorderTag = isPreorder ? ` [⚡ PRÉ-VENTE - Sortie estimée: ${item.product.releaseDate || '15 Oct.'}]` : "";
 
-        itemsListText += `${index + 1}. *${item.product.name}*${preorderTag}${sizeText}\n   Quantité: ${item.quantity} x ${formatPrice(item.product.price)} = *${formatPrice(itemTotal)}*\n`;
+        itemsListText += `${index + 1}. *${item.product.name}*${sizeText}\n   Quantité: ${item.quantity} x ${formatPrice(item.product.price)} = *${formatPrice(itemTotal)}*\n`;
     });
 
     const isFreeShipping = total >= 25000;
@@ -1767,7 +1826,7 @@ async function processCheckout() {
         (resellerToUse ? `🏷️ Code Revendeur Associé: ${resellerToUse.code}\n` : "") +
         `\n`;
 
-    const headerTitle = hasPreorder ? "*NOUVELLE COMMANDE EN PRÉ-VENTE - CULTURE STREETWEAR*" : "*NOUVELLE COMMANDE - CULTURE STREETWEAR*";
+    const headerTitle = "*NOUVELLE COMMANDE - PRIORITY STREETWEAR*";
 
     const message = `${headerTitle}\n\n` +
         customerInfoBlock +
@@ -1788,7 +1847,8 @@ async function processCheckout() {
         total,
         hasPreorder,
         items: cart.map(i => ({
-            name: i.product.name + ((i.isPreorder || i.product.status === 'preorder') ? " [PRÉ-VENTE]" : ""),
+            id: i.product.id,
+            name: i.product.name,
             size: i.size || "Standard",
             quantity: i.quantity,
             price: i.product.price,
@@ -1807,6 +1867,29 @@ async function processCheckout() {
             return;
         }
     }
+
+    // Décrémenter définitivement le stock des produits achetés dans le catalogue local et dans Supabase
+    for (const item of cart) {
+        const prod = PRODUCTS.find(p => String(p.id).toLowerCase() === String(item.product.id).toLowerCase());
+        if (prod && prod.status !== "upcoming") {
+            const currentBaseStock = (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10;
+            const qtyBought = Number(item.quantity) || 1;
+            const newStock = Math.max(0, currentBaseStock - qtyBought);
+            prod.stock = newStock;
+            prod.totalStock = newStock;
+            recordPurchasedQty(prod.id, qtyBought);
+
+            if (typeof supabaseClient !== "undefined" && supabaseClient) {
+                supabaseClient
+                    .from("products")
+                    .update({ total_stock: newStock, reserved_stock: 0, updated_at: new Date().toISOString() })
+                    .eq("id", prod.id)
+                    .then(() => {})
+                    .catch(e => console.warn("Mise à jour stock Supabase:", e));
+            }
+        }
+    }
+    saveProductsToStorage();
 
     const defaultWhatsApp = (window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER)
         ? window.ENV_CONFIG.WHATSAPP_NUMBER
@@ -1827,11 +1910,13 @@ async function processCheckout() {
         showToast("Redirection vers la passerelle de confirmation...");
     }
 
-    // Vider le panier et synchroniser l'affichage
+    // Vider le panier et synchroniser l'affichage du stock en direct
     cart = [];
     saveCart();
     renderCart();
     updateBadgesCount();
+    filterAndRenderFeaturedProducts();
+    refreshActiveProductModalIfOpen();
     closeCartDrawer();
 }
 
@@ -2219,10 +2304,7 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
 
     const isWishlisted = wishlist.includes(product.id);
     const isUpcoming = product.status === "upcoming";
-    const isPreorder = product.status === "preorder";
-    const stockCount = (product.stock !== undefined && product.stock !== null) 
-        ? Number(product.stock) 
-        : 10;
+    const stockCount = getEffectiveStock(product);
     const isOutOfStock = !isUpcoming && stockCount === 0;
 
     let stockBannerHtml = "";
@@ -2235,21 +2317,12 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
                 </div>
             </div>
         `;
-    } else if (isPreorder) {
-        stockBannerHtml = `
-            <div class="qv-stock-banner">
-                <div class="product-stock-tag low-stock">
-                    <span class="stock-tag-dot pulse"></span>
-                    <span class="stock-tag-label">${product.preorderBadge || '⚡ PRÉ-VENTE'} // EXPÉDITION : <strong>${product.releaseDate || 'Immédiat'}</strong></span>
-                </div>
-            </div>
-        `;
-    } else if (stockCount > 5) {
+    } else if (stockCount > 3) {
         stockBannerHtml = `
             <div class="qv-stock-banner">
                 <div class="product-stock-tag in-stock">
                     <span class="stock-tag-dot"></span>
-                    <span class="stock-tag-label">EN STOCK // SÉRIE LIMITÉE : <strong>${stockCount} PIÈCES</strong> DISPONIBLES</span>
+                    <span class="stock-tag-label">EN STOCK IMMÉDIAT // <strong>${stockCount} PIÈCE(S) DISPONIBLE(S)</strong></span>
                 </div>
             </div>
         `;
@@ -2258,7 +2331,7 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
             <div class="qv-stock-banner">
                 <div class="product-stock-tag low-stock">
                     <span class="stock-tag-dot pulse"></span>
-                    <span class="stock-tag-label">⚡ DERNIÈRE CHANCE // PLUS QUE <strong>${stockCount} PIÈCES</strong> RESTANTES</span>
+                    <span class="stock-tag-label">⚡ DERNIÈRES PIÈCES // PLUS QUE <strong>${stockCount} EN STOCK</strong></span>
                 </div>
             </div>
         `;
@@ -2267,7 +2340,7 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
             <div class="qv-stock-banner">
                 <div class="product-stock-tag out-of-stock">
                     <span class="stock-tag-dot"></span>
-                    <span class="stock-tag-label">SOLD OUT // SÉRIE ÉPUISÉE</span>
+                    <span class="stock-tag-label">SOLD OUT // RUPTURE DE STOCK</span>
                 </div>
             </div>
         `;
@@ -2314,7 +2387,7 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
             <div class="qv-text-side immersive-info-zone">
                 <div class="immersive-meta-header stagger-item-1">
                     <span class="qv-badge">${getCategoryLabel(product.category)}</span>
-                    ${product.releaseDate ? `<span class="immersive-release-pill">📦 ${product.releaseDate}</span>` : ''}
+                    <span class="immersive-release-pill">📦 ${isUpcoming ? 'Bientôt disponible' : 'Disponible immédiatement'}</span>
                 </div>
 
                 <h3 class="qv-title immersive-product-title stagger-item-2" id="immersiveProductTitle">${product.name}</h3>
@@ -2352,7 +2425,7 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
                         </button>
                     ` : `
                         <button class="qv-add-to-cart immersive-buy-btn" onclick="addFromModalToCart('${product.id}')">
-                            <span>${isPreorder ? '⚡ Pré-commander — ' + formatPrice(product.price) : 'Ajouter au Sac — ' + formatPrice(product.price)}</span>
+                            <span>Ajouter au Sac — ${formatPrice(product.price)}</span>
                             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2">
                                 <line x1="5" y1="12" x2="19" y2="12"></line>
                                 <polyline points="12 5 19 12 12 19"></polyline>
@@ -2471,6 +2544,11 @@ function addFromModalToCart(productId) {
     const product = PRODUCTS.find(p => p.id === productId);
     if (!product) return;
 
+    if (getEffectiveStock(product) <= 0) {
+        showToast("Stock épuisé pour cet article.");
+        return;
+    }
+
     let selectedSize = "";
     const sizeBtn = document.querySelector(".qv-sizes-row .size-btn.active");
     if (sizeBtn) {
@@ -2478,7 +2556,8 @@ function addFromModalToCart(productId) {
     }
 
     addItemToCartArray(product, selectedSize);
-    showToast(`${product.name} ${selectedSize ? '(' + selectedSize + ')' : ''} ajouté au panier.`);
+    const remaining = getEffectiveStock(product);
+    showToast(`${product.name} ${selectedSize ? '(' + selectedSize + ')' : ''} ajouté au panier (${remaining} restant${remaining > 1 ? 's' : ''}).`);
     
     closeImmersiveProduct();
     openCartDrawer();
