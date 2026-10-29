@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /admin/
+Disallow: /admin.html
+
+Sitemap: https://priority-illegal.com/sitemap.xml

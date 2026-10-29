@@ -50,28 +50,27 @@
 
             <form id="adminLoginForm" class="auth-form">
                 <div class="auth-field">
-                    <input type="email" id="loginEmail" class="auth-input" placeholder="Enter your email address" value="admin@culture.store" required autocomplete="email">
+                    <input type="email" id="loginEmail" class="auth-input" placeholder="Adresse email administrateur" required autocomplete="email">
                 </div>
 
                 <div class="auth-field">
-                    <input type="password" id="loginPassword" class="auth-input" placeholder="Password" value="admin123" required autocomplete="current-password">
+                    <input type="password" id="loginPassword" class="auth-input" placeholder="Mot de passe" required autocomplete="current-password">
                 </div>
 
-                <div class="auth-helper-row">
-                    <span class="auth-helper-hint" onclick="document.getElementById('loginEmail').value='admin@culture.store';document.getElementById('loginPassword').value='admin123';" title="Cliquer pour réinitialiser les identifiants">Identifiants par défaut</span>
-                    <a href="#" class="auth-forgot-link" onclick="alert('Pour réinitialiser votre mot de passe administrateur, utilisez le tableau de bord Supabase (Authentication > Users) ou contactez le support technique.'); return false;">Forgot Password?</a>
+                <div class="auth-helper-row" style="justify-content: flex-end;">
+                    <a href="#" class="auth-forgot-link" onclick="alert('Pour réinitialiser votre mot de passe administrateur, utilisez le tableau de bord Supabase (Authentication > Users) ou contactez le support technique.'); return false;">Mot de passe oublié ?</a>
                 </div>
 
                 <button type="submit" id="loginSubmitBtn" class="auth-btn-primary">
-                    Sign in
+                    Se connecter
                 </button>
             </form>
 
             <div class="auth-divider">
-                <span>OR</span>
+                <span>OU</span>
             </div>
 
-            <a href="../index.html" class="auth-btn-secondary">
+            <a href="/" class="auth-btn-secondary">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M19 12H5M12 19l-7-7 7-7"/>
                 </svg>
@@ -147,7 +146,7 @@
             </nav>
 
             <div class="admin-sidebar-footer">
-                <a href="../index.html" target="_blank" class="admin-btn admin-btn-sm admin-btn-outline" style="width: 100%; justify-content: center; margin-bottom: 0.5rem;">
+                <a href="/" target="_blank" class="admin-btn admin-btn-sm admin-btn-outline" style="width: 100%; justify-content: center; margin-bottom: 0.5rem;">
                     🌐 Boutique Publique ↗
                 </a>
                 <button id="adminLogoutBtn" class="admin-btn admin-btn-sm admin-btn-danger" style="width: 100%; justify-content: center;">

@@ -40,13 +40,7 @@ window.AdminAPI = {
             { id: "sac4", name: "ILLEGAL Cobalt Icon Pack", price: 12000, stock: 10, category: "backpacks", image: "IMAGE/sac_illegal_cobalt.png", description: "Édition emblématique ILLEGAL × Priority en toile technique bleu cobalt avec macro-étoile blanche et emblème Diesel.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" }
         ];
 
-        let localProducts = [];
-        try {
-            const rawStored = localStorage.getItem('culture_products');
-            if (rawStored) localProducts = JSON.parse(rawStored);
-        } catch(e) {}
-
-        // 1. Tentative de lecture Supabase si disponible
+        // 1. Tentative de lecture Supabase si disponible (Source de vérité Cloud)
         if (this.isOnline()) {
             try {
                 const { data, error } = await this.getClient().from('products').select('*').order('created_at', { ascending: false });
@@ -54,77 +48,48 @@ window.AdminAPI = {
                     const filteredData = data.filter(d => d && !['h1', 'cap1'].includes(String(d.id).toLowerCase()));
                     const mapped = filteredData.map(d => {
                         const idLower = String(d.id).toLowerCase();
+                        const defMatch = defaultCatalog.find(dp => String(dp.id).toLowerCase() === idLower);
                         const stk = (d.stock !== undefined && d.stock !== null)
                             ? Number(d.stock)
                             : ((d.total_stock !== undefined && d.total_stock !== null)
                                 ? Number(d.total_stock)
-                                : ((idLower === 'dj1') ? 50 : 10));
+                                : (defMatch?.stock || 10));
 
-                        const cat = d.category;
-                        const resolvedCat = (idLower === 'sac3')
-                            ? 'backpacks'
-                            : ((cat && cat !== 'bags')
-                                ? cat
-                                : (idLower.startsWith('c') ? 'crossbody' : (idLower.startsWith('sac') ? 'backpacks' : (cat || 'crossbody'))));
+                        const cat = d.category || defMatch?.category || 'crossbody';
+                        const resolvedCat = (cat && cat !== 'bags')
+                            ? cat
+                            : (idLower.startsWith('sac') ? 'backpacks' : 'crossbody');
 
-                        const resolvedStatus = (idLower === 'sac3')
-                            ? 'available'
-                            : ((idLower === 'dj1') ? 'upcoming' : (d.status || 'available'));
-
-                        const resolvedBadge = (idLower === 'sac3')
-                            ? 'DISPONIBLE'
-                            : ((idLower === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (d.preorder_badge || 'DISPONIBLE')));
-
-                        const resolvedRelease = (idLower === 'sac3')
-                            ? 'Immédiat'
-                            : ((idLower === 'dj1') ? 'Bientôt disponible' : (d.release_date || 'Immédiat'));
+                        const resolvedStatus = d.status || defMatch?.status || 'available';
+                        const resolvedBadge = d.preorder_badge || (
+                            resolvedStatus === 'available'
+                                ? 'DISPONIBLE'
+                                : (resolvedStatus === 'upcoming' ? '⏳ BIENTÔT DISPONIBLE' : 'PRÉ-COMMANDE')
+                        );
+                        const resolvedRelease = d.release_date || (
+                            resolvedStatus === 'available' ? 'Immédiat' : (defMatch?.releaseDate || 'Bientôt disponible')
+                        );
 
                         return {
                             id: d.id,
-                            name: (idLower === 'sac3') ? 'ILLEGAL Ocean Camo Pack' : d.name,
-                            price: (idLower === 'sac3') ? 12000 : Number(d.price),
+                            name: d.name || defMatch?.name || 'Article PRIORITY',
+                            price: (d.price !== undefined && d.price !== null) ? Number(d.price) : (defMatch?.price || 10000),
                             category: resolvedCat,
-                            image: (idLower === 'sac3') ? 'IMAGE/sac_illegal_blue.png' : d.image,
-                            description: d.description || '',
-                            sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
+                            image: d.image || defMatch?.image || 'IMAGE/logo P.png',
+                            description: d.description || defMatch?.description || '',
+                            sizes: Array.isArray(d.sizes) && d.sizes.length > 0 ? d.sizes : (defMatch?.sizes || ["Unique"]),
                             status: resolvedStatus,
                             preorderBadge: resolvedBadge,
                             releaseDate: resolvedRelease,
-                            reservedPercentage: (idLower === 'sac3') ? 100 : (Number(d.reserved_percentage) || 100),
+                            reservedPercentage: Number(d.reserved_percentage ?? 100),
                             totalStock: stk,
-                            reservedStock: (idLower === 'sac3') ? 0 : (Number(d.reserved_stock) || 0),
+                            reservedStock: Number(d.reserved_stock ?? 0),
                             stock: stk
                         };
                     });
 
-                    // Si des produits locaux ont été créés manuellement par l'admin, les conserver
-                    if (Array.isArray(localProducts)) {
-                        localProducts.forEach(lp => {
-                            if (!mapped.some(m => String(m.id).toLowerCase() === String(lp.id).toLowerCase())) {
-                                mapped.unshift(lp);
-                            }
-                        });
-                    }
-
-                    // S'assurer que les produits par défaut (ex: sac4, c4-c8) sont également inclus
-                    if (Array.isArray(defaultCatalog)) {
-                        defaultCatalog.forEach(dp => {
-                            const existing = mapped.find(m => String(m.id).toLowerCase() === String(dp.id).toLowerCase());
-                            if (!existing) {
-                                mapped.push({ ...dp });
-                            } else if (String(dp.id).toLowerCase() === 'sac3') {
-                                existing.status = 'available';
-                                existing.preorderBadge = 'DISPONIBLE';
-                                existing.category = 'backpacks';
-                                existing.image = 'IMAGE/sac_illegal_blue.png';
-                                existing.price = 12000;
-                            }
-                        });
-                    }
-
-                    const sanitized = mapped.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
-                    localStorage.setItem('culture_products', JSON.stringify(sanitized));
-                    return sanitized;
+                    localStorage.setItem('culture_products', JSON.stringify(mapped));
+                    return mapped;
                 }
             } catch (err) {
                 console.warn("Lecture Supabase products, repli local:", err);
@@ -144,73 +109,12 @@ window.AdminAPI = {
             return defaultCatalog;
         }
 
-        // Auto-réparation des images manquantes ou obsolètes dans le cache utilisateur
-        let updated = false;
-        const imageRepairs = {
-            'terra icon': 'IMAGE/c 1.png',
-            'aero character': 'IMAGE/c 2.png',
-            'portrait editorial': 'IMAGE/c 3.png',
-            'minimalist utility': 'IMAGE/c 4.png',
-            'creator studio': 'IMAGE/logo P.png',
-            'raw indigo denim': 'IMAGE/denim_jacket.jpg.png',
-            'illegal blackout': 'IMAGE/Sac 1.png',
-            'illegal star': 'IMAGE/Sac 2.png',
-            'illegal ocean': 'IMAGE/Sac 3.png',
-            'illegal cobalt': 'IMAGE/sac_illegal_cobalt.png',
-            'cobalt icon': 'IMAGE/sac_illegal_cobalt.png',
-            'cobalt star': 'IMAGE/sac_illegal_cobalt.png',
-            'bleu cobalt': 'IMAGE/sac_illegal_cobalt.png',
-            'camo beanie': 'IMAGE/c 4.png',
-            'all-star shooter': 'IMAGE/c 4_shooter.png',
-            'manga rebel': 'IMAGE/c 5.png',
-            'boxy silhouette': 'IMAGE/c 6.png',
-            'stealth blackout': 'IMAGE/c 7.png',
-            'culture core': 'IMAGE/c 2.png',
-            'phantom utility': 'IMAGE/c 3.png'
-        };
-
         products = products.map(p => {
-            const nameLower = (p.name || '').toLowerCase();
-            const badImg = !p.image || p.image.includes('WhatsApp') || p.image.includes('logo P.png');
-            if (badImg) {
-                for (const [key, validImg] of Object.entries(imageRepairs)) {
-                    if (nameLower.includes(key)) {
-                        p.image = validImg;
-                        updated = true;
-                        break;
-                    }
-                }
-            }
-
-            // Normalisation automatique du stock
             if (p.stock === undefined || p.stock === null) {
                 p.stock = (p.totalStock && p.reservedStock !== undefined) ? Math.max(0, p.totalStock - p.reservedStock) : 10;
-                updated = true;
             }
-
-            // dj1 doit être "upcoming" (Coming Soon)
-            if (String(p.id).toLowerCase() === 'dj1' && p.status !== 'upcoming') {
-                p.status = 'upcoming';
-                p.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
-                p.releaseDate = 'Bientôt disponible';
-                p.stock = 50;
-                updated = true;
-            }
-
             return p;
         });
-
-        // Compléter avec les nouveautés du catalogue par défaut
-        defaultCatalog.forEach(item => {
-            if (!products.some(p => String(p.id).toLowerCase() === String(item.id).toLowerCase())) {
-                products.push(item);
-                updated = true;
-            }
-        });
-
-        if (updated) {
-            localStorage.setItem('culture_products', JSON.stringify(products));
-        }
 
         return products;
     },

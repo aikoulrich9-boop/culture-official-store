@@ -223,8 +223,8 @@ const INITIAL_PRODUCTS = [
     }
 ];
 
-// Gestion impérative du cache et version du catalogue (invalidation des états obsolètes)
-const CATALOGUE_STORAGE_VERSION = "20261028_v6_uniform_dimensions";
+// Gestion impérative du cache et version du catalogue
+const CATALOGUE_STORAGE_VERSION = "20261029_v7_live_admin_sync";
 try {
     if (typeof localStorage !== "undefined") {
         if (localStorage.getItem("culture_catalogue_version") !== CATALOGUE_STORAGE_VERSION) {
@@ -234,6 +234,55 @@ try {
     }
 } catch (e) {}
 
+function normalizeProductRecord(prod) {
+    const idLower = String(prod.id || '').toLowerCase();
+    const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
+
+    const stk = (prod.stock !== undefined && prod.stock !== null)
+        ? Number(prod.stock)
+        : ((prod.total_stock !== undefined && prod.total_stock !== null)
+            ? Number(prod.total_stock)
+            : ((prod.totalStock !== undefined && prod.totalStock !== null)
+                ? Number(prod.totalStock)
+                : (initMatch?.stock || 10)));
+
+    const rawCat = prod.category || initMatch?.category || 'crossbody';
+    const resolvedCategory = (rawCat && rawCat !== 'bags')
+        ? rawCat
+        : (idLower.startsWith('sac') ? 'backpacks' : 'crossbody');
+
+    const resolvedStatus = prod.status || initMatch?.status || 'available';
+    const resolvedBadge = prod.preorder_badge || prod.preorderBadge || (
+        resolvedStatus === 'available'
+            ? 'DISPONIBLE'
+            : (resolvedStatus === 'upcoming' ? '⏳ BIENTÔT DISPONIBLE' : 'PRÉ-COMMANDE')
+    );
+    const resolvedRelease = prod.release_date || prod.releaseDate || (
+        resolvedStatus === 'available' ? 'Immédiat' : (initMatch?.releaseDate || 'Bientôt disponible')
+    );
+
+    return {
+        ...(initMatch || {}),
+        ...prod,
+        id: prod.id,
+        name: prod.name || initMatch?.name || 'Article PRIORITY',
+        price: (prod.price !== undefined && prod.price !== null) ? Number(prod.price) : (initMatch?.price || 10000),
+        category: resolvedCategory,
+        image: prod.image || initMatch?.image || 'IMAGE/logo P.png',
+        description: (prod.description !== undefined && prod.description !== null && prod.description !== '')
+            ? prod.description
+            : (initMatch?.description || ''),
+        sizes: Array.isArray(prod.sizes) && prod.sizes.length > 0 ? prod.sizes : (initMatch?.sizes || ["Unique"]),
+        status: resolvedStatus,
+        preorderBadge: resolvedBadge,
+        releaseDate: resolvedRelease,
+        reservedPercentage: Number(prod.reserved_percentage ?? prod.reservedPercentage ?? initMatch?.reservedPercentage ?? 100),
+        totalStock: stk,
+        reservedStock: Number(prod.reserved_stock ?? prod.reservedStock ?? 0),
+        stock: stk
+    };
+}
+
 let storedProducts = null;
 try {
     const raw = localStorage.getItem("culture_products");
@@ -242,59 +291,9 @@ try {
 
 let PRODUCTS = [];
 if (Array.isArray(storedProducts) && storedProducts.length > 0) {
-    // 1. Filtrer formellement les anciens produits supprimés (h1 hoodie, cap1 casquette)
-    storedProducts = storedProducts.filter(p => p && !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
-
-    PRODUCTS = storedProducts.map(prod => {
-        const idLower = String(prod.id).toLowerCase();
-        if (idLower === 'dj1' && (!prod.status || prod.status === 'preorder')) {
-            prod.status = 'upcoming';
-            prod.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
-            prod.releaseDate = 'Bientôt disponible';
-        }
-        const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
-        if (initMatch) {
-            // sac3 est disponible immédiatement à la vente dans la boutique
-            const resolvedStatus = (idLower === 'sac3') ? 'available' : (prod.status || initMatch.status);
-            const resolvedBadge = (idLower === 'sac3') ? 'DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge));
-            const resolvedCat = (idLower === 'sac3') ? 'backpacks' : (prod.category || initMatch.category);
-            const resolvedImg = initMatch.image || prod.image;
-
-            return {
-                ...initMatch,
-                ...prod,
-                category: resolvedCat,
-                image: resolvedImg,
-                stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : (initMatch.stock || 10),
-                status: resolvedStatus,
-                preorderBadge: resolvedBadge,
-                releaseDate: resolvedStatus === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
-                reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (resolvedStatus === 'available' ? 100 : initMatch.reservedPercentage)
-            };
-        }
-        return {
-            ...prod,
-            stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
-        };
-    });
-
-    // Compléter avec les nouveaux produits éventuels de INITIAL_PRODUCTS absents du stockage local
-    INITIAL_PRODUCTS.forEach(init => {
-        const existing = PRODUCTS.find(p => String(p.id).toLowerCase() === String(init.id).toLowerCase());
-        if (!existing) {
-            PRODUCTS.push({ ...init });
-        } else {
-            existing.image = init.image;
-            if (String(init.id).toLowerCase() === 'sac3') {
-                existing.status = 'available';
-                existing.preorderBadge = 'DISPONIBLE';
-                existing.category = 'backpacks';
-                existing.price = 12000;
-            }
-        }
-    });
-
-    PRODUCTS = PRODUCTS.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
+    PRODUCTS = storedProducts
+        .filter(p => p && !['h1', 'cap1'].includes(String(p.id).toLowerCase()))
+        .map(normalizeProductRecord);
     saveProductsToStorage();
 } else {
     PRODUCTS = INITIAL_PRODUCTS.map(p => ({ ...p }));
@@ -302,7 +301,9 @@ if (Array.isArray(storedProducts) && storedProducts.length > 0) {
 }
 
 function saveProductsToStorage() {
-    localStorage.setItem("culture_products", JSON.stringify(PRODUCTS));
+    try {
+        localStorage.setItem("culture_products", JSON.stringify(PRODUCTS));
+    } catch (e) {}
 }
 
 function reloadProductsFromStorage() {
@@ -310,59 +311,11 @@ function reloadProductsFromStorage() {
         const raw = localStorage.getItem("culture_products");
         if (raw) {
             const list = JSON.parse(raw);
-            if (Array.isArray(list) && list.length > 0) {
-                const cleanedList = list.filter(p => p && !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
+            if (Array.isArray(list)) {
+                PRODUCTS = list
+                    .filter(p => p && !['h1', 'cap1'].includes(String(p.id).toLowerCase()))
+                    .map(normalizeProductRecord);
 
-                PRODUCTS = cleanedList.map(prod => {
-                    const idLower = String(prod.id).toLowerCase();
-                    if (idLower === 'dj1' && (!prod.status || prod.status === 'preorder')) {
-                        prod.status = 'upcoming';
-                        prod.preorderBadge = '⏳ BIENTÔT DISPONIBLE';
-                        prod.releaseDate = 'Bientôt disponible';
-                    }
-                    const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
-                    if (initMatch) {
-                        const resolvedStatus = (idLower === 'sac3') ? 'available' : (prod.status || initMatch.status);
-                        const resolvedBadge = (idLower === 'sac3') ? 'DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (prod.preorderBadge || initMatch.preorderBadge));
-                        const resolvedCat = (idLower === 'sac3') ? 'backpacks' : (prod.category || initMatch.category);
-                        const resolvedImg = initMatch.image || prod.image;
-
-                        return {
-                            ...initMatch,
-                            ...prod,
-                            category: resolvedCat,
-                            image: resolvedImg,
-                            stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : (initMatch.stock || 10),
-                            status: resolvedStatus,
-                            preorderBadge: resolvedBadge,
-                            releaseDate: resolvedStatus === 'available' ? 'Immédiat' : (prod.releaseDate || initMatch.releaseDate),
-                            reservedPercentage: prod.reservedPercentage !== undefined ? prod.reservedPercentage : (resolvedStatus === 'available' ? 100 : initMatch.reservedPercentage)
-                        };
-                    }
-                    return {
-                        ...prod,
-                        stock: (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10
-                    };
-                });
-
-                PRODUCTS = PRODUCTS.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()) && INITIAL_PRODUCTS.some(init => String(init.id).toLowerCase() === String(p.id).toLowerCase()));
-
-                INITIAL_PRODUCTS.forEach(init => {
-                    const existing = PRODUCTS.find(p => String(p.id).toLowerCase() === String(init.id).toLowerCase());
-                    if (!existing) {
-                        PRODUCTS.push({ ...init });
-                    } else {
-                        existing.image = init.image;
-                        if (String(init.id).toLowerCase() === 'sac3') {
-                            existing.status = 'available';
-                            existing.preorderBadge = 'DISPONIBLE';
-                            existing.category = 'backpacks';
-                            existing.price = 12000;
-                        }
-                    }
-                });
-
-                saveProductsToStorage();
                 if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
                 if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
                 if (typeof syncFlagshipDropCard === 'function') syncFlagshipDropCard();
@@ -376,84 +329,12 @@ function reloadProductsFromStorage() {
 async function syncProductsFromSupabase() {
     if (typeof supabaseClient === 'undefined' || !supabaseClient) return;
     try {
-        let localProducts = [];
-        try {
-            const rawStored = localStorage.getItem('culture_products');
-            if (rawStored) localProducts = JSON.parse(rawStored);
-        } catch(e) {}
-
         const { data, error } = await supabaseClient.from('products').select('*').order('created_at', { ascending: false });
         if (!error && Array.isArray(data) && data.length > 0) {
-            const filteredData = data.filter(d => d && !['h1', 'cap1'].includes(String(d.id).toLowerCase()));
+            PRODUCTS = data
+                .filter(d => d && !['h1', 'cap1'].includes(String(d.id).toLowerCase()))
+                .map(normalizeProductRecord);
 
-            const mapped = filteredData.map(d => {
-                const idLower = String(d.id).toLowerCase();
-                const initMatch = INITIAL_PRODUCTS.find(i => String(i.id).toLowerCase() === idLower);
-
-                const stk = (d.stock !== undefined && d.stock !== null)
-                    ? Number(d.stock)
-                    : ((d.total_stock !== undefined && d.total_stock !== null)
-                        ? Number(d.total_stock)
-                        : ((idLower === 'dj1') ? 50 : 10));
-
-                const resolvedCategory = (idLower === 'sac3')
-                    ? 'backpacks'
-                    : ((d.category && d.category !== 'bags')
-                        ? d.category
-                        : (idLower.startsWith('c') ? 'crossbody' : (idLower.startsWith('sac') ? 'backpacks' : (d.category || 'crossbody'))));
-
-                // sac3 est disponible immédiatement à la vente dans la boutique
-                const resolvedStatus = (idLower === 'sac3')
-                    ? 'available'
-                    : ((idLower === 'dj1') ? 'upcoming' : (d.status || 'available'));
-
-                const resolvedBadge = (idLower === 'sac3')
-                    ? 'DISPONIBLE'
-                    : ((idLower === 'dj1') ? '⏳ BIENTÔT DISPONIBLE' : (resolvedStatus === 'available' ? 'DISPONIBLE' : (d.preorder_badge || 'DISPONIBLE')));
-
-                const resolvedRelease = (idLower === 'sac3')
-                    ? 'Immédiat'
-                    : ((idLower === 'dj1') ? 'Bientôt disponible' : (d.release_date || 'Immédiat'));
-
-                const resolvedImage = (initMatch && initMatch.image) ? initMatch.image : d.image;
-
-                return {
-                    id: d.id,
-                    name: (idLower === 'sac3') ? 'ILLEGAL Ocean Camo Pack' : d.name,
-                    price: (idLower === 'sac3') ? 12000 : Number(d.price),
-                    category: resolvedCategory,
-                    image: resolvedImage,
-                    description: (idLower === 'sac3') ? "Édition exclusive en tissu camo aquatique bleu céruléen avec motif all-over imprimé sublimation. Logo ILLEGAL en patch woven signature, macro-étoile emblématique blanche, zips étanches et bretelles ergonomiques. Sac à dos collector." : (d.description || ''),
-                    sizes: Array.isArray(d.sizes) ? d.sizes : ["Unique"],
-                    status: resolvedStatus,
-                    preorderBadge: resolvedBadge,
-                    releaseDate: resolvedRelease,
-                    reservedPercentage: (idLower === 'sac3') ? 100 : (Number(d.reserved_percentage) || 100),
-                    totalStock: stk,
-                    reservedStock: (idLower === 'sac3') ? 0 : (Number(d.reserved_stock) || 0),
-                    stock: stk
-                };
-            });
-
-            // S'assurer que tous les INITIAL_PRODUCTS (ex: sac4, sac3) sont préservés même si absents de la table distante
-            if (Array.isArray(INITIAL_PRODUCTS)) {
-                INITIAL_PRODUCTS.forEach(init => {
-                    const existing = mapped.find(p => String(p.id).toLowerCase() === String(init.id).toLowerCase());
-                    if (!existing) {
-                        mapped.push({ ...init });
-                    } else {
-                        existing.image = init.image;
-                        if (String(init.id).toLowerCase() === 'sac3') {
-                            existing.status = 'available';
-                            existing.preorderBadge = 'DISPONIBLE';
-                            existing.category = 'backpacks';
-                            existing.price = 12000;
-                        }
-                    }
-                });
-            }
-
-            PRODUCTS = mapped.filter(p => !['h1', 'cap1'].includes(String(p.id).toLowerCase()));
             saveProductsToStorage();
             if (typeof filterAndRenderFeaturedProducts === 'function') filterAndRenderFeaturedProducts();
             if (typeof renderDropCarousel === 'function') renderDropCarousel(activeDropFilter || 'all');
