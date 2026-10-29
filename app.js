@@ -1010,11 +1010,12 @@ function filterAndRenderFeaturedProducts() {
         const isWishlisted = wishlist.includes(product.id);
         const categoryLabel = getCategoryLabel(product.category);
         const stockCount = getEffectiveStock(product);
+        const isOutOfStock = stockCount <= 0;
 
         let stockStatusText = `DISPONIBLE // <strong>${stockCount}</strong> PIÈCES DISPONIBLES`;
         let stockClass = "in-stock";
-        if (stockCount <= 0) {
-            stockStatusText = "RUPTURE DE STOCK // ÉPUISÉ";
+        if (isOutOfStock) {
+            stockStatusText = "🔒 RUPTURE DE STOCK // ÉPUISÉ (0 DISPO)";
             stockClass = "out-of-stock";
         } else if (stockCount === 1) {
             stockStatusText = `DERNIÈRE PIÈCE // <strong>1</strong> DISPONIBLE`;
@@ -1024,8 +1025,9 @@ function filterAndRenderFeaturedProducts() {
         const isBackpack = product.category === "backpacks" || (product.id && product.id.startsWith("sac"));
 
         return `
-            <div class="product-card" data-id="${product.id}" onclick="openQuickView('${product.id}')">
+            <div class="product-card ${isOutOfStock ? 'is-out-of-stock' : ''}" data-id="${product.id}" onclick="openQuickView('${product.id}')">
                 <div class="product-card-img-wrapper">
+                    ${isOutOfStock ? '<div class="product-soldout-overlay-badge">🔒 ÉPUISÉ // SOLD OUT</div>' : ''}
                     <button type="button" 
                             class="wishlist-toggle-btn ${isWishlisted ? 'active' : ''}" 
                             onclick="event.stopPropagation(); toggleWishlist('${product.id}')" 
@@ -1045,15 +1047,22 @@ function filterAndRenderFeaturedProducts() {
 
                     <!-- Floating Circular Add Button (Ajout Direct Panier) -->
                     <button type="button" 
-                            class="card-float-add-btn" 
-                            ${stockCount <= 0 ? 'disabled style="opacity:0.4; cursor:not-allowed;"' : ''}
-                            onclick="event.stopPropagation(); addToCartDirect('${product.id}')" 
-                            aria-label="Ajouter ${product.name} au panier"
-                            title="${stockCount <= 0 ? 'Rupture de stock' : 'Ajouter au panier'}">
-                        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-                            <line x1="12" y1="5" x2="12" y2="19"></line>
-                            <line x1="5" y1="12" x2="19" y2="12"></line>
-                        </svg>
+                            class="card-float-add-btn ${isOutOfStock ? 'disabled-btn' : ''}" 
+                            ${isOutOfStock ? 'disabled aria-disabled="true" style="opacity:0.35; cursor:not-allowed; pointer-events:none;"' : ''}
+                            onclick="event.stopPropagation(); ${isOutOfStock ? 'return false;' : `addToCartDirect('${product.id}')`}" 
+                            aria-label="${isOutOfStock ? 'Article épuisé' : 'Ajouter ' + product.name + ' au panier'}"
+                            title="${isOutOfStock ? 'Rupture de stock — Indisponible' : 'Ajouter au panier'}">
+                        ${isOutOfStock ? `
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="18" y1="6" x2="6" y2="18"></line>
+                                <line x1="6" y1="6" x2="18" y2="18"></line>
+                            </svg>
+                        ` : `
+                            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+                                <line x1="12" y1="5" x2="12" y2="19"></line>
+                                <line x1="5" y1="12" x2="19" y2="12"></line>
+                            </svg>
+                        `}
                     </button>
                 </div>
 
@@ -1218,20 +1227,26 @@ function renderBoutiqueGrandShowcase(direction = 0) {
                 <span class="showcase-price-tag">PRIX OFFICIEL</span>
                 <div class="showcase-price-amount">${formatPrice(product.price)}</div>
                 <div class="showcase-available-count">
-                    SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCES DISPONIBLES
+                    ${stockCount <= 0 ? '🔒 RUPTURE DE STOCK // <strong>0</strong> DISPONIBLE' : `SÉRIE LIMITÉE // <strong>${stockCount}</strong> PIÈCE(S) DISPONIBLE(S)`}
                 </div>
             </div>
 
             ${sizesHtml}
 
             <div class="showcase-action-row">
-                <button type="button" class="showcase-cta-main" onclick="addCurrentShowcaseProductToCart()">
-                    <span>Ajouter au panier</span>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-                        <line x1="5" y1="12" x2="19" y2="12"></line>
-                        <polyline points="12 5 19 12 12 19"></polyline>
-                    </svg>
-                </button>
+                ${stockCount <= 0 ? `
+                    <button type="button" class="showcase-cta-main is-disabled" disabled aria-disabled="true" style="opacity:0.55; cursor:not-allowed; pointer-events:none; background:#64748b;">
+                        <span>🔒 Article Épuisé — Indisponible</span>
+                    </button>
+                ` : `
+                    <button type="button" class="showcase-cta-main" onclick="addCurrentShowcaseProductToCart()">
+                        <span>Ajouter au panier</span>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                            <line x1="5" y1="12" x2="19" y2="12"></line>
+                            <polyline points="12 5 19 12 12 19"></polyline>
+                        </svg>
+                    </button>
+                `}
                 <button type="button" class="showcase-wishlist-toggle ${isWishlisted ? 'active' : ''}" 
                         onclick="toggleWishlistItem('${product.id}'); this.classList.toggle('active');" 
                         aria-label="${isWishlisted ? 'Retirer des favoris' : 'Ajouter aux favoris'}">
@@ -1369,10 +1384,16 @@ function addCurrentShowcaseProductToCart() {
     const product = list[currentBoutiqueShowcaseIndex];
     if (!product) return;
 
+    if (getEffectiveStock(product) <= 0) {
+        showToast("🔒 Cet article est épuisé et ne peut plus être commandé.");
+        return;
+    }
+
     const sizeToOrder = currentBoutiqueSelectedSize || (product.sizes && product.sizes[0]) || 'Unique';
-    addItemToCartArray(product, sizeToOrder, product.status === 'preorder');
+    addItemToCartArray(product, sizeToOrder, false);
     openCartDrawer();
-    showToast(`✓ ${product.name} ajouté au panier !`);
+    const remaining = getEffectiveStock(product);
+    showToast(`✓ ${product.name} ajouté au panier (${remaining} restant${remaining > 1 ? 's' : ''}) !`);
 }
 
 // Global exposes for onclick handlers
@@ -1736,6 +1757,20 @@ async function processCheckout() {
         return;
     }
 
+    // Vérifier qu'aucun article du panier ne dépasse le stock disponible
+    for (const item of cart) {
+        const prod = PRODUCTS.find(p => String(p.id).toLowerCase() === String(item.product.id).toLowerCase());
+        const maxAvailable = prod ? ((prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 3) : 0;
+        if (maxAvailable <= 0) {
+            showToast(`🔒 L'article "${item.product.name}" est épuisé et ne peut plus être commandé.`);
+            return;
+        }
+        if (item.quantity > maxAvailable) {
+            showToast(`Stock insuffisant pour "${item.product.name}" (max ${maxAvailable} disponible(s)).`);
+            return;
+        }
+    }
+
     const nameInput = document.getElementById("checkoutName");
     const phoneInput = document.getElementById("checkoutPhone");
     const emailInput = document.getElementById("checkoutEmail");
@@ -1837,27 +1872,45 @@ async function processCheckout() {
     }
 
     // Décrémenter définitivement le stock des produits achetés dans le catalogue local et dans Supabase
+    const itemsToDecrement = [];
     for (const item of cart) {
         const prod = PRODUCTS.find(p => String(p.id).toLowerCase() === String(item.product.id).toLowerCase());
         if (prod && prod.status !== "upcoming") {
-            const currentBaseStock = (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 10;
+            const currentBaseStock = (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 3;
             const qtyBought = Number(item.quantity) || 1;
             const newStock = Math.max(0, currentBaseStock - qtyBought);
             prod.stock = newStock;
             prod.totalStock = newStock;
-            recordPurchasedQty(prod.id, qtyBought);
-
-            if (typeof supabaseClient !== "undefined" && supabaseClient) {
-                supabaseClient
-                    .from("products")
-                    .update({ total_stock: newStock, reserved_stock: 0, updated_at: new Date().toISOString() })
-                    .eq("id", prod.id)
-                    .then(() => {})
-                    .catch(e => console.warn("Mise à jour stock Supabase:", e));
-            }
+            itemsToDecrement.push({ id: prod.id, quantity: qtyBought, newStock });
         }
     }
     saveProductsToStorage();
+
+    if (itemsToDecrement.length > 0) {
+        try {
+            const stockRes = await fetch("/api/decrement-stock", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ items: itemsToDecrement })
+            });
+            if (!stockRes.ok) {
+                throw new Error("Fallback local");
+            }
+        } catch (e) {
+            // Repli hors-ligne : mémoriser localement et tenter un update Supabase direct
+            itemsToDecrement.forEach(it => {
+                recordPurchasedQty(it.id, it.quantity);
+                if (typeof supabaseClient !== "undefined" && supabaseClient) {
+                    supabaseClient
+                        .from("products")
+                        .update({ total_stock: it.newStock, reserved_stock: 0, updated_at: new Date().toISOString() })
+                        .eq("id", it.id)
+                        .then(() => {})
+                        .catch(() => {});
+                }
+            });
+        }
+    }
 
     const defaultWhatsApp = (window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER)
         ? window.ENV_CONFIG.WHATSAPP_NUMBER
@@ -2376,7 +2429,7 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
                         <h5>Choisir votre taille</h5>
                         <div class="qv-sizes-row">
                             ${product.sizes.map((s, idx) => `
-                                <button class="size-btn ${idx === 0 ? 'active' : ''}" onclick="selectModalSize(this)">${s}</button>
+                                <button class="size-btn ${idx === 0 ? 'active' : ''}" ${isOutOfStock ? 'disabled style="opacity:0.45; cursor:not-allowed;"' : ''} onclick="selectModalSize(this)">${s}</button>
                             `).join("")}
                         </div>
                     </div>
@@ -2388,8 +2441,8 @@ function renderImmersiveShowcaseContent(product, direction = 0) {
                             <span>🔔 M'alerter au Drops</span>
                         </button>
                     ` : isOutOfStock ? `
-                        <button class="qv-add-to-cart" disabled style="opacity:0.6; cursor:not-allowed;">
-                            <span>❌ Épuisé pour le moment</span>
+                        <button class="qv-add-to-cart is-disabled" disabled aria-disabled="true" style="opacity:0.55; cursor:not-allowed; pointer-events:none; background:#475569; color:#fff;">
+                            <span>🔒 Article Épuisé — Indisponible</span>
                         </button>
                     ` : `
                         <button class="qv-add-to-cart immersive-buy-btn" onclick="addFromModalToCart('${product.id}')">

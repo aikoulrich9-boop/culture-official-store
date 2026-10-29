@@ -2,6 +2,7 @@ import http from 'http';
 import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import decrementStockHandler from './api/decrement-stock.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -27,6 +28,10 @@ const server = http.createServer((req, res) => {
     try {
         const parsedUrl = new URL(req.url, `http://${req.headers.host || 'localhost:3000'}`);
         let pathname = decodeURIComponent(parsedUrl.pathname);
+        if (pathname === '/api/decrement-stock') {
+            decrementStockHandler(req, res);
+            return;
+        }
         if (pathname === '/') pathname = '/index.html';
         if (pathname === '/admin' || pathname === '/admin/') pathname = '/admin.html';
         if (pathname.endsWith('/')) pathname += 'index.html';
