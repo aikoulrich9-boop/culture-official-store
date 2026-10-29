@@ -364,7 +364,6 @@ let orders = JSON.parse(localStorage.getItem("culture_orders")) || [];
 
 let activeCategoryFilter = "all";
 let activeSearchQuery = "";
-let currentTheme = localStorage.getItem("culture_theme") || "light";
 
 function formatPrice(price) {
     if (typeof price !== "number") price = Number(price);
@@ -372,48 +371,21 @@ function formatPrice(price) {
 }
 
 /* ==========================================================================
-   THEME SWITCHER MANAGER
+   THEME MANAGER (LIGHT MODE ENFORCED)
    ========================================================================== */
 function initTheme() {
-    if (currentTheme === "dark") {
-        document.documentElement.setAttribute("data-theme", "dark");
-    } else {
-        document.documentElement.removeAttribute("data-theme");
-    }
-    updateThemeIcons();
-}
-
-function toggleTheme() {
-    currentTheme = currentTheme === "dark" ? "light" : "dark";
-    localStorage.setItem("culture_theme", currentTheme);
-    initTheme();
-    showToast(currentTheme === "dark" ? "Mode Minuit activé 🌙" : "Mode Clair activé ☀️");
-}
-
-function updateThemeIcons() {
-    const sunIcon = document.querySelector(".sun-icon");
-    const moonIcon = document.querySelector(".moon-icon");
-    if (!sunIcon || !moonIcon) return;
-
-    if (currentTheme === "dark") {
-        sunIcon.style.display = "none";
-        moonIcon.style.display = "block";
-    } else {
-        sunIcon.style.display = "block";
-        moonIcon.style.display = "none";
-    }
+    document.documentElement.removeAttribute("data-theme");
+    try {
+        localStorage.removeItem("culture_theme");
+    } catch (e) {}
 }
 
 /* ==========================================================================
    DOM INITIALIZATION
    ========================================================================== */
 document.addEventListener("DOMContentLoaded", () => {
-    // Initialize Theme
+    // Enforce Light Theme
     initTheme();
-    const themeToggleBtn = document.getElementById("themeToggleBtn");
-    if (themeToggleBtn) {
-        themeToggleBtn.addEventListener("click", toggleTheme);
-    }
 
     // Navigation / Header
     const header = document.querySelector(".site-header");
