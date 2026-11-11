@@ -227,6 +227,22 @@ const INITIAL_PRODUCTS = [
         stock: 3
     },
     {
+        id: "c14",
+        name: "Crimson Grin Flap Crossbody",
+        price: 10000,
+        category: "crossbody",
+        image: "IMAGE/c 14_crimson_grin.png",
+        description: "Sacoche bandoulière à rabat en toile ripstop noire texturée losange, ornée d'un regard rouge perçant sur le rabat et d'un large sourire acéré blanc contrastant. Équipée de boucles latérales mates haute résistance et d'une sangle tissée large entièrement ajustable pour un style streetwear nocturne affirmé.",
+        sizes: ["Unique"],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 5,
+        reservedStock: 0,
+        stock: 5
+    },
+    {
         id: "sac1",
         name: "ILLEGAL Blackout Pack Vol.1",
         price: 12000,
@@ -277,7 +293,7 @@ const INITIAL_PRODUCTS = [
 ];
 
 // Nettoyage unique des anciens compteurs de test pour refléter l'état réel de Supabase
-const CATALOGUE_STORAGE_VERSION = "20261111_v10_5_new_crossbodies";
+const CATALOGUE_STORAGE_VERSION = "20261111_v11_c14_crimson_grin";
 try {
     if (typeof localStorage !== "undefined") {
         if (localStorage.getItem("culture_catalogue_version") !== CATALOGUE_STORAGE_VERSION) {
