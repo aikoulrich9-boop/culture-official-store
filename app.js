@@ -147,6 +147,86 @@ const INITIAL_PRODUCTS = [
         stock: 3
     },
     {
+        id: "c9",
+        name: "ILLEGAL Ice Wash White-Star Crossbody",
+        price: 10000,
+        category: "crossbody",
+        image: "IMAGE/c 9_ice_white_star.png",
+        description: "Sacoche bandoulière en toile technique à motif marbré bleu glacier et blanc façon acid-wash. Dotée du macro-logo étoile emblématique ILLEGAL imprimé en blanc contrastant sur la face avant. Équipée d'une poche frontale à accès rapide, de doubles fermetures éclair avec tirettes paracorde mouchetées et d'une sangle noire tissée haute résistance entièrement ajustable.",
+        sizes: ["Unique"],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 3,
+        reservedStock: 0,
+        stock: 3
+    },
+    {
+        id: "c10",
+        name: "ILLEGAL Star Blackout Crossbody",
+        price: 10000,
+        category: "crossbody",
+        image: "IMAGE/c 10_black_white_star.png",
+        description: "L'édition bandoulière iconique du célèbre Star Pack. Toile technique noire intense rehaussée du macro-graphisme étoile blanche signature imprimé pleine face. Silhouette compacte et structurée avec double compartiment zippé, tirettes en corde tressée technique et sangle réglable à boucles mates pour un porté croisé urbain.",
+        sizes: ["Unique"],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 3,
+        reservedStock: 0,
+        stock: 3
+    },
+    {
+        id: "c11",
+        name: "ILLEGAL Shadow Flora Star Crossbody",
+        price: 10000,
+        category: "crossbody",
+        image: "IMAGE/c 11_shadow_flora_star.png",
+        description: "Sac bandoulière en toile technique à motif floral sombre ton-sur-ton (anthracite et noir charbon), sublimé par l'étoile emblématique blanche ILLEGAL en grand format. Finitions soignées avec double zip fluide, tirettes paracorde mouchetées, pochette frontale discrète et bandoulière renforcée ajustable.",
+        sizes: ["Unique"],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 3,
+        reservedStock: 0,
+        stock: 3
+    },
+    {
+        id: "c12",
+        name: "ILLEGAL Ice Wash Black-Star Crossbody",
+        price: 10000,
+        category: "crossbody",
+        image: "IMAGE/c 12_ice_black_star.png",
+        description: "Édition contraste inversé de la série Ice Wash : toile texturée bleu électrique délavé façon acid-wash marquée par le macro-logo étoile ILLEGAL imprimé en noir profond. Conçue pour le quotidien urbain avec double fermeture à glissière, tirettes paracorde tressées, poche avant pratique et sangle réglable ultra-solide.",
+        sizes: ["Unique"],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 3,
+        reservedStock: 0,
+        stock: 3
+    },
+    {
+        id: "c13",
+        name: "Sacred Stained-Glass Crossbody",
+        price: 10000,
+        category: "crossbody",
+        image: "IMAGE/c 13_stained_glass.png",
+        description: "Pièce collector au design audacieux : sacoche noire ornée d'un double visuel façon vitrail gothique haute définition mêlant figures sacrées, éclats solaires dorés, bleu cyan électrique et flammes écarlates. Toile robuste, double compartiment zippé à tirettes paracorde et sangle réglable à boucle mate.",
+        sizes: ["Unique"],
+        status: "available",
+        preorderBadge: "DISPONIBLE",
+        releaseDate: "Immédiat",
+        reservedPercentage: 100,
+        totalStock: 3,
+        reservedStock: 0,
+        stock: 3
+    },
+    {
         id: "sac1",
         name: "ILLEGAL Blackout Pack Vol.1",
         price: 12000,
@@ -197,7 +277,7 @@ const INITIAL_PRODUCTS = [
 ];
 
 // Nettoyage unique des anciens compteurs de test pour refléter l'état réel de Supabase
-const CATALOGUE_STORAGE_VERSION = "20261029_v9_supabase_source_of_truth_stock3";
+const CATALOGUE_STORAGE_VERSION = "20261111_v10_5_new_crossbodies";
 try {
     if (typeof localStorage !== "undefined") {
         if (localStorage.getItem("culture_catalogue_version") !== CATALOGUE_STORAGE_VERSION) {
@@ -1839,7 +1919,11 @@ async function processCheckout() {
         `*Frais de livraison* : ${shippingText}\n\n` +
         `Merci de me confirmer la réservation de mes articles et l'accès au paiement.`;
 
+    let createdOrder = null;
+    const checkoutIdempotencyKey = `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 9)}`;
+
     const orderPayload = {
+        idempotencyKey: checkoutIdempotencyKey,
         customerName,
         customerPhone,
         customerEmail,
@@ -1862,73 +1946,71 @@ async function processCheckout() {
 
     if (window.SupabaseService) {
         try {
-            const createdOrder = await window.SupabaseService.createOrder(orderPayload);
+            createdOrder = await window.SupabaseService.createOrder(orderPayload);
             orders.unshift(createdOrder);
         } catch (err) {
-            console.error("Erreur enregistrement commande:", err);
-            showToast(err.message || "Erreur lors de la validation de la commande.");
+            console.error("Erreur enregistrement commande transactionnelle:", err);
+            showToast(err.message || "Erreur lors de la réservation de votre commande.");
             return;
         }
     }
 
-    // Décrémenter définitivement le stock des produits achetés dans le catalogue local et dans Supabase
-    const itemsToDecrement = [];
-    for (const item of cart) {
-        const prod = PRODUCTS.find(p => String(p.id).toLowerCase() === String(item.product.id).toLowerCase());
-        if (prod && prod.status !== "upcoming") {
-            const currentBaseStock = (prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 3;
-            const qtyBought = Number(item.quantity) || 1;
-            const newStock = Math.max(0, currentBaseStock - qtyBought);
-            prod.stock = newStock;
-            prod.totalStock = newStock;
-            itemsToDecrement.push({ id: prod.id, quantity: qtyBought, newStock });
-        }
-    }
-    saveProductsToStorage();
+    // Le stock est désormais réservé atomiquement côté serveur via la RPC create_order_with_reservation.
+    // L'ancien appel à decrement-stock depuis le navigateur est supprimé pour éviter la double décrémentation.
 
-    if (itemsToDecrement.length > 0) {
-        try {
-            const stockRes = await fetch("/api/decrement-stock", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ items: itemsToDecrement })
-            });
-            if (!stockRes.ok) {
-                throw new Error("Fallback local");
-            }
-        } catch (e) {
-            // Repli hors-ligne : mémoriser localement et tenter un update Supabase direct
-            itemsToDecrement.forEach(it => {
-                recordPurchasedQty(it.id, it.quantity);
-                if (typeof supabaseClient !== "undefined" && supabaseClient) {
-                    supabaseClient
-                        .from("products")
-                        .update({ total_stock: it.newStock, reserved_stock: 0, updated_at: new Date().toISOString() })
-                        .eq("id", it.id)
-                        .then(() => {})
-                        .catch(() => {});
-                }
-            });
-        }
-    }
+    // Mise à jour de l'affichage avec les totaux confirmés par le serveur
+    const confirmedTotal = (createdOrder && createdOrder.total_amount !== undefined) ? createdOrder.total_amount : total;
+    const confirmedOrderId = (createdOrder && createdOrder.id) ? createdOrder.id : "COMMANDE";
 
-    const defaultWhatsApp = (window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER)
+    const rawWhatsApp = (window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER)
         ? window.ENV_CONFIG.WHATSAPP_NUMBER
         : "2290165173634";
+    const defaultWhatsApp = String(rawWhatsApp).replace(/\D/g, "");
+
+    const serverConfirmedMessage = `${headerTitle}\n\n` +
+        `📦 RÉFÉRENCE DE COMMANDE : *${confirmedOrderId}*\n` +
+        customerInfoBlock +
+        `Bonjour, ma commande a été validée avec réservation de stock :\n\n` +
+        `${itemsListText}\n` +
+        `*TOTAL CALCULÉ SERVEUR : ${formatPrice(confirmedTotal)}*\n` +
+        `*Frais de livraison* : ${shippingText}\n\n` +
+        `Merci de me confirmer la réception de ma commande et l'accès au paiement Mobile Money.`;
+
+    const whatsappUrl = `https://api.whatsapp.com/send?phone=${defaultWhatsApp}&text=${encodeURIComponent(serverConfirmedMessage)}`;
+
+    // Fonction de redirection universelle résistante aux bloqueurs de pop-up mobiles
+    const navigateToWhatsApp = (url) => {
+        const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
+        if (isMobile) {
+            // Sur mobile (Safari iOS, Chrome Android, Instagram In-App), la navigation directe
+            // n'est JAMAIS bloquée par les filtres anti-popups et déclenche l'application native.
+            window.location.href = url;
+        } else {
+            const popup = window.open(url, "_blank");
+            if (!popup || popup.closed || typeof popup.closed === "undefined") {
+                window.location.href = url;
+            }
+        }
+    };
 
     if (window.PaymentService) {
         try {
-            const res = await window.PaymentService.processOrderPayment(orderPayload);
-            if (res && res.message) showToast(res.message);
+            const res = await window.PaymentService.processOrderPayment({
+                ...orderPayload,
+                id: confirmedOrderId,
+                total: confirmedTotal,
+                customMessage: serverConfirmedMessage
+            });
+            const targetLink = (res && res.redirectUrl) ? res.redirectUrl : whatsappUrl;
+            showToast(`Commande ${confirmedOrderId} validée ! Redirection WhatsApp... <a href="${targetLink}" style="text-decoration:underline;margin-left:6px;font-weight:600;color:inherit;">Ouvrir</a>`, 6000);
         } catch (err) {
-            console.warn("Passerelle de paiement en échec, bascule WhatsApp:", err);
-            const whatsappUrl = `https://wa.me/${defaultWhatsApp}?text=${encodeURIComponent(message)}`;
-            window.open(whatsappUrl, "_blank");
+            console.warn("Passerelle de paiement en échec, bascule WhatsApp direct:", err);
+            navigateToWhatsApp(whatsappUrl);
+            showToast(`Commande ${confirmedOrderId} validée ! Redirection WhatsApp... <a href="${whatsappUrl}" style="text-decoration:underline;margin-left:6px;font-weight:600;color:inherit;">Ouvrir</a>`, 6000);
         }
     } else {
-        const whatsappUrl = `https://wa.me/${defaultWhatsApp}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, "_blank");
-        showToast("Redirection vers la passerelle de confirmation...");
+        navigateToWhatsApp(whatsappUrl);
+        showToast(`Commande ${confirmedOrderId} validée ! Redirection WhatsApp... <a href="${whatsappUrl}" style="text-decoration:underline;margin-left:6px;font-weight:600;color:inherit;">Ouvrir</a>`, 6000);
     }
 
     // Vider le panier et synchroniser l'affichage du stock en direct
@@ -2587,7 +2669,7 @@ function addFromModalToCart(productId) {
 /* ==========================================================================
    TOAST POPUPS
    ========================================================================== */
-function showToast(message) {
+function showToast(message, duration = 2800) {
     const container = document.getElementById("toastContainer");
     if (!container) return;
 
@@ -2607,7 +2689,7 @@ function showToast(message) {
     setTimeout(() => {
         toast.classList.remove("show");
         setTimeout(() => toast.remove(), 400);
-    }, 2800);
+    }, duration);
 }
 
 /* ==========================================================================

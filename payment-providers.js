@@ -29,41 +29,68 @@ class WhatsAppBridgeAdapter extends PaymentProvider {
     }
 
     async processPayment(orderData) {
-        const phone = window.ENV_CONFIG ? window.ENV_CONFIG.WHATSAPP_NUMBER : "2290165173634";
+        const rawPhone = window.ENV_CONFIG && window.ENV_CONFIG.WHATSAPP_NUMBER 
+            ? window.ENV_CONFIG.WHATSAPP_NUMBER 
+            : "2290165173634";
+        const phone = String(rawPhone).replace(/\D/g, "");
         const hasPreorder = orderData.hasPreorder;
-        const headerTitle = hasPreorder ? "*NOUVELLE COMMANDE EN PRÉ-VENTE - CULTURE STREETWEAR*" : "*NOUVELLE COMMANDE - CULTURE STREETWEAR*";
+        const headerTitle = hasPreorder 
+            ? "*NOUVELLE COMMANDE EN PRÉ-VENTE - PRIORITY STREETWEAR*" 
+            : "*NOUVELLE COMMANDE - PRIORITY STREETWEAR*";
 
-        let itemsText = "";
-        orderData.items.forEach((item, index) => {
-            const itemTotal = item.price * item.quantity;
-            itemsText += `${index + 1}. *${item.name}*\n   Quantité: ${item.quantity} x ${item.price.toLocaleString('fr-FR')} = *${itemTotal.toLocaleString('fr-FR')} FCFA*\n`;
-        });
+        let message = "";
+        if (orderData.customMessage) {
+            message = orderData.customMessage;
+        } else {
+            let itemsText = "";
+            (orderData.items || []).forEach((item, index) => {
+                const itemTotal = (item.price || 0) * (item.quantity || 1);
+                const sizeText = item.size ? ` (Taille: ${item.size})` : "";
+                itemsText += `${index + 1}. *${item.name}*${sizeText}\n   Quantité: ${item.quantity || 1} x ${(item.price || 0).toLocaleString('fr-FR')} = *${itemTotal.toLocaleString('fr-FR')} FCFA*\n`;
+            });
 
-        const customerInfoBlock = `*INFORMATIONS CLIENT (CHECKOUT INVITÉ)*\n` +
-            `👤 Nom: ${orderData.customerName}\n` +
-            (orderData.customerPhone ? `📞 Tél/WhatsApp: ${orderData.customerPhone}\n` : "") +
-            (orderData.customerEmail ? `📧 Email: ${orderData.customerEmail}\n` : "") +
-            `🌍 Pays: ${orderData.country} ${orderData.city ? '(' + orderData.city + ')' : ''}\n` +
-            (orderData.address ? `📍 Adresse/Quartier: ${orderData.address}\n` : "") +
-            `💳 Mode de Paiement: ${orderData.paymentMethod}\n` +
-            (orderData.resellerInfo ? `🏷️ Code Revendeur Associé: ${orderData.resellerInfo.code}\n` : "") +
-            `\n`;
+            const customerInfoBlock = `*INFORMATIONS CLIENT (CHECKOUT INVITÉ)*\n` +
+                (orderData.id ? `📦 Réf Commande: *${orderData.id}*\n` : "") +
+                `👤 Nom: ${orderData.customerName || "Client"}\n` +
+                (orderData.customerPhone ? `📞 Tél/WhatsApp: ${orderData.customerPhone}\n` : "") +
+                (orderData.customerEmail ? `📧 Email: ${orderData.customerEmail}\n` : "") +
+                `🌍 Pays: ${orderData.country || "Bénin"} ${orderData.city ? '(' + orderData.city + ')' : ''}\n` +
+                (orderData.address ? `📍 Adresse/Quartier: ${orderData.address}\n` : "") +
+                `💳 Mode de Paiement: ${orderData.paymentMethod || "WhatsApp / Mobile Money"}\n` +
+                (orderData.resellerInfo ? `🏷️ Code Revendeur Associé: ${orderData.resellerInfo.code}\n` : "") +
+                `\n`;
 
-        const message = `${headerTitle}\n\n` +
-            customerInfoBlock +
-            `Bonjour, je souhaite valider ma commande :\n\n` +
-            `${itemsText}\n` +
-            `*TOTAL COMMANDE : ${orderData.total.toLocaleString('fr-FR')} FCFA*\n\n` +
-            `Merci de me confirmer la réservation de mes articles et l'accès au paiement.`;
+            message = `${headerTitle}\n\n` +
+                customerInfoBlock +
+                `Bonjour, je souhaite valider ma commande :\n\n` +
+                `${itemsText}\n` +
+                `*TOTAL COMMANDE : ${(orderData.total || 0).toLocaleString('fr-FR')} FCFA*\n\n` +
+                `Merci de me confirmer la réservation de mes articles et l'accès au paiement.`;
+        }
 
-        const whatsappUrl = `https://wa.me/${phone}?text=${encodeURIComponent(message)}`;
-        window.open(whatsappUrl, "_blank");
+        // Format universel officiel api.whatsapp.com (reconnu directement par iOS et Android sans redirection 302 intermédiaire)
+        const whatsappUrl = `https://api.whatsapp.com/send?phone=${phone}&text=${encodeURIComponent(message)}`;
+
+        // Redirection sans blocage de popup sur mobile
+        if (typeof window !== "undefined") {
+            const isMobile = /iPhone|iPad|iPod|Android|webOS|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent || "");
+            if (isMobile) {
+                // Sur mobile (Safari iOS, Chrome Android, Instagram In-App), window.location.href contourne le bloqueur de popups
+                window.location.href = whatsappUrl;
+            } else {
+                // Sur ordinateur de bureau, ouverture dans un nouvel onglet avec repli automatique
+                const popup = window.open(whatsappUrl, "_blank");
+                if (!popup || popup.closed || typeof popup.closed === "undefined") {
+                    window.location.href = whatsappUrl;
+                }
+            }
+        }
 
         return {
             success: true,
             provider: this.code,
             redirectUrl: whatsappUrl,
-            message: "Redirection vers la passerelle de confirmation WhatsApp..."
+            message: "Redirection vers WhatsApp..."
         };
     }
 }

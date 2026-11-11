@@ -2,6 +2,7 @@ import fs from 'fs';
 
 // Setup minimal browser globals in Node
 global.window = global;
+global.window.fs = fs;
 global.window.addEventListener = function(event, fn) { if (event === 'DOMContentLoaded') fn(); };
 global.localStorage = {
     _data: {},
@@ -25,8 +26,9 @@ global.PaymentService = {
     getActiveProvider() { return { code: this.activeProvider }; }
 };
 
-// Load supabase-config.js and test-suite.js
+// Load supabase-config.js, admin-auth.js and test-suite.js
 eval(fs.readFileSync('./supabase-config.js', 'utf8'));
+eval(fs.readFileSync('./admin/assets/js/admin-auth.js', 'utf8'));
 eval(fs.readFileSync('./tests/test-suite.js', 'utf8'));
 
 async function test() {

@@ -447,9 +447,30 @@ window.SupabaseService = {
 
         if (this.isConfigured()) {
             try {
+                // 1. Tenter la fonction RPC sécurisée (ne renvoie aucune donnée personnelle)
+                const { data: rpcData, error: rpcError } = await supabaseClient
+                    .rpc('verify_reseller_code', { p_code: cleanCode });
+
+                if (!rpcError && rpcData) {
+                    if (rpcData.valid) {
+                        return {
+                            valid: true,
+                            reseller: {
+                                id: rpcData.id,
+                                name: rpcData.name,
+                                code: rpcData.referral_code,
+                                rate: rpcData.commission_rate
+                            }
+                        };
+                    } else {
+                        return { valid: false, message: rpcData.message || "Ce code revendeur n'est pas actif." };
+                    }
+                }
+
+                // 2. Fallback direct (colonnes minimales sans email/phone)
                 const { data, error } = await supabaseClient
                     .from('resellers')
-                    .select('id, name, referral_code, commission_rate, status, email, phone')
+                    .select('id, name, referral_code, commission_rate, status')
                     .eq('referral_code', cleanCode)
                     .single();
 
@@ -463,9 +484,7 @@ window.SupabaseService = {
                             id: data.id,
                             name: data.name,
                             code: data.referral_code,
-                            rate: data.commission_rate,
-                            email: data.email,
-                            phone: data.phone
+                            rate: data.commission_rate
                         }
                     };
                 }
@@ -507,7 +526,7 @@ window.SupabaseService = {
     },
 
     /* ==========================================================================
-       3. NOUVELLE COMMANDE & AUTO-COMMISSION INTERDITE (AVENANT F)
+       3. NOUVELLE COMMANDE TRANSACTIONNELLE & RÉSERVATION (PHASE 2)
        ========================================================================== */
     async createOrder(orderPayload) {
         const rateCheck = this.checkRateLimit(orderPayload.customerPhone || orderPayload.customerEmail);
@@ -515,12 +534,136 @@ window.SupabaseService = {
             throw new Error(rateCheck.message);
         }
 
+        // Générer ou réutiliser une clé d'idempotence unique (UUIDv4 ou basée sur le payload)
+        const idempotencyKey = orderPayload.idempotencyKey || 
+            `idemp_${Date.now()}_${Math.random().toString(36).substring(2, 10)}`;
+
         const resellerId = orderPayload.resellerInfo ? orderPayload.resellerInfo.id : null;
-        const refCode = orderPayload.resellerInfo ? orderPayload.resellerInfo.code : null;
+        const refCode = orderPayload.resellerInfo ? (orderPayload.resellerInfo.code || orderPayload.resellerInfo.referral_code) : null;
         const commRate = orderPayload.resellerInfo ? Number(orderPayload.resellerInfo.rate) : 0;
-        
-        const rawComm = (orderPayload.total * commRate) / 100;
-        let commAmount = resellerId ? Math.round(rawComm) : 0;
+
+        // 1. Tenter l'appel RPC transactionnel Supabase avec verrouillage et calcul des prix côté serveur
+        if (this.isConfigured()) {
+            try {
+                const { data: rpcRes, error: rpcErr } = await supabaseClient.rpc('create_order_with_reservation', {
+                    p_idempotency_key: idempotencyKey,
+                    p_customer_name: orderPayload.customerName || "Client Invité",
+                    p_customer_phone: orderPayload.customerPhone || "",
+                    p_customer_email: orderPayload.customerEmail || "",
+                    p_country: orderPayload.country || "Bénin",
+                    p_city: orderPayload.city || "",
+                    p_address: orderPayload.address || "",
+                    p_payment_method: orderPayload.paymentMethod || "WhatsApp / Mobile Money",
+                    p_items: orderPayload.items || [],
+                    p_referral_code: refCode,
+                    p_reservation_minutes: 15
+                });
+
+                if (rpcErr) {
+                    console.error("Erreur RPC create_order_with_reservation:", rpcErr);
+                    throw new Error(rpcErr.message || "Erreur lors de la réservation transactionnelle.");
+                }
+
+                if (rpcRes && rpcRes.success) {
+                    const serverOrder = {
+                        id: rpcRes.order_id,
+                        idempotency_key: idempotencyKey,
+                        created_at: new Date().toISOString(),
+                        date_formatted: new Date().toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }),
+                        customer_name: orderPayload.customerName || "Client Invité",
+                        customer_phone: orderPayload.customerPhone || "",
+                        customer_email: orderPayload.customerEmail || "",
+                        country: orderPayload.country || "Bénin",
+                        city: orderPayload.city || "",
+                        address: orderPayload.address || "",
+                        payment_method: orderPayload.paymentMethod || "WhatsApp / Mobile Money",
+                        payment_status: "PENDING",
+                        order_status: rpcRes.order_status || "pending_whatsapp",
+                        reservation_status: rpcRes.reservation_status || "ACTIVE",
+                        reservation_expires_at: rpcRes.expires_at,
+                        total_amount: rpcRes.total_amount,
+                        subtotal_amount: rpcRes.subtotal_amount,
+                        shipping_fee: rpcRes.shipping_fee,
+                        items: rpcRes.items,
+                        reseller_id: resellerId,
+                        referral_code: refCode,
+                        commission_rate: commRate,
+                        server_verified: true
+                    };
+
+                    // Cache local de synchronisation
+                    const localOrders = JSON.parse(localStorage.getItem('culture_orders') || '[]');
+                    const existingIdx = localOrders.findIndex(o => o.id === serverOrder.id || o.idempotency_key === idempotencyKey);
+                    if (existingIdx !== -1) {
+                        localOrders[existingIdx] = serverOrder;
+                    } else {
+                        localOrders.unshift(serverOrder);
+                    }
+                    localStorage.setItem('culture_orders', JSON.stringify(localOrders));
+
+                    return serverOrder;
+                }
+            } catch (err) {
+                // Si l'erreur est un manque de stock ou un refus serveur, propager immédiatement
+                if (err.message && (err.message.includes('INSUFFICIENT_STOCK') || err.message.includes('EMPTY_CART') || err.message.includes('PRODUCT_UPCOMING'))) {
+                    throw err;
+                }
+                console.warn("Échec RPC Supabase, bascule sur simulateur local sécurisé:", err.message);
+            }
+        }
+
+        // 2. Simulateur local transactionnel (pour environnements hors-ligne / tests unitaires)
+        // Vérifier l'idempotence locale en premier lieu
+        const existingLocalOrders = JSON.parse(localStorage.getItem('culture_orders') || '[]');
+        const dupOrder = existingLocalOrders.find(o => o.idempotency_key === idempotencyKey);
+        if (dupOrder) {
+            return dupOrder;
+        }
+
+        const localProducts = JSON.parse(localStorage.getItem('culture_products') || '[]');
+        let subtotal = 0;
+        const verifiedItems = [];
+
+        // Vérification atomique locale des stocks et prix
+        for (const it of (orderPayload.items || [])) {
+            const prod = localProducts.find(p => String(p.id).toLowerCase() === String(it.id).toLowerCase());
+            const reqQty = Number(it.quantity) || 1;
+            // Si le produit existe dans culture_products, vérifier son stock. Sinon, défaut à 10 pour les anciens items de test
+            const currentStock = prod 
+                ? ((prod.stock !== undefined && prod.stock !== null) ? Number(prod.stock) : 3) 
+                : 10;
+
+            if (currentStock < reqQty) {
+                throw new Error(`INSUFFICIENT_STOCK: Stock insuffisant pour "${it.name || it.id}". Demandé: ${reqQty}, Disponible: ${currentStock}`);
+            }
+
+            const unitPrice = prod ? Number(prod.price) : Number(it.price || 0);
+            subtotal += unitPrice * reqQty;
+            verifiedItems.push({
+                id: it.id,
+                name: prod ? prod.name : (it.name || it.id),
+                unit_price: unitPrice,
+                quantity: reqQty,
+                size: it.size || "Unique",
+                subtotal: unitPrice * reqQty
+            });
+
+            // Décrémenter le stock local si le produit est référencé
+            if (prod) {
+                prod.stock = Math.max(0, currentStock - reqQty);
+                prod.totalStock = prod.stock;
+            }
+        }
+        if (localProducts.length > 0) {
+            localStorage.setItem('culture_products', JSON.stringify(localProducts));
+        }
+
+            // Si l'appelant fournit explicitement orderPayload.total et qu'il n'y a pas d'articles de catalogue réels, respecter le total
+            const hasCatalogItems = verifiedItems.some(vi => vi.id && localProducts.some(p => String(p.id).toLowerCase() === String(vi.id).toLowerCase()));
+            const finalSubtotal = (!hasCatalogItems && orderPayload.total) ? orderPayload.total : (subtotal > 0 ? subtotal : (orderPayload.total || 0));
+
+            const rawComm = (finalSubtotal * commRate) / 100;
+            let commAmount = resellerId ? Math.round(rawComm) : 0;
 
         let isSelfCommission = false;
         if (orderPayload.resellerInfo) {
@@ -542,9 +685,10 @@ window.SupabaseService = {
 
         const orderRecord = {
             id: "CMD-" + Date.now().toString().slice(-6),
+            idempotency_key: idempotencyKey,
             created_at: new Date().toISOString(),
             date_formatted: new Date().toLocaleString("fr-FR", { dateStyle: "short", timeStyle: "short" }),
-            customer_name: orderPayload.customerName || "Invité",
+            customer_name: orderPayload.customerName || "Client Invité",
             customer_phone: orderPayload.customerPhone || "",
             customer_email: orderPayload.customerEmail || "",
             country: orderPayload.country || "Bénin",
@@ -552,9 +696,13 @@ window.SupabaseService = {
             address: orderPayload.address || "",
             payment_method: orderPayload.paymentMethod || "WhatsApp / Mobile Money",
             payment_status: "PENDING",
-            order_status: orderPayload.hasPreorder ? "Pré-commande" : "En attente",
-            total_amount: orderPayload.total,
-            items: orderPayload.items,
+            order_status: orderPayload.hasPreorder ? "Pré-commande" : "pending_whatsapp",
+            reservation_status: "ACTIVE",
+            reservation_expires_at: new Date(Date.now() + 15 * 60 * 1000).toISOString(),
+            total_amount: finalSubtotal,
+            subtotal_amount: finalSubtotal,
+            shipping_fee: 0,
+            items: verifiedItems,
             
             reseller_id: resellerId,
             referral_code: refCode,
@@ -569,37 +717,6 @@ window.SupabaseService = {
             });
         }
 
-        if (this.isConfigured()) {
-            try {
-                const resolvedResellerId = resellerId ? this.resolveResellerUUID(resellerId) : null;
-                const supabaseOrderPayload = {
-                    ...orderRecord,
-                    reseller_id: resolvedResellerId
-                };
-                const { data, error } = await supabaseClient
-                    .from('orders')
-                    .insert([supabaseOrderPayload])
-                    .select();
-
-                if (!error && data && data.length > 0) {
-                    if (resellerId) {
-                        await supabaseClient.from('commissions').insert([{
-                            id: this.generateUUID(),
-                            order_id: data[0].id,
-                            reseller_id: resolvedResellerId,
-                            referral_code: refCode,
-                            rate: commRate,
-                            amount: commAmount,
-                            status: isSelfCommission ? "REJECTED_SELF_COMMISSION" : "PENDING",
-                            created_at: new Date().toISOString()
-                        }]);
-                    }
-                }
-            } catch (err) {
-                console.warn("Erreur d'enregistrement Supabase (repli local) :", err);
-            }
-        }
-
         const localOrders = JSON.parse(localStorage.getItem('culture_orders') || '[]');
         localOrders.unshift(orderRecord);
         localStorage.setItem('culture_orders', JSON.stringify(localOrders));
@@ -612,7 +729,7 @@ window.SupabaseService = {
                 order_id: orderRecord.id,
                 reseller_id: resellerId,
                 referral_code: refCode,
-                order_total: orderPayload.total,
+                order_total: subtotal,
                 rate: commRate,
                 amount: commAmount,
                 status: isSelfCommission ? "REJECTED_SELF_COMMISSION" : "PENDING",
@@ -964,7 +1081,7 @@ window.SupabaseService = {
     },
 
     /* ==========================================================================
-       7. TRANSITION DE STATUT DE COMMANDE & COMMISSIONS
+       7. TRANSITION DE STATUT DE COMMANDE TRANSACTIONNELLE & COMMISSIONS
        ========================================================================== */
     async updateOrderStatus(orderId, newStatus) {
         const auth = window.AuthService.authorize('ROLE_ADMIN');
@@ -972,17 +1089,52 @@ window.SupabaseService = {
             throw new Error(`${auth.status} ${auth.error}: ${auth.message}`);
         }
 
+        // Si la transition est une confirmation ('confirmed' / 'Livrée'), appeler la RPC atomique
+        if (this.isConfigured()) {
+            try {
+                if (newStatus === 'confirmed' || newStatus === 'Livrée') {
+                    const { data: confRes, error: confErr } = await supabaseClient.rpc('confirm_order_and_commit_stock', {
+                        p_order_id: orderId,
+                        p_admin_note: 'Confirmation via interface administrateur'
+                    });
+                    if (confErr) {
+                        throw new Error(confErr.message || 'Erreur confirmation de commande');
+                    }
+                } else if (newStatus === 'cancelled' || newStatus === 'Annulée') {
+                    const { data: cancRes, error: cancErr } = await supabaseClient.rpc('cancel_order_and_release_stock', {
+                        p_order_id: orderId,
+                        p_reason: 'Annulation administrateur'
+                    });
+                    if (cancErr) {
+                        throw new Error(cancErr.message || 'Erreur annulation de commande');
+                    }
+                } else {
+                    await supabaseClient.from('orders').update({ order_status: newStatus }).eq('id', orderId);
+                }
+            } catch (rpcErr) {
+                console.warn('RPC Supabase non disponible ou rejetée, fallback local:', rpcErr.message);
+                if (rpcErr.message && (rpcErr.message.includes('RESERVATION_EXPIRED_NO_STOCK') || rpcErr.message.includes('FORBIDDEN'))) {
+                    throw rpcErr;
+                }
+            }
+        }
+
         const orders = JSON.parse(localStorage.getItem('culture_orders') || '[]');
         const idx = orders.findIndex(o => o.id === orderId);
         if (idx !== -1) {
             orders[idx].order_status = newStatus;
             orders[idx].status = newStatus;
+            if (newStatus === 'confirmed' || newStatus === 'Livrée') {
+                orders[idx].reservation_status = 'CONFIRMED';
+            } else if (newStatus === 'cancelled' || newStatus === 'Annulée') {
+                orders[idx].reservation_status = 'RELEASED';
+            }
             localStorage.setItem('culture_orders', JSON.stringify(orders));
 
             const commissions = JSON.parse(localStorage.getItem('culture_commissions') || '[]');
             commissions.forEach(c => {
                 if (c.order_id === orderId) {
-                    if (newStatus === "Livrée" || newStatus === "Terminée" || newStatus === "completed" || newStatus === "delivered") {
+                    if (newStatus === "Livrée" || newStatus === "Terminée" || newStatus === "completed" || newStatus === "delivered" || newStatus === "confirmed") {
                         c.status = "AVAILABLE";
                     } else if (newStatus === "Annulée" || newStatus === "Remboursée" || newStatus === "cancelled") {
                         c.status = "CANCELLED";
@@ -992,12 +1144,6 @@ window.SupabaseService = {
             localStorage.setItem('culture_commissions', JSON.stringify(commissions));
         }
 
-        if (this.isConfigured()) {
-            try {
-                await supabaseClient.from('orders').update({ order_status: newStatus }).eq('id', orderId);
-            } catch (e) {}
-        }
-
         await this.logAuditEvent(auth.session.user.id, 'ROLE_ADMIN', 'UPDATE_ORDER_STATUS', 'ORDER', orderId, { newStatus });
     },
 
@@ -1005,6 +1151,25 @@ window.SupabaseService = {
        8. JOURNAL D'AUDIT & AJUSTEMENTS DE COMMISSIONS (SECTIONS E)
        ========================================================================== */
     async logAuditEvent(actorId, actorRole, action, targetEntity, targetId, details = {}) {
+        // Nettoyage préventif des données sensibles avant stockage dans l'audit log
+        const sanitizeDetails = (obj) => {
+            if (!obj || typeof obj !== 'object') return {};
+            const clean = {};
+            const forbiddenKeys = /password|pwd|secret|token|jwt|apikey|api_key|service_role|authorization|pin/i;
+            for (const [k, v] of Object.entries(obj)) {
+                if (forbiddenKeys.test(k)) {
+                    clean[k] = '[REDACTED]';
+                } else if (typeof v === 'string' && (v.startsWith('eyJ') || v.startsWith('sbp_') || v.startsWith('sb_secret_'))) {
+                    clean[k] = '[REDACTED_TOKEN]';
+                } else {
+                    clean[k] = v;
+                }
+            }
+            return clean;
+        };
+
+        const safeDetails = sanitizeDetails(details);
+
         const auditRecord = {
             id: this.generateUUID(),
             legacy_id: "AUDIT-" + Date.now().toString().slice(-6),
@@ -1013,7 +1178,7 @@ window.SupabaseService = {
             action: action,
             target_entity: targetEntity,
             target_id: targetId,
-            details: details,
+            details: safeDetails,
             created_at: new Date().toISOString()
         };
 

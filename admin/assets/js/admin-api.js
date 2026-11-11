@@ -32,6 +32,11 @@ window.AdminAPI = {
             { id: "c6", name: "Manga Rebel Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 5.png", description: "Graphisme d'auteur façon croquis manga brut aux hachures expressives et cheveux blonds.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "c7", name: "Boxy Silhouette Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 6.png", description: "Silhouette streetwear underground en veste worker vintage oversize et pantalon cargo large.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "c8", name: "Stealth Blackout Crossbody", price: 8000, stock: 3, category: "crossbody", image: "IMAGE/c 7.png", description: "Édition purement minimaliste All-Black en toile balistique 1680D sans marquage.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c9", name: "ILLEGAL Ice Wash White-Star Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 9_ice_white_star.png", description: "Sacoche bandoulière en toile technique à motif marbré bleu glacier et blanc façon acid-wash. Dotée du macro-logo étoile emblématique ILLEGAL imprimé en blanc contrastant.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c10", name: "ILLEGAL Star Blackout Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 10_black_white_star.png", description: "L'édition bandoulière iconique du célèbre Star Pack. Toile technique noire intense rehaussée du macro-graphisme étoile blanche signature imprimé pleine face.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c11", name: "ILLEGAL Shadow Flora Star Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 11_shadow_flora_star.png", description: "Sac bandoulière en toile technique à motif floral sombre ton-sur-ton (anthracite et noir charbon), sublimé par l'étoile emblématique blanche ILLEGAL en grand format.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c12", name: "ILLEGAL Ice Wash Black-Star Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 12_ice_black_star.png", description: "Édition contraste inversé de la série Ice Wash : toile texturée bleu électrique délavé façon acid-wash marquée par le macro-logo étoile ILLEGAL imprimé en noir profond.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
+            { id: "c13", name: "Sacred Stained-Glass Crossbody", price: 10000, stock: 3, category: "crossbody", image: "IMAGE/c 13_stained_glass.png", description: "Pièce collector au design audacieux : sacoche noire ornée d'un double visuel façon vitrail gothique haute définition mêlant figures sacrées, éclats solaires dorés et flammes écarlates.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "dj1", name: "Veste Hoodie Raw Indigo Denim 480gsm", price: 15000, stock: 10, category: "hoodies", image: "IMAGE/denim_jacket.jpg.png", description: "Veste à capuche zippée en denim brut indigo lourd 480gsm.", sizes: ["S", "M", "L", "XL"], status: "upcoming", preorderBadge: "⏳ BIENTÔT DISPONIBLE", releaseDate: "Bientôt disponible" },
             { id: "sac1", name: "ILLEGAL Blackout Pack Vol.1", price: 12000, stock: 3, category: "backpacks", image: "IMAGE/Sac 1.png", description: "Sac à dos en toile technique noire intense avec logo ILLEGAL brodé.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
             { id: "sac2", name: "ILLEGAL Star Pack Vol.2", price: 12000, stock: 3, category: "backpacks", image: "IMAGE/Sac 2.png", description: "Version signature de la collection ILLEGAL × Priority.", sizes: ["Unique"], status: "available", preorderBadge: "DISPONIBLE", releaseDate: "Immédiat" },
@@ -273,6 +278,9 @@ window.AdminAPI = {
        ========================================================================== */
     async getResellers() {
         if (typeof window.SupabaseService !== 'undefined') {
+            if (typeof window.SupabaseService.getAllResellers === 'function') {
+                return await window.SupabaseService.getAllResellers();
+            }
             return await window.SupabaseService.getAllResellersRaw();
         }
         return JSON.parse(localStorage.getItem('culture_resellers') || '[]');
@@ -404,10 +412,8 @@ window.AdminAPI = {
         const activeGateway = (typeof window.PaymentService !== 'undefined') 
             ? window.PaymentService.getActiveProvider().code 
             : (localStorage.getItem('culture_payment_gateway') || "WHATSAPP_BRIDGE");
-        const adminPin = localStorage.getItem('culture_admin_pin') || (window.ENV_CONFIG?.DEFAULT_ADMIN_PIN || "1234");
 
         return {
-            adminPin,
             minPayout,
             min_payout_amount: minPayout,
             defaultRate,
@@ -420,9 +426,6 @@ window.AdminAPI = {
     },
 
     saveSettings(settings) {
-        if (settings.adminPin) {
-            localStorage.setItem('culture_admin_pin', settings.adminPin);
-        }
         const minPayout = settings.min_payout_amount !== undefined ? settings.min_payout_amount : settings.minPayout;
         if (minPayout !== undefined) {
             localStorage.setItem('culture_min_payout', minPayout);

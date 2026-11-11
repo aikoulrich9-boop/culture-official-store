@@ -6,4 +6,15 @@ pull/
 .temp/
 supabase/.temp/
 
+# Protection des secrets et variables d'environnement
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+.env.test
 
+# Archives et dumps
+*.zip
+*.tar.gz
+*.dump

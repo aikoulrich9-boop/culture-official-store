@@ -95,14 +95,27 @@
                 : `<span class="admin-badge admin-badge-neutral" style="font-size:11px; opacity:0.65;">Vente Directe</span>`;
 
             const currentStatus = o.order_status || o.status || 'En attente';
+            const resStatus = o.reservation_status || (currentStatus === 'confirmed' || currentStatus === 'Livrée' ? 'CONFIRMED' : (currentStatus === 'cancelled' || currentStatus === 'Annulée' ? 'RELEASED' : 'ACTIVE'));
+            const isExpired = resStatus === 'EXPIRED' || (resStatus === 'ACTIVE' && o.reservation_expires_at && new Date(o.reservation_expires_at) < new Date());
+
+            let resBadge = '<span class="admin-badge admin-badge-warning" style="font-size:10px;">⏳ Réservation Active</span>';
+            if (resStatus === 'CONFIRMED') {
+                resBadge = '<span class="admin-badge admin-badge-success" style="font-size:10px;">🔒 Stock Décrémenté</span>';
+            } else if (resStatus === 'RELEASED') {
+                resBadge = '<span class="admin-badge admin-badge-neutral" style="font-size:10px;">🔓 Stock Libéré</span>';
+            } else if (isExpired) {
+                resBadge = '<span class="admin-badge admin-badge-danger" style="font-size:10px;">⚠️ Réservation Expirée</span>';
+            }
 
             return `
                 <tr>
                     <td>
                         <strong style="font-family:monospace; font-size:12px; color:var(--admin-accent);">${escapeHtml(o.id)}</strong>
+                        <div style="margin-top:3px;">${resBadge}</div>
                     </td>
                     <td>
                         <span style="font-size:12px; color:var(--admin-text-muted);">${escapeHtml(o.date_formatted || (o.created_at ? o.created_at.substring(0, 16).replace('T', ' ') : 'Récente'))}</span>
+                        ${o.reservation_expires_at ? `<div style="font-size:10px; color:var(--admin-text-muted);">Exp: ${escapeHtml(o.reservation_expires_at.substring(11, 19))}</div>` : ''}
                     </td>
                     <td>
                         <div style="font-weight:600; color:var(--admin-text);">${escapeHtml(o.customer_name || 'Client Invité')}</div>
@@ -115,16 +128,18 @@
                     </td>
                     <td>
                         <strong style="font-size:14px; color:var(--admin-text);">${formatPrice(o.total_amount || o.total || 0)}</strong>
+                        ${o.subtotal_amount && o.subtotal_amount !== o.total_amount ? `<div style="font-size:10px; color:var(--admin-text-muted);">Sous-total: ${formatPrice(o.subtotal_amount)}</div>` : ''}
                     </td>
                     <td>
                         <select class="admin-select admin-select-sm" 
                             style="min-width: 150px; font-weight:600;" 
                             data-order-id="${escapeHtml(o.id)}"
                             onchange="window.OrdersModule.handleChangeStatus('${escapeHtml(o.id)}', this.value)">
-                            <option value="En attente" ${currentStatus === 'En attente' ? 'selected' : ''}>⏳ En attente</option>
+                            <option value="pending_whatsapp" ${currentStatus === 'pending_whatsapp' || currentStatus === 'En attente' ? 'selected' : ''}>⏳ En attente WhatsApp</option>
+                            <option value="confirmed" ${currentStatus === 'confirmed' || currentStatus === 'Livrée' ? 'selected' : ''}>✅ Confirmée (Décrémente Stock)</option>
                             <option value="Pré-commande" ${currentStatus === 'Pré-commande' ? 'selected' : ''}>⚡ Pré-commande</option>
-                            <option value="Livrée" ${currentStatus === 'Livrée' || currentStatus === 'completed' ? 'selected' : ''}>✅ Livrée (Valide Comm.)</option>
-                            <option value="Annulée" ${currentStatus === 'Annulée' || currentStatus === 'cancelled' ? 'selected' : ''}>❌ Annulée</option>
+                            <option value="cancelled" ${currentStatus === 'cancelled' || currentStatus === 'Annulée' ? 'selected' : ''}>❌ Annulée (Libère Stock)</option>
+                            <option value="expired" ${currentStatus === 'expired' ? 'selected' : ''}>⏱️ Expirée</option>
                         </select>
                     </td>
                     <td>${resellerBadge}</td>
